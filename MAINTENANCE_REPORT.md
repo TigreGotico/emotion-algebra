@@ -1,4 +1,4 @@
-# Maintenance Report — emotion_data
+# Maintenance Report — emotion_algebra
 
 ## 2026-03-30 — Phase 1 Revival
 
@@ -24,10 +24,10 @@
    - Neutrality identity element
 
 3. **Added type hints and docstrings** to core classes
-   - `Emotion`, `Neutrality`, `EmotionalDimension` — `emotion_data/plutchik.py`
-   - `Feeling` — `emotion_data/feelings.py`
-   - `CompositeEmotion`, `CompositeDimension` — `emotion_data/composite_emotions.py`
-   - `Behaviour`, `BehavioralReaction` — `emotion_data/behaviour.py`
+   - `Emotion`, `Neutrality`, `EmotionalDimension` — `emotion_algebra/plutchik.py`
+   - `Feeling` — `emotion_algebra/feelings.py`
+   - `CompositeEmotion`, `CompositeDimension` — `emotion_algebra/composite_emotions.py`
+   - `Behaviour`, `BehavioralReaction` — `emotion_algebra/behaviour.py`
 
 4. **Created `docs/index.md`**
    - Overview, algebra examples, emotion taxonomy table, installation instructions
@@ -35,10 +35,10 @@
 
 ### Files Modified
 - `setup.py` → replaced by `pyproject.toml` (setup.py retained for legacy compatibility)
-- `emotion_data/plutchik.py` — type hints + docstrings
-- `emotion_data/feelings.py` — type hints + docstrings
-- `emotion_data/composite_emotions.py` — type hints + docstrings
-- `emotion_data/behaviour.py` — type hints + docstrings
+- `emotion_algebra/plutchik.py` — type hints + docstrings
+- `emotion_algebra/feelings.py` — type hints + docstrings
+- `emotion_algebra/composite_emotions.py` — type hints + docstrings
+- `emotion_algebra/behaviour.py` — type hints + docstrings
 
 ### Files Created
 - `pyproject.toml`
@@ -56,35 +56,35 @@
 
 ### Actions Taken
 
-1. **Created `emotion_data/base.py`** — `EmotionBase` ABC
+1. **Created `emotion_algebra/base.py`** — `EmotionBase` ABC
    - Abstract properties: `name`, `emotional_flow`, `valence`, `arousal`, `type`, `emotion_vector`
    - Concrete shared implementations: `as_array`, `as_matrix`, `__bool__`, `__int__`, `__float__`, `__lt__`, `__le__`, `__gt__`, `__ge__`
 
-2. **`Emotion(EmotionBase)`** — `emotion_data/plutchik.py`
+2. **`Emotion(EmotionBase)`** — `emotion_algebra/plutchik.py`
    - Removed methods now provided by `EmotionBase`: `as_array`, `as_matrix`, `__bool__`, `__lt__`, `__le__`, `__gt__`, `__ge__`
    - Retained `__int__` (includes `intensity_offset`), `__float__`, `__eq__`, `__ne__`
    - Removed dead TODO comment block
 
-3. **`CompositeEmotion(EmotionBase)`** — `emotion_data/composite_emotions.py`
+3. **`CompositeEmotion(EmotionBase)`** — `emotion_algebra/composite_emotions.py`
    - Broke inheritance from `Emotion` — `CompositeEmotion` is now a peer, not a subclass
    - `__init__` no longer calls `Emotion.__init__`; no `intensity_offset`
    - Added `string_to_emotion` static method (was previously inherited)
    - Removed duplicate `__lt__`, `__le__`, `__gt__`, `__ge__` (now from `EmotionBase`)
    - Removed commented-out print and dead TODO block in `kind` property
 
-4. **`Feeling(EmotionBase)`** — `emotion_data/feelings.py`
+4. **`Feeling(EmotionBase)`** — `emotion_algebra/feelings.py`
    - Added `EmotionBase` as base class
    - Removed debug `print(self.emotions)` in `secondary_name`
    - Removed duplicate `__int__`, `__float__`, `__lt__`, `__le__`, `__gt__`, `__ge__`
    - Removed large commented-out dead operator code block
    - Removed `if __name__ == '__main__'` block
 
-5. **`emotion_data/__init__.py`** — exported `EmotionBase`
+5. **`emotion_algebra/__init__.py`** — exported `EmotionBase`
 
 ### Coverage
 - Before: 87% total (1,350 stmts, 169 missed)
 - After: 90% total (1,314 stmts, 126 missed — code deletion reduced total)
-- `emotion_data/base.py`: 100%
+- `emotion_algebra/base.py`: 100%
 - All 395 tests pass
 
 ---
@@ -126,9 +126,9 @@ Excluded from coverage: `deepmoji.py`, `tag.py` (optional external integrations)
 - `test/test_emotions_module.py`
 
 ### Files Modified
-- `emotion_data/plutchik.py` — `__bool__` bug fix
-- `emotion_data/behaviour.py` — `if e is not None:` + `from_data()` guard
-- `emotion_data/emotions.py` — `if emotion is not None:`
+- `emotion_algebra/plutchik.py` — `__bool__` bug fix
+- `emotion_algebra/behaviour.py` — `if e is not None:` + `from_data()` guard
+- `emotion_algebra/emotions.py` — `if emotion is not None:`
 - `FAQ.md` — documented bugs, tests, coverage
 
 ---
@@ -191,3 +191,33 @@ Excluded from coverage: `deepmoji.py`, `tag.py` (optional external integrations)
 - Sensitivity=0 valence: Öhman (1986) — anger is approach, fear is avoidance; neither is inherently pleasant
 
 ### Post-fix: 395 tests, 0 failures
+
+---
+
+## 2026-03-30 — v1.0.0 Pre-release: Rename & Audit
+
+**AI Model**: claude-sonnet-4-6
+**Oversight**: Human-directed; AI executed all changes.
+
+### Actions Taken
+
+1. **Renamed package** `emotion_data` → `emotion-algebra` (`emotion_algebra`)
+   - Package directory renamed: `emotion_data/` → `emotion_algebra/`
+   - All imports updated throughout `emotion_algebra/`, `test/`, `examples/`
+   - `pyproject.toml`: `name = "emotion-algebra"`, `version = "1.0.0"`, `license = "Apache-2.0"`, `readme = "README.md"`
+   - `.coveragerc` updated to omit `emotion_algebra/deepmoji.py` and `emotion_algebra/tag.py`
+
+2. **Wrote new `README.md`**
+   - Installation, model overview (axes table, valence/arousal/type), quick reference
+   - Scientific references: Plutchik 1980, Cambria 2012, Russell 1980, Posner 2005
+   - Replaced old `readme.md` (donation badges, outdated 2018 blog link)
+
+3. **Fresh pre-release `AUDIT.md`**
+   - 6 open issues (A-001 to A-006), 17 resolved issues (R-001 to R-017)
+   - All Phase 1–4 resolutions consolidated into resolved table
+   - Security section updated with accurate optional-dep call paths
+
+4. **`TODO.md`** updated: A-002, A-003, A-005 marked resolved.
+
+### Test results
+441 tests, 0 failures, 94% coverage (core algebraic modules 94–100%).

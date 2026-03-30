@@ -10,8 +10,8 @@ from copy import copy, deepcopy
 from types import MappingProxyType
 from typing import List, Optional, Union
 
-from emotion_data.base import EmotionBase
-from emotion_data.plutchik import Emotion, Neutrality
+from emotion_algebra.base import EmotionBase
+from emotion_algebra.plutchik import Emotion, Neutrality
 
 
 FEELING_NAMES = {'acknowledgement': ['serenity', 'acceptance'],
@@ -188,7 +188,7 @@ class Feeling(EmotionBase):
     @property
     def type(self) -> str:
         """Russell (1980) Circumplex classification using feeling valence and arousal."""
-        from emotion_data.plutchik import _circumplex_type
+        from emotion_algebra.plutchik import _circumplex_type
         return _circumplex_type(self.valence, self.arousal)
 
     def __str__(self):
@@ -315,7 +315,7 @@ class Feeling(EmotionBase):
 
 def _get_feeling_emotions():
     bucket = {}
-    from emotion_data.emotions import EMOTIONS
+    from emotion_algebra.emotions import EMOTIONS
     for feeling in FEELING_NAMES:
         emotions = FEELING_NAMES[feeling]
         bucket[feeling] = []
@@ -334,7 +334,7 @@ def _get_feelings():
         #f.name = feeling.lower()
         for emotion in FEELINGS_TO_EMOTION_MAP[feeling]:
             f.emotions.append(emotion)
-            from emotion_data.emotions import DIMENSIONS
+            from emotion_algebra.emotions import DIMENSIONS
             d = DIMENSIONS.get(emotion.name)
 
             if isinstance(d, list):

@@ -5,7 +5,7 @@ except ImportError:
     print("This example requires: pip install 'emotion_data[lexicon]'")
     raise SystemExit(0)
 
-from emotion_data import EmotionAnalyzer
+from emotion_algebra import EmotionAnalyzer
 
 analyzer = EmotionAnalyzer()
 

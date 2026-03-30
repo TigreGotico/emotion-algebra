@@ -1,7 +1,7 @@
 """06_valence_arousal_type.py — Valence, arousal, and Circumplex type for all emotions."""
 from copy import copy
-from emotion_data.emotions import EMOTIONS
-from emotion_data.plutchik import Neutrality
+from emotion_algebra.emotions import EMOTIONS
+from emotion_algebra.plutchik import Neutrality
 
 print("=== Valence and arousal for all 24 emotions ===")
 print(f"  {'Name':15s}  {'Axis':12s}  {'flow':>5}  {'valence':>7}  {'arousal':>7}  type")

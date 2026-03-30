@@ -1,6 +1,6 @@
 """03_negation_opposites.py — Opposite emotions via unary negation."""
 from copy import copy
-from emotion_data.emotions import EMOTIONS
+from emotion_algebra.emotions import EMOTIONS
 
 pairs = [
     ("anger",       "fear"),

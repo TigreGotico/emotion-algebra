@@ -40,7 +40,7 @@ Aptitude:     admiration, trust, acceptance, boredom, disgust, loathing
 ## Accessing emotions
 
 ```python
-from emotion_data.emotions import EMOTIONS, POSITIVE_EMOTIONS, NEGATIVE_EMOTIONS
+from emotion_algebra.emotions import EMOTIONS, POSITIVE_EMOTIONS, NEGATIVE_EMOTIONS
 from copy import copy
 
 anger = copy(EMOTIONS["anger"])

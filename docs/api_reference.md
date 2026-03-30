@@ -1,6 +1,6 @@
 # API Reference
 
-## `emotion_data.plutchik`
+## `emotion_algebra.plutchik`
 
 ### `Emotion`
 
@@ -71,7 +71,7 @@ Circumplex category. Used by `Emotion.type`, `CompositeEmotion.type`,
 
 ---
 
-## `emotion_data.composite_emotions`
+## `emotion_algebra.composite_emotions`
 
 ### `CompositeEmotion`
 
@@ -95,7 +95,7 @@ Examples: `"love": ["ecstasy", "admiration"]`, `"aggressiveness": ["rage", "vigi
 
 ---
 
-## `emotion_data.feelings`
+## `emotion_algebra.feelings`
 
 ### `Feeling`
 
@@ -123,7 +123,7 @@ Return the feeling name for a pair of emotion names, or `None` if no match.
 
 ---
 
-## `emotion_data.emotions`
+## `emotion_algebra.emotions`
 
 ### `EMOTIONS`
 
@@ -146,7 +146,7 @@ Return the axis for a named emotion.
 
 ---
 
-## `emotion_data.behaviour`
+## `emotion_algebra.behaviour`
 
 ### `Behaviour` / `BehavioralReaction`
 

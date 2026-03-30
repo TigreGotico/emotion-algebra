@@ -1,6 +1,6 @@
 """09_comparisons_sorting.py — Comparing and sorting emotions by intensity."""
 from copy import copy
-from emotion_data.emotions import EMOTIONS, DIMENSION_TO_EMOTION_MAP
+from emotion_algebra.emotions import EMOTIONS, DIMENSION_TO_EMOTION_MAP
 
 # --- Direct comparison on same axis -----------------------------------------
 print("=== Comparison on Sensitivity axis ===")

@@ -1,6 +1,6 @@
-from emotion_data.emotions import EMOTIONS
-from emotion_data.feelings import Feeling, FEELINGS
-from emotion_data.plutchik import Neutrality, Emotion
+from emotion_algebra.emotions import EMOTIONS
+from emotion_algebra.feelings import Feeling, FEELINGS
+from emotion_algebra.plutchik import Neutrality, Emotion
 import numpy as np
 
 n = Neutrality()

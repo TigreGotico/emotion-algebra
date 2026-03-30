@@ -2,9 +2,9 @@
 import pytest
 from copy import copy
 
-from emotion_data.emotions import EMOTIONS
-from emotion_data.feelings import FEELINGS
-from emotion_data.plutchik import Emotion, Neutrality, DIMENSIONS
+from emotion_algebra.emotions import EMOTIONS
+from emotion_algebra.feelings import FEELINGS
+from emotion_algebra.plutchik import Emotion, Neutrality, DIMENSIONS
 
 
 # ---------------------------------------------------------------------------
@@ -97,17 +97,17 @@ class TestHyperintensity:
 
 class TestComposition:
     def test_joy_plus_trust_returns_composite(self) -> None:
-        from emotion_data.composite_emotions import CompositeEmotion
+        from emotion_algebra.composite_emotions import CompositeEmotion
         result = emo("joy") + emo("trust")
         assert isinstance(result, CompositeEmotion), f"Expected CompositeEmotion, got {type(result)}"
 
     def test_joy_plus_surprise_returns_composite(self) -> None:
-        from emotion_data.composite_emotions import CompositeEmotion
+        from emotion_algebra.composite_emotions import CompositeEmotion
         result = emo("joy") + emo("surprise")
         assert isinstance(result, CompositeEmotion), f"Expected CompositeEmotion, got {type(result)}"
 
     def test_fear_plus_sadness_returns_composite(self) -> None:
-        from emotion_data.composite_emotions import CompositeEmotion
+        from emotion_algebra.composite_emotions import CompositeEmotion
         result = emo("fear") + emo("sadness")
         assert isinstance(result, CompositeEmotion), f"Expected CompositeEmotion, got {type(result)}"
 

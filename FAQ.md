@@ -1,6 +1,6 @@
-# FAQ — emotion_data
+# FAQ — emotion_algebra
 
-## What is emotion_data?
+## What is emotion_algebra?
 
 A Python library implementing **emotion algebra** based on Plutchik's Wheel of Emotions and the Hourglass of Emotions. Emotions are first-class mathematical objects with operator overloading.
 
@@ -11,7 +11,7 @@ Core package requires only `numpy`. All other dependencies are optional extras.
 ## How do I install just the core?
 
 ```bash
-pip install emotion_data
+pip install emotion_algebra
 ```
 
 ## What optional extras are available?
@@ -69,7 +69,7 @@ Five test files in `test/`:
 - `test_behaviour.py` — `Behaviour`, `BehavioralReaction`, `BEHAVIOURS`, `REACTIONS`
 - `test_emotions_module.py` — `emotions.py`, `lexicons.py`, `EmotionAnalyzer`
 
-Run: `python -m pytest test/ --cov=emotion_data --cov-config=.coveragerc`
+Run: `python -m pytest test/ --cov=emotion_algebra --cov-config=.coveragerc`
 
 ## What is the coverage target?
 

@@ -1,7 +1,7 @@
-from emotion_data.emotions import EMOTIONS
-from emotion_data.feelings import Feeling
-from emotion_data.plutchik import Neutrality
-from emotion_data.composite_emotions import CompositeEmotion, CompositeDimension
+from emotion_algebra.emotions import EMOTIONS
+from emotion_algebra.feelings import Feeling
+from emotion_algebra.plutchik import Neutrality
+from emotion_algebra.composite_emotions import CompositeEmotion, CompositeDimension
 
 e = EMOTIONS["joy"]
 
@@ -156,7 +156,7 @@ assert - e == "boredom"
 
 # you can also check if dimensions are part of an emotion
 
-from emotion_data.plutchik import DIMENSIONS
+from emotion_algebra.plutchik import DIMENSIONS
 
 d = DIMENSIONS["aptitude"]
 

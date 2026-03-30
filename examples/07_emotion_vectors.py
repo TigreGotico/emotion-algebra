@@ -1,8 +1,8 @@
 """07_emotion_vectors.py — 4D Hourglass vectors and matrix representations."""
 import numpy as np
 from copy import copy
-from emotion_data.emotions import EMOTIONS
-from emotion_data.composite_emotions import CompositeEmotion
+from emotion_algebra.emotions import EMOTIONS
+from emotion_algebra.composite_emotions import CompositeEmotion
 
 # --- Single emotion vector --------------------------------------------------
 print("=== 4D vector for joy (Pleasantness +2) ===")

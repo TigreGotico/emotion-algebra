@@ -1,10 +1,10 @@
 [run]
-source = emotion_data
+source = emotion_algebra
 omit =
-    emotion_data/deepmoji.py
-    emotion_data/tag.py
+    emotion_algebra/deepmoji.py
+    emotion_algebra/tag.py
 
 [report]
 omit =
-    emotion_data/deepmoji.py
-    emotion_data/tag.py
+    emotion_algebra/deepmoji.py
+    emotion_algebra/tag.py

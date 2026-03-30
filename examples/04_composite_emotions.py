@@ -1,7 +1,7 @@
 """04_composite_emotions.py — Cross-axis addition producing CompositeEmotion."""
 from copy import copy
-from emotion_data.emotions import EMOTIONS
-from emotion_data.composite_emotions import CompositeEmotion, COMPOSITE_EMOTIONS_NAMES
+from emotion_algebra.emotions import EMOTIONS
+from emotion_algebra.composite_emotions import CompositeEmotion, COMPOSITE_EMOTIONS_NAMES
 
 # --- Cross-axis addition always returns CompositeEmotion --------------------
 # Named composites use TERTIARY emotions (flow ±3) per COMPOSITE_EMOTIONS_NAMES

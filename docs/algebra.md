@@ -48,7 +48,7 @@ joy + serenity         # flow 2+1 = 3 → ecstasy
 Two emotions on **different** axes produce a `CompositeEmotion`:
 
 ```python
-from emotion_data.emotions import EMOTIONS
+from emotion_algebra.emotions import EMOTIONS
 from copy import copy
 
 joy   = copy(EMOTIONS["joy"])

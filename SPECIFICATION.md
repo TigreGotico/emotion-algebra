@@ -1,9 +1,9 @@
-# emotion_data — Scientific Specification
+# emotion_algebra — Scientific Specification
 
 **Version**: 1.0
 **Status**: Normative
 **Purpose**: This document is the single source of truth for the behaviour of every class
-and operation in `emotion_data`.  All implementation decisions must be traceable to a
+and operation in `emotion_algebra`.  All implementation decisions must be traceable to a
 clause here.  Where the spec departs from common intuition or prior code, the departure is
 justified with a citation or explicit argument.
 

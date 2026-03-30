@@ -1,7 +1,7 @@
-from emotion_data.emotions import EMOTIONS, DIMENSIONS
-from emotion_data.plutchik import EmotionalDimension, Neutrality
-from emotion_data.composite_emotions import COMPOSITE_EMOTIONS, CompositeEmotion, CompositeDimension
-from emotion_data.feelings import FEELINGS
+from emotion_algebra.emotions import EMOTIONS, DIMENSIONS
+from emotion_algebra.plutchik import EmotionalDimension, Neutrality
+from emotion_algebra.composite_emotions import COMPOSITE_EMOTIONS, CompositeEmotion, CompositeDimension
+from emotion_algebra.feelings import FEELINGS
 
 # dimensions have a kind and valence
 d = DIMENSIONS["sensitivity"]

@@ -1,4 +1,4 @@
-# TODO — emotion_data
+# TODO — emotion_algebra
 
 Issues are grouped by severity. Each item maps to one commit.
 
@@ -30,7 +30,7 @@ Issues are grouped by severity. Each item maps to one commit.
 ## Architectural (code quality)
 
 - [x] **`string_to_emotion` is duplicated** — defined on `Emotion` as a `@staticmethod`, then copied verbatim into `CompositeEmotion` and `Feeling`. Move to a module-level function in `emotions.py` and import from there.
-- [x] **`deepmoji` and `tag` imported unconditionally at module top** — `__init__.py` line 1 imports from `deepmoji.py` which requires torch/torchMoji. If those aren't installed, `import emotion_data` raises `ImportError`. Fix: lazy-import inside the methods that use them.
+- [x] **`deepmoji` and `tag` imported unconditionally at module top** — `__init__.py` line 1 imports from `deepmoji.py` which requires torch/torchMoji. If those aren't installed, `import emotion_algebra` raises `ImportError`. Fix: lazy-import inside the methods that use them.
 - [x] **Global dicts are mutable and tests depend on ordering** — `EMOTIONS`, `FEELINGS`, `BEHAVIOURS`, `REACTIONS` are plain `dict`s mutated freely in tests. Wrap with `types.MappingProxyType` after construction to make accidental mutation a `TypeError`.
 - [x] **`Emotion.__sub__` has an unreachable string branch** — `if isinstance(other, str): return self.name - other` would raise `TypeError` because string subtraction is invalid Python. The string is already resolved to an emotion object earlier in the same method. Dead code; remove it.
 - [x] **`np.matrix` is deprecated** — `as_matrix` uses `np.matrix(...)`. NumPy has deprecated `np.matrix` since 1.15. Replace with a 2×2 `np.ndarray`.

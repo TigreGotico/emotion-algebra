@@ -1,12 +1,12 @@
-"""Tests for emotion_data.emotions, emotion_data.lexicons, emotion_data.__init__."""
+"""Tests for emotion_data.emotions, emotion_data.lexicons, emotion_algebra.__init__."""
 import pytest
 
-from emotion_data.emotions import (
+from emotion_algebra.emotions import (
     EMOTIONS, EMOTION_NAMES, POSITIVE_EMOTIONS, NEGATIVE_EMOTIONS,
     DIMENSION_TO_EMOTION_MAP, KIND_TO_EMOTION_MAP,
     random_emotion, get_emotion, get_dimension, emotion_to_dimension,
 )
-from emotion_data.plutchik import Emotion, EmotionalDimension
+from emotion_algebra.plutchik import Emotion, EmotionalDimension
 
 
 # ---------------------------------------------------------------------------
@@ -123,8 +123,8 @@ class TestEmotionToDimension:
 
     def test_composite_emotion_returns_list(self):
         from copy import copy
-        from emotion_data.emotions import EMOTIONS
-        from emotion_data.composite_emotions import CompositeEmotion
+        from emotion_algebra.emotions import EMOTIONS
+        from emotion_algebra.composite_emotions import CompositeEmotion
         rage = copy(EMOTIONS["rage"])
         vigilance = copy(EMOTIONS["vigilance"])
         composite = rage * vigilance
@@ -140,47 +140,47 @@ class TestEmotionToDimension:
 
 class TestLexicons:
     def test_get_color_known_word(self):
-        from emotion_data.lexicons import get_color, LEXICON
+        from emotion_algebra.lexicons import get_color, LEXICON
         word = next(iter(LEXICON))
         result = get_color(word)
         assert result is not None
 
     def test_get_emotion_known_word(self):
-        from emotion_data.lexicons import get_word_emotion, LEXICON
+        from emotion_algebra.lexicons import get_word_emotion, LEXICON
         word = next(iter(LEXICON))
         result = get_word_emotion(word)
         assert result is not None
 
     def test_get_sentiment_known_word(self):
-        from emotion_data.lexicons import get_sentiment, LEXICON
+        from emotion_algebra.lexicons import get_sentiment, LEXICON
         word = next(iter(LEXICON))
         result = get_sentiment(word)
         assert result is not None
 
     def test_get_subjectivity_known_word(self):
-        from emotion_data.lexicons import get_subjectivity, LEXICON
+        from emotion_algebra.lexicons import get_subjectivity, LEXICON
         word = next(iter(LEXICON))
         result = get_subjectivity(word)
         assert result is not None
 
     def test_get_orientation_known_word(self):
-        from emotion_data.lexicons import get_orientation, LEXICON
+        from emotion_algebra.lexicons import get_orientation, LEXICON
         word = next(iter(LEXICON))
         result = get_orientation(word)
         assert result is not None
 
     def test_unknown_word_returns_none(self):
-        from emotion_data.lexicons import get_color, get_word_emotion
+        from emotion_algebra.lexicons import get_color, get_word_emotion
         assert get_color("xyz_not_in_lexicon_abcdef") is None
         assert get_word_emotion("xyz_not_in_lexicon_abcdef") is None
 
     def test_lexicon_has_entries(self):
-        from emotion_data.lexicons import LEXICON
+        from emotion_algebra.lexicons import LEXICON
         assert len(LEXICON) > 100
 
 
 # ---------------------------------------------------------------------------
-# emotion_data.__init__ — EmotionAnalyzer
+# emotion_algebra.__init__ — EmotionAnalyzer
 # ---------------------------------------------------------------------------
 
 class TestEmotionAnalyzer:
@@ -194,16 +194,16 @@ class TestEmotionAnalyzer:
             sys.modules["deepmoji"] = mock_deepmoji
 
     def _get_analyzer(self):
-        from emotion_data import EmotionAnalyzer
+        from emotion_algebra import EmotionAnalyzer
         return EmotionAnalyzer()
 
     def test_get_emotion_known(self):
-        from emotion_data.emotions import get_emotion
+        from emotion_algebra.emotions import get_emotion
         e = get_emotion("anger")
         assert isinstance(e, Emotion)
 
     def test_get_feeling_known(self):
-        from emotion_data.feelings import get_feeling
+        from emotion_algebra.feelings import get_feeling
         f = get_feeling("love")
         assert f is not None
 
@@ -212,28 +212,28 @@ class TestEmotionAnalyzer:
         assert isinstance(d, EmotionalDimension)
 
     def test_analyzer_get_method(self):
-        from emotion_data import EmotionAnalyzer
+        from emotion_algebra import EmotionAnalyzer
         a = EmotionAnalyzer()
         result = a.get("anger")
         assert isinstance(result, Emotion)
 
     def test_analyzer_random_emotion(self):
-        from emotion_data import EmotionAnalyzer
+        from emotion_algebra import EmotionAnalyzer
         a = EmotionAnalyzer()
         e = a.random_emotion()
         assert isinstance(e, Emotion)
 
     def test_analyzer_emotion_method(self):
-        from emotion_data import EmotionAnalyzer
+        from emotion_algebra import EmotionAnalyzer
         a = EmotionAnalyzer()
         e = a.emotion("anger")
         assert isinstance(e, Emotion)
 
     def test_analyzer_feeling_method(self):
         try:
-            from emotion_data import EmotionAnalyzer
+            from emotion_algebra import EmotionAnalyzer
             a = EmotionAnalyzer()
-            from emotion_data.feelings import Feeling
+            from emotion_algebra.feelings import Feeling
             f = a.feeling("love")
             assert isinstance(f, Feeling)
         except ImportError:
@@ -241,7 +241,7 @@ class TestEmotionAnalyzer:
 
     def test_analyzer_dimension_method(self):
         try:
-            from emotion_data import EmotionAnalyzer
+            from emotion_algebra import EmotionAnalyzer
             a = EmotionAnalyzer()
             d = a.dimension("sensitivity")
             assert isinstance(d, EmotionalDimension)
@@ -250,8 +250,8 @@ class TestEmotionAnalyzer:
 
     def test_analyzer_get_sentiment(self):
         try:
-            from emotion_data import EmotionAnalyzer
-            from emotion_data.lexicons import LEXICON
+            from emotion_algebra import EmotionAnalyzer
+            from emotion_algebra.lexicons import LEXICON
             a = EmotionAnalyzer()
             word = next(iter(LEXICON))
             result = a.get_sentiment(word)
@@ -261,8 +261,8 @@ class TestEmotionAnalyzer:
 
     def test_analyzer_get_color(self):
         try:
-            from emotion_data import EmotionAnalyzer
-            from emotion_data.lexicons import LEXICON
+            from emotion_algebra import EmotionAnalyzer
+            from emotion_algebra.lexicons import LEXICON
             a = EmotionAnalyzer()
             word = next(iter(LEXICON))
             result = a.get_color(word)

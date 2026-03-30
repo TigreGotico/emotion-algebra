@@ -1,6 +1,6 @@
 """11_same_axis_arithmetic.py — Same-axis addition: flows sum within an axis."""
 from copy import copy
-from emotion_data.emotions import EMOTIONS
+from emotion_algebra.emotions import EMOTIONS
 
 # --- Adding two same-axis emotions ------------------------------------------
 print("=== Same-axis addition (Sensitivity) ===")

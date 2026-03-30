@@ -1,5 +1,5 @@
 """12_emotional_dimension.py — Inspecting EmotionalDimension axes."""
-from emotion_data.plutchik import DIMENSIONS
+from emotion_algebra.plutchik import DIMENSIONS
 
 print("=== All four Hourglass axes ===")
 for axis_name, dim in DIMENSIONS.items():
@@ -14,7 +14,7 @@ for axis_name, dim in DIMENSIONS.items():
 
 # --- Dimension containment check --------------------------------------------
 from copy import copy
-from emotion_data.emotions import EMOTIONS
+from emotion_algebra.emotions import EMOTIONS
 
 print("\n=== Containment: 'anger in sensitivity' ===")
 anger = copy(EMOTIONS["anger"])
@@ -24,7 +24,7 @@ print(f"  anger in pleasantness : {anger in DIMENSIONS['pleasantness']}")
 
 # --- Dimension addition (CompositeDimension) --------------------------------
 print("\n=== Dimension addition ===")
-from emotion_data.composite_emotions import CompositeDimension
+from emotion_algebra.composite_emotions import CompositeDimension
 combined = DIMENSIONS["sensitivity"] + DIMENSIONS["pleasantness"]
 print(f"  sensitivity + pleasantness → {type(combined).__name__}")
 print(f"  axes: {combined.axes}")

@@ -1,5 +1,5 @@
-from emotion_data.tag import best_emotion
-from emotion_data.emotions import EMOTIONS
+from emotion_algebra.tag import best_emotion
+from emotion_algebra.emotions import EMOTIONS
 
 
 TEST_SENTENCES = ['I love mom\'s cooking',

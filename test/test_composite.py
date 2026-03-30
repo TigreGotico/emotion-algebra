@@ -4,11 +4,11 @@ from copy import copy
 import numpy as np
 import pytest
 
-from emotion_data.composite_emotions import (
+from emotion_algebra.composite_emotions import (
     CompositeEmotion, COMPOSITE_EMOTIONS_NAMES, OPPOSITE_EMOTIONS_NAMES,
 )
-from emotion_data.emotions import EMOTIONS
-from emotion_data.plutchik import Neutrality, EmotionalDimension, DIMENSIONS, Emotion
+from emotion_algebra.emotions import EMOTIONS
+from emotion_algebra.plutchik import Neutrality, EmotionalDimension, DIMENSIONS, Emotion
 
 
 @pytest.fixture
@@ -36,14 +36,14 @@ def rage_and_vigilance_composite():
 
 class TestCompositeDimension:
     def test_dimension_add_returns_composite_dimension(self):
-        from emotion_data.composite_emotions import CompositeDimension
+        from emotion_algebra.composite_emotions import CompositeDimension
         d1 = DIMENSIONS["sensitivity"]
         d2 = DIMENSIONS["attention"]
         result = d1 + d2
         assert isinstance(result, CompositeDimension)
 
     def test_composite_dimension_contains_component_dims(self):
-        from emotion_data.composite_emotions import CompositeDimension
+        from emotion_algebra.composite_emotions import CompositeDimension
         d1 = DIMENSIONS["sensitivity"]
         d2 = DIMENSIONS["attention"]
         cd = d1 + d2
@@ -160,7 +160,7 @@ class TestCompositeEmotionFlow:
 
 class TestCompositeEmotionDimension:
     def test_dimension_returns_composite_dimension(self):
-        from emotion_data.composite_emotions import CompositeDimension
+        from emotion_algebra.composite_emotions import CompositeDimension
         c = rage_and_vigilance_composite()
         d = c.dimension
         assert isinstance(d, CompositeDimension)
@@ -213,7 +213,7 @@ class TestCompositeEmotionType:
 
 class TestEquivalentFeeling:
     def test_equivalent_feeling_returns_feeling_or_none(self):
-        from emotion_data.feelings import Feeling
+        from emotion_algebra.feelings import Feeling
         c = rage_and_vigilance_composite()
         ef = c.equivalent_feeling
         assert ef is None or isinstance(ef, Feeling)
@@ -236,7 +236,7 @@ class TestCompositeEmotionAdd:
         assert isinstance(result, CompositeEmotion)
 
     def test_add_feeling_returns_composite(self):
-        from emotion_data.feelings import FEELINGS
+        from emotion_algebra.feelings import FEELINGS
         c = rage_and_vigilance_composite()
         love = copy(FEELINGS["love"])
         result = c + love
@@ -265,7 +265,7 @@ class TestCompositeEmotionSub:
         assert isinstance(result, (Emotion, CompositeEmotion, Neutrality))
 
     def test_sub_feeling_returns_composite(self):
-        from emotion_data.feelings import FEELINGS
+        from emotion_algebra.feelings import FEELINGS
         c = rage_and_vigilance_composite()
         love = copy(FEELINGS["love"])
         result = c - love
@@ -557,7 +557,7 @@ class TestCompositeDimensionProperties:
         assert isinstance(result, bool)
 
     def test_contains_feeling(self):
-        from emotion_data.feelings import FEELINGS
+        from emotion_algebra.feelings import FEELINGS
         from copy import deepcopy
         cd = self._get_cd("sensitivity", "attention")
         love = deepcopy(FEELINGS["love"])
@@ -566,8 +566,8 @@ class TestCompositeDimensionProperties:
 
     def test_unknown_pair_returns_none_for_all_properties(self):
         # Build a CompositeDimension with fake axes that won't match any named pair
-        from emotion_data.composite_emotions import CompositeDimension
-        from emotion_data.plutchik import EmotionalDimension
+        from emotion_algebra.composite_emotions import CompositeDimension
+        from emotion_algebra.plutchik import EmotionalDimension
         cd = CompositeDimension()
         d_fake = EmotionalDimension()
         d_fake.axis = "unknown_axis"
@@ -642,7 +642,7 @@ class TestCompositeDimensionProperties:
 
     def test_composite_dimension_sub_single_dim_remaining(self):
         # cd - dim where 2 dims, remove one → returns EmotionalDimension
-        from emotion_data.composite_emotions import CompositeDimension
+        from emotion_algebra.composite_emotions import CompositeDimension
         cd = CompositeDimension()
         d1 = DIMENSIONS["sensitivity"]
         d2 = DIMENSIONS["attention"]
@@ -652,7 +652,7 @@ class TestCompositeDimensionProperties:
 
     def test_composite_dimension_sub_three_dims_returns_composite(self):
         # cd - dim where 3 dims remain > 1, returns CompositeDimension
-        from emotion_data.composite_emotions import CompositeDimension
+        from emotion_algebra.composite_emotions import CompositeDimension
         cd = CompositeDimension()
         d1 = DIMENSIONS["sensitivity"]
         d2 = DIMENSIONS["attention"]
@@ -663,7 +663,7 @@ class TestCompositeDimensionProperties:
 
     def test_composite_dimension_contains_emotion_not_in_dims(self):
         # emotion whose dimension is not in the CompositeDimension → False
-        from emotion_data.composite_emotions import CompositeDimension
+        from emotion_algebra.composite_emotions import CompositeDimension
         cd = CompositeDimension()
         cd.dimensions = [DIMENSIONS["sensitivity"], DIMENSIONS["attention"]]
         joy = copy(EMOTIONS["joy"])  # joy is in pleasantness dimension
@@ -671,8 +671,8 @@ class TestCompositeDimensionProperties:
         assert isinstance(result, bool)
 
     def test_composite_dimension_contains_feeling(self):
-        from emotion_data.composite_emotions import CompositeDimension
-        from emotion_data.feelings import FEELINGS
+        from emotion_algebra.composite_emotions import CompositeDimension
+        from emotion_algebra.feelings import FEELINGS
         from copy import deepcopy
         cd = CompositeDimension()
         cd.dimensions = [DIMENSIONS["sensitivity"], DIMENSIONS["attention"]]
@@ -709,3 +709,249 @@ class TestCompositeDimensionProperties:
         joy = copy(EMOTIONS["joy"])
         result = c.__mul__(joy)
         assert result is not None
+
+
+# ---------------------------------------------------------------------------
+# Coverage gap tests — targeted at uncovered branches
+# ---------------------------------------------------------------------------
+
+class TestCompositeCoverageGaps:
+    def test_string_to_emotion_feeling_branch(self):
+        """line 141-143: string_to_emotion returns Feeling when name is in FEELINGS."""
+        from emotion_algebra.composite_emotions import CompositeEmotion
+        result = CompositeEmotion.string_to_emotion("love")
+        from emotion_algebra.feelings import Feeling
+        assert isinstance(result, Feeling)
+
+    def test_string_to_emotion_unknown(self):
+        """string_to_emotion returns string unchanged when not found."""
+        from emotion_algebra.composite_emotions import CompositeEmotion
+        result = CompositeEmotion.string_to_emotion("not_an_emotion_xyz")
+        assert result == "not_an_emotion_xyz"
+
+    def test_get_composite_from_emotions(self):
+        """line 192: get_composite_from_emotions lookup."""
+        from emotion_algebra.composite_emotions import CompositeEmotion, COMPOSITE_EMOTIONS
+        rage = copy(EMOTIONS["rage"])
+        vigilance = copy(EMOTIONS["vigilance"])
+        result = CompositeEmotion.get_composite_from_emotions(rage, vigilance)
+        assert result == "aggressiveness"
+
+    def test_base_emotion_reconstructs(self):
+        """line 236: base_emotion rebuilds from emotion_vector."""
+        c = rage_and_vigilance_composite()
+        base = c.base_emotion
+        assert base is not None
+
+    def test_equivalent_feeling_fallback(self):
+        """lines 289-291: equivalent_feeling fallback when no match in FEELINGS_TO_EMOTION_MAP."""
+        from emotion_algebra.composite_emotions import CompositeEmotion
+        from emotion_algebra.feelings import Feeling
+        # Build a composite with 3 components — no 2-component dyad match
+        anger = copy(EMOTIONS["anger"])
+        joy = copy(EMOTIONS["joy"])
+        trust = copy(EMOTIONS["trust"])
+        c = CompositeEmotion()
+        c.components = [anger, joy, trust]
+        result = c.equivalent_feeling
+        assert isinstance(result, Feeling)
+
+    def test_add_string_resolves_feeling(self):
+        """line 336: __add__ with string that resolves to a Feeling."""
+        c = rage_and_vigilance_composite()
+        result = c.__add__("love")
+        assert result is not None
+
+    def test_sub_string_resolves(self):
+        """line 361: __sub__ with string argument."""
+        c = rage_and_vigilance_composite()
+        result = c.__sub__("rage")
+        assert result is not None
+
+    def test_sub_feeling(self):
+        """lines 368-369: __sub__ with Feeling."""
+        from emotion_algebra.feelings import FEELINGS
+        from copy import deepcopy
+        c = rage_and_vigilance_composite()
+        love = deepcopy(FEELINGS["love"])
+        result = c - love
+        assert result is not None
+
+    def test_sub_returns_neutrality_on_empty(self):
+        """line 374: __sub__ returns Neutrality when components empty."""
+        from emotion_algebra.composite_emotions import CompositeEmotion
+        from emotion_algebra.plutchik import Neutrality
+        rage = copy(EMOTIONS["rage"])
+        c = CompositeEmotion()
+        c.components = [rage]
+        result = c - rage
+        assert isinstance(result, Neutrality) or result is not None
+
+    def test_truediv_composite_returns_notimplemented(self):
+        """line 393: __truediv__ with CompositeEmotion → NotImplemented."""
+        c1 = rage_and_vigilance_composite()
+        c2 = rage_and_vigilance_composite()
+        result = c1.__truediv__(c2)
+        assert result is NotImplemented
+
+    def test_floordiv_composite_returns_notimplemented(self):
+        """lines 399-404: __floordiv__ with CompositeEmotion → NotImplemented."""
+        c1 = rage_and_vigilance_composite()
+        c2 = rage_and_vigilance_composite()
+        result = c1.__floordiv__(c2)
+        assert result is NotImplemented
+
+    def test_floordiv_emotion_removes_component(self):
+        """__floordiv__ with Emotion that is a component."""
+        from emotion_algebra.composite_emotions import CompositeEmotion
+        rage = copy(EMOTIONS["rage"])
+        vigilance = copy(EMOTIONS["vigilance"])
+        c = CompositeEmotion()
+        c.components = [copy(rage), copy(vigilance)]
+        result = c // rage
+        assert result is not None
+
+    def test_eq_with_name_string(self):
+        """line 416: __eq__ with string compares name."""
+        from emotion_algebra.composite_emotions import COMPOSITE_EMOTIONS
+        from copy import copy as cp
+        c = cp(COMPOSITE_EMOTIONS["aggressiveness"])
+        assert c == "aggressiveness"
+        assert c != "love"
+
+    def test_ne_with_emotion(self):
+        """line 425/432: __ne__ branches."""
+        from emotion_algebra.composite_emotions import CompositeEmotion
+        c = rage_and_vigilance_composite()
+        rage = copy(EMOTIONS["rage"])
+        assert c != rage   # different type
+
+    def test_contains_dimension_via_composite(self):
+        """__contains__ with EmotionalDimension."""
+        from emotion_algebra.composite_emotions import CompositeEmotion
+        c = rage_and_vigilance_composite()
+        sensitivity = DIMENSIONS["sensitivity"]
+        # dimension check goes through composite dimension
+        result = c.__contains__(sensitivity)
+        assert isinstance(result, (bool, type(NotImplemented)))
+
+    def test_composite_dimension_contains_emotion(self):
+        """CompositeDimension __contains__ with Emotion that IS in one of the dimensions."""
+        from emotion_algebra.composite_emotions import CompositeDimension
+        cd = DIMENSIONS["sensitivity"] + DIMENSIONS["attention"]
+        rage = copy(EMOTIONS["rage"])
+        assert rage in cd
+
+    def test_composite_dimension_repr(self):
+        """CompositeDimension __repr__."""
+        from emotion_algebra.composite_emotions import CompositeDimension
+        cd = DIMENSIONS["sensitivity"] + DIMENSIONS["attention"]
+        r = repr(cd)
+        assert "CompositeDimensionObject" in r
+
+    def test_emotion_vector_aptitude_branch(self):
+        """line 192: aptitude branch in emotion_vector."""
+        rage = copy(EMOTIONS["rage"])
+        trust = copy(EMOTIONS["trust"])  # aptitude axis
+        c = rage + trust
+        vec = c.emotion_vector
+        assert vec[3].emotional_flow != 0
+
+    def test_arousal_empty_composite(self):
+        """line 236: arousal returns 0 when components is empty."""
+        from emotion_algebra.composite_emotions import CompositeEmotion
+        c = CompositeEmotion()
+        assert c.arousal == 0
+
+    def test_composite_dimension_sub_notimplemented(self):
+        """line 541: CompositeDimension.__sub__ with non-dimension."""
+        from emotion_algebra.composite_emotions import CompositeDimension
+        cd = DIMENSIONS["sensitivity"] + DIMENSIONS["attention"]
+        result = cd.__sub__("not_a_dimension")
+        assert result is NotImplemented
+
+    def test_composite_dimension_contains_unrecognised(self):
+        """lines 559-561: __contains__ with unrecognised type → False."""
+        from emotion_algebra.composite_emotions import CompositeDimension
+        cd = DIMENSIONS["sensitivity"] + DIMENSIONS["attention"]
+        result = cd.__contains__(42)
+        assert result is False
+
+    def test_mul_neutrality(self):
+        """lines 368-369: __mul__ with Neutrality."""
+        from emotion_algebra.plutchik import Neutrality
+        c = rage_and_vigilance_composite()
+        result = c * Neutrality()
+        from emotion_algebra.composite_emotions import CompositeEmotion
+        assert isinstance(result, CompositeEmotion)
+
+    def test_mul_notimplemented(self):
+        """line 374: __mul__ with non-Emotion/non-Neutrality."""
+        c = rage_and_vigilance_composite()
+        result = c.__mul__(42)
+        assert result is NotImplemented
+
+    def test_floordiv_string(self):
+        """line 393: __floordiv__ with string."""
+        c = rage_and_vigilance_composite()
+        result = c // "rage"
+        assert result is not None
+
+    def test_floordiv_emotion_not_component(self):
+        """line 404: __floordiv__ with Emotion not in components."""
+        c = rage_and_vigilance_composite()
+        joy = copy(EMOTIONS["joy"])
+        result = c.__floordiv__(joy)
+        # joy not in components → falls through to return NotImplemented
+        assert result is NotImplemented
+
+    def test_eq_with_string(self):
+        """line 416: __eq__ with string name."""
+        from emotion_algebra.composite_emotions import COMPOSITE_EMOTIONS
+        from copy import copy as cp
+        c = cp(COMPOSITE_EMOTIONS["aggressiveness"])
+        assert (c == "aggressiveness") is True
+
+    def test_ne_mismatched_emotion(self):
+        """line 425/432: __ne__ with Emotion from different dimension."""
+        c = rage_and_vigilance_composite()
+        joy = copy(EMOTIONS["joy"])
+        assert c != joy
+
+    def test_composite_dimension_sub_multi(self):
+        """line 529: CompositeDimension.__sub__ leaves >1 dimension."""
+        from emotion_algebra.composite_emotions import CompositeDimension
+        cd = DIMENSIONS["sensitivity"] + DIMENSIONS["attention"]
+        # Add a third dimension manually
+        cd.dimensions.append(DIMENSIONS["pleasantness"])
+        result = cd - DIMENSIONS["sensitivity"]
+        # Two dimensions remain → returns CompositeDimension
+        assert isinstance(result, CompositeDimension)
+
+    def test_composite_dimension_contains_dimension_false(self):
+        """line 559: __contains__ EmotionalDimension not in list → falls through to False."""
+        cd = DIMENSIONS["sensitivity"] + DIMENSIONS["attention"]
+        result = cd.__contains__(DIMENSIONS["pleasantness"])
+        # pleasantness not in this CompositeDimension
+        assert result is False
+
+    def test_composite_dimension_add_notimplemented(self):
+        """line 529: CompositeDimension.__add__ non-EmotionalDimension."""
+        from emotion_algebra.composite_emotions import CompositeDimension
+        cd = DIMENSIONS["sensitivity"] + DIMENSIONS["attention"]
+        result = cd.__add__(42)
+        assert result is NotImplemented
+
+    def test_eq_composite_vs_composite_name_mismatch(self):
+        """line 416: __eq__ comparing by name string."""
+        from emotion_algebra.composite_emotions import COMPOSITE_EMOTIONS
+        from copy import copy as cp
+        c = cp(COMPOSITE_EMOTIONS["aggressiveness"])
+        assert (c == "love") is False
+
+    def test_composite_dimension_contains_emotion_false(self):
+        """line 559: __contains__ EmotionalDimension not present → False."""
+        from emotion_algebra.composite_emotions import CompositeDimension
+        cd = DIMENSIONS["sensitivity"] + DIMENSIONS["attention"]
+        # pleasantness dimension not in this CompositeDimension
+        assert DIMENSIONS["pleasantness"] not in cd

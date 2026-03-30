@@ -28,12 +28,12 @@ explicitly.
 | `trust + fear` | submission |
 | `anticipation + fear` | anxiety |
 
-Full list: `FEELING_NAMES` in `emotion_data/feelings.py`.
+Full list: `FEELING_NAMES` in `emotion_algebra/feelings.py`.
 
 ## Creating a Feeling
 
 ```python
-from emotion_data.feelings import FEELINGS, Feeling
+from emotion_algebra.feelings import FEELINGS, Feeling
 from copy import copy
 
 love = copy(FEELINGS["love"])
@@ -58,7 +58,7 @@ print(love.type)     # "excited positive"
 `OPPOSITE_FEELINGS_NAMES` maps each feeling to its psychological opposite:
 
 ```python
-from emotion_data.feelings import FEELINGS, OPPOSITE_FEELINGS_NAMES
+from emotion_algebra.feelings import FEELINGS, OPPOSITE_FEELINGS_NAMES
 
 print(OPPOSITE_FEELINGS_NAMES["love"])       # "remorse"
 print(OPPOSITE_FEELINGS_NAMES["optimism"])   # "disapproval"

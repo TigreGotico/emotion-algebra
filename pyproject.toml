@@ -3,12 +3,12 @@ requires = ["setuptools>=64", "wheel"]
 build-backend = "setuptools.backends.legacy:build"
 
 [project]
-name = "emotion_data"
-version = "0.6"
-description = "Structured data for working with human emotions — emotion algebra based on Plutchik's Wheel and the Hourglass of Emotions model"
-license = { text = "MIT" }
+name = "emotion-algebra"
+version = "1.0.0"
+description = "Emotion algebra based on Plutchik's Wheel and Cambria's Hourglass of Emotions — signed integer arithmetic over a 4-axis affective space"
+license = { text = "Apache-2.0" }
 authors = [{ name = "jarbasAI", email = "jarbasai@mailfence.com" }]
-readme = "readme.md"
+readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
     "numpy",
@@ -27,16 +27,16 @@ tagging = [
     "paralleldots",
 ]
 all = [
-    "emotion_data[lexicon]",
-    "emotion_data[tagging]",
+    "emotion_algebra[lexicon]",
+    "emotion_algebra[tagging]",
 ]
 
 [project.urls]
-Homepage = "https://github.com/JarbasAl/emotion_data"
+Homepage = "https://github.com/JarbasAl/emotion-algebra"
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["emotion_data*"]
+include = ["emotion_algebra*"]
 
 [tool.setuptools.package-data]
-emotion_data = ["*.csv"]
+emotion_algebra = ["*.csv"]

@@ -1,7 +1,7 @@
 """02_intensity_arithmetic.py — Moving along an axis with +, -, *, /, //, <<, >>."""
 from copy import copy
-from emotion_data.emotions import EMOTIONS
-from emotion_data.plutchik import Neutrality
+from emotion_algebra.emotions import EMOTIONS
+from emotion_algebra.plutchik import Neutrality
 
 anger = copy(EMOTIONS["anger"])       # Sensitivity +2
 annoyance = copy(EMOTIONS["annoyance"])  # Sensitivity +1

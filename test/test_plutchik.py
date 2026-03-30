@@ -4,11 +4,11 @@ from copy import copy
 import numpy as np
 import pytest
 
-from emotion_data.plutchik import (
+from emotion_algebra.plutchik import (
     Emotion, Neutrality, EmotionalDimension, DIMENSIONS,
     PRIMARY_EMOTION_NAMES, SECONDARY_EMOTIONS_NAMES, TERTIARY_EMOTIONS_NAMES,
 )
-from emotion_data.emotions import EMOTIONS
+from emotion_algebra.emotions import EMOTIONS
 
 
 # ---------------------------------------------------------------------------
@@ -111,7 +111,7 @@ class TestEmotionalDimension:
         assert d != DIMENSIONS["attention"]
 
     def test_dimension_add_returns_composite_dimension(self):
-        from emotion_data.composite_emotions import CompositeDimension
+        from emotion_algebra.composite_emotions import CompositeDimension
         d1 = DIMENSIONS["sensitivity"]
         d2 = DIMENSIONS["attention"]
         result = d1 + d2
@@ -407,7 +407,7 @@ class TestEmotionArithmetic:
         assert result.emotional_flow == 2
 
     def test_add_different_dim_creates_composite(self, joy, trust):
-        from emotion_data.composite_emotions import CompositeEmotion
+        from emotion_algebra.composite_emotions import CompositeEmotion
         result = joy + trust
         assert isinstance(result, CompositeEmotion)
 
@@ -421,7 +421,7 @@ class TestEmotionArithmetic:
         assert hasattr(result, "emotional_flow")
 
     def test_add_feeling(self, anger):
-        from emotion_data.feelings import FEELINGS
+        from emotion_algebra.feelings import FEELINGS
         love = copy(FEELINGS["love"])
         result = anger + love
         assert result is not None
@@ -444,7 +444,7 @@ class TestEmotionArithmetic:
         assert hasattr(result, "emotional_flow")
 
     def test_mul_emotion_creates_composite(self, anger):
-        from emotion_data.composite_emotions import CompositeEmotion
+        from emotion_algebra.composite_emotions import CompositeEmotion
         vigilance = copy(EMOTIONS["vigilance"])
         result = anger * vigilance
         assert isinstance(result, CompositeEmotion)

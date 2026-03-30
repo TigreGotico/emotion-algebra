@@ -1,4 +1,4 @@
-# emotion_data
+# emotion_algebra
 
 Python library implementing **emotion algebra** — emotions as first-class mathematical objects,
 grounded in Cambria's Hourglass of Emotions and Plutchik's Wheel.
@@ -30,15 +30,15 @@ grounded in Cambria's Hourglass of Emotions and Plutchik's Wheel.
 ## Installation
 
 ```bash
-pip install emotion_data              # core (numpy only)
-pip install "emotion_data[lexicon]"   # + word→emotion CSV lookup (pandas)
-pip install "emotion_data[tagging]"   # + ParallelDots API tagging
+pip install emotion_algebra              # core (numpy only)
+pip install "emotion_algebra[lexicon]"   # + word→emotion CSV lookup (pandas)
+pip install "emotion_algebra[tagging]"   # + ParallelDots API tagging
 ```
 
 ## Quick start
 
 ```python
-from emotion_data.emotions import EMOTIONS
+from emotion_algebra.emotions import EMOTIONS
 from copy import copy
 
 anger = copy(EMOTIONS["anger"])

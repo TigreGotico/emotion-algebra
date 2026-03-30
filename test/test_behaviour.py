@@ -1,7 +1,7 @@
 """Tests for emotion_data.behaviour — Behaviour, BehavioralReaction, BEHAVIOURS, REACTIONS."""
 import pytest
 
-from emotion_data.behaviour import (
+from emotion_algebra.behaviour import (
     Behaviour, BehavioralReaction, BEHAVIOURS, REACTIONS,
     REACTION_TO_EMOTION_MAP, BEHAVIOUR_NAMES, REACTION_NAMES,
 )
@@ -142,6 +142,6 @@ class TestReactionToEmotionMap:
             assert name in REACTION_TO_EMOTION_MAP
 
     def test_map_values_are_emotions(self):
-        from emotion_data.plutchik import Emotion
+        from emotion_algebra.plutchik import Emotion
         for v in REACTION_TO_EMOTION_MAP.values():
             assert isinstance(v, Emotion)

@@ -1,7 +1,7 @@
 import random
 from types import MappingProxyType
 
-from emotion_data.plutchik import DIMENSIONS
+from emotion_algebra.plutchik import DIMENSIONS
 
 
 def _get_emotion_map():

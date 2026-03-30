@@ -1,6 +1,6 @@
 """05_feelings.py — Named Feelings (Plutchik's dyads) and their properties."""
 from copy import copy
-from emotion_data.feelings import FEELINGS, FEELING_NAMES, OPPOSITE_FEELINGS_NAMES, get_feeling_from_emotions
+from emotion_algebra.feelings import FEELINGS, FEELING_NAMES, OPPOSITE_FEELINGS_NAMES, get_feeling_from_emotions
 
 # --- Accessing named feelings -----------------------------------------------
 print("=== Selected named feelings ===")

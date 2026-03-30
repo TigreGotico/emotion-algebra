@@ -1,7 +1,7 @@
 """08_behaviour_reactions.py — Behaviour and BehavioralReaction mappings."""
 from copy import copy
-from emotion_data.emotions import EMOTIONS
-from emotion_data.behaviour import BEHAVIOURS, REACTIONS, REACTION_TO_EMOTION_MAP
+from emotion_algebra.emotions import EMOTIONS
+from emotion_algebra.behaviour import BEHAVIOURS, REACTIONS, REACTION_TO_EMOTION_MAP
 
 # --- What behaviours does anger trigger? ------------------------------------
 print("=== Behaviours ===")
@@ -21,7 +21,7 @@ for reaction_name, emotion in list(REACTION_TO_EMOTION_MAP.items())[:8]:
 
 # --- BehavioralReaction.from_data -------------------------------------------
 print("\n=== BehavioralReaction.from_data ===")
-from emotion_data.behaviour import BehavioralReaction
+from emotion_algebra.behaviour import BehavioralReaction
 # With valid data
 if BEHAVIOURS:
     first_key = next(iter(BEHAVIOURS))
