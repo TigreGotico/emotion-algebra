@@ -80,18 +80,8 @@ class TestScoreText:
         assert np.linalg.norm(s2.snapshot()) >= np.linalg.norm(s1.snapshot())
 
 
-class TestHFEmotionAdapterImportError:
-    def test_raises_import_error_without_transformers(self):
-        from emotion_algebra.text import HFEmotionAdapter
-        import sys
-        # Temporarily hide transformers if present
-        transformers_mod = sys.modules.get("transformers")
-        sys.modules["transformers"] = None  # type: ignore[assignment]
-        try:
-            with pytest.raises(ImportError, match="transformers"):
-                HFEmotionAdapter("some-model")
-        finally:
-            if transformers_mod is not None:
-                sys.modules["transformers"] = transformers_mod
-            elif "transformers" in sys.modules:
-                del sys.modules["transformers"]
+class TestDeepMojiONNXAdapterImportable:
+    def test_deepmoji_onnx_is_canonical_dependency(self):
+        """deepmoji-onnx replaced HFEmotionAdapter as the canonical neural engine."""
+        from emotion_algebra.deepmoji import DeepMojiONNXAdapter  # noqa: F401
+        import deepmoji_onnx  # noqa: F401

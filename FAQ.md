@@ -20,7 +20,22 @@ pip install emotion_algebra
 |---|---|---|
 | `[lexicon]` | pandas | `lexicons.py` — word→emotion CSV lookup |
 | `[fast]` | ahocorasick-ner | Phrase-aware Aho-Corasick backend for `score_text`/`from_text` |
-| `[transformers]` | transformers>=4.0, torch | `text.py` — HuggingFace pipeline tagging |
+
+`deepmoji-onnx` is a **canonical dependency** (not an extra). It ships the DeepMoji ONNX model and is always available. Use `DeepMojiONNXAdapter` for neural text-to-emotion scoring.
+
+## How do I use DeepMoji for neural text-to-emotion scoring?
+
+```python
+from emotion_algebra.deepmoji import DeepMojiONNXAdapter
+
+adapter = DeepMojiONNXAdapter()                    # downloads model on first call
+emotion = adapter.analyze("I love rainy days")      # → Emotion or None
+state   = adapter.score("I love rainy days")        # → EmotionalState
+scores  = adapter.top_emoji_scores("rainy days")    # → {emoji: prob, ...}
+```
+
+The model is downloaded from HuggingFace on first use and cached to `~/.cache/deepmoji`.
+`top_emojis(k=10)` emoji probabilities are piped through `DeepMojiAdapter` for emoji→emotion mapping.
 
 ## How does the Aho-Corasick backend change `score_text` / `from_text`?
 

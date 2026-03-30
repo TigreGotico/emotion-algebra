@@ -15,6 +15,8 @@ from emotion_algebra.emoji import (
 from emotion_algebra.text import score_mixed, from_mixed
 from emotion_algebra.appraisal import Appraisal, appraisal_to_emotion
 from emotion_algebra.float_emotion import FloatEmotion
+from emotion_algebra.lexicons import get_afinn_score, get_hourglass, get_float_emotion
+from emotion_algebra.deepmoji import DeepMojiONNXAdapter
 
 
 class EmotionAnalyzer(object):
