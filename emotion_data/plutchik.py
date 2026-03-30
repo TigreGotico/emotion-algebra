@@ -1,8 +1,22 @@
-from emotion_data.reference_maps import EMOTION_CONTRASTS
-import numpy as np
+"""Plutchik's Wheel and Hourglass of Emotions — core Emotion and Dimension algebra.
+
+Classes
+-------
+Emotion
+    A single emotion on the Hourglass scale, supporting full operator algebra.
+Neutrality
+    The identity element of the emotion algebra (zero-intensity).
+EmotionalDimension
+    One of the four Hourglass axes: sensitivity, attention, pleasantness, aptitude.
+"""
+from __future__ import annotations
+
 from copy import copy
-# from emotion_data.feelings import Feeling
-# from emotion_data.behaviour import Behaviour, BehavioralReaction
+from typing import Union
+
+import numpy as np
+
+from emotion_data.reference_maps import EMOTION_CONTRASTS
 
 
 PRIMARY_EMOTION_NAMES = ["serenity", "pensiveness", "acceptance", "boredom", "apprehension", "annoyance", "distraction",
@@ -54,20 +68,35 @@ EMOTION_KIND_NAMES['future appraisal'].append("anticipation")
 
 
 class Emotion(object):
-    def __init__(self, name, dimension=None):
-        self._name = name
+    """A single emotion from the Hourglass of Emotions model.
+
+    Supports arithmetic operators that move the emotion along its dimensional axis:
+    ``anger + 1 == rage``, ``-anger == fear``, ``joy + trust == Feeling("love")``.
+
+    Parameters
+    ----------
+    name:
+        Canonical lowercase emotion name (e.g. ``"anger"``).
+    dimension:
+        Optional :class:`EmotionalDimension` or its string axis name.
+    """
+
+    def __init__(self, name: str, dimension: "Union[EmotionalDimension, str, None]" = None) -> None:
+        self._name: str = name
         if dimension and isinstance(dimension, str):
             dimension = DIMENSIONS[dimension]
-        self._dimension = dimension  # dimension name
-        self.intensity_offset = 0
-        self._kind = ""
+        self._dimension: "Union[EmotionalDimension, None]" = dimension
+        self.intensity_offset: int = 0
+        self._kind: str = ""
 
     @property
-    def dimension(self):
+    def dimension(self) -> "Union[EmotionalDimension, None]":
+        """The :class:`EmotionalDimension` this emotion belongs to, or ``None``."""
         return self._dimension or DIMENSIONS.get(self.name)
 
     @property
-    def name(self):
+    def name(self) -> str:
+        """Canonical name, prefixed with intensity label when ``intensity_offset > 0``."""
         if self.intensity_offset <= 0:
             return self._name
         if self.emotional_flow < 0:
@@ -195,7 +224,8 @@ class Emotion(object):
         return self._kind
 
     @property
-    def emotional_flow(self):
+    def emotional_flow(self) -> int:
+        """Signed intensity level: ±1 primary, ±2 secondary, ±3 tertiary, 0 neutral."""
         if self.is_primary and self._dimension.basic_emotion.name == self._name:
             return 1
         elif self.is_primary and self._dimension.basic_opposite.name == self._name:
@@ -211,12 +241,13 @@ class Emotion(object):
         return 0
 
     @property
-    def valence(self):
+    def valence(self) -> bool:
+        """``True`` when the emotion has a non-zero flow (i.e. is not neutral)."""
         return bool(self.emotional_flow)
 
     @property
-    def intensity(self):
-
+    def intensity(self) -> str:
+        """Human-readable intensity label: ``"neutral"``, ``"basic"``, ``"mild"``, ``"intense"``, or hyper prefix."""
         if abs(self.intensity_offset) == 1:
             return "mega"
         if abs(self.intensity_offset) == 2:
@@ -234,10 +265,11 @@ class Emotion(object):
         return "neutral"
 
     @property
-    def is_composite(self):
+    def is_composite(self) -> bool:
+        """Always ``False`` for plain :class:`Emotion`; overridden by :class:`CompositeEmotion`."""
         return False
 
-    def emotion_from_flow(self, flow):
+    def emotion_from_flow(self, flow: Union[int, float]) -> "Emotion":
         flow = int(flow)
         # how to handle invalid flows?
         flow = 9 if flow > 9 else flow if flow > -9 else -9
@@ -524,7 +556,12 @@ class Emotion(object):
 
 
 class Neutrality(Emotion):
-    def __init__(self, dimension=""):
+    """The identity element of the emotion algebra — zero emotional flow.
+
+    ``emotion + Neutrality() == emotion`` for all emotions.
+    """
+
+    def __init__(self, dimension: "Union[EmotionalDimension, str]" = "") -> None:
         Emotion.__init__(self, "neutrality", dimension)
 
     @property
@@ -604,14 +641,30 @@ class Neutrality(Emotion):
 
 
 class EmotionalDimension(object):
-    def __init__(self):
-        self.axis = ""  # sensitivity, attention, pleasantness, aptitude
-        self.mild_emotion = None
-        self.mild_opposite = None
-        self.basic_emotion = None
-        self.basic_opposite = None
-        self.intense_emotion = None
-        self.intense_opposite = None
+    """One axis of the Hourglass of Emotions model.
+
+    Each dimension has three intensity levels (basic, mild, intense) on each polarity.
+
+    Attributes
+    ----------
+    axis:
+        One of ``"sensitivity"``, ``"attention"``, ``"pleasantness"``, ``"aptitude"``.
+    basic_emotion / basic_opposite:
+        Primary (flow ±1) emotions.
+    mild_emotion / mild_opposite:
+        Secondary (flow ±2) emotions.
+    intense_emotion / intense_opposite:
+        Tertiary (flow ±3) emotions.
+    """
+
+    def __init__(self) -> None:
+        self.axis: str = ""  # sensitivity, attention, pleasantness, aptitude
+        self.mild_emotion: "Union[Emotion, None]" = None
+        self.mild_opposite: "Union[Emotion, None]" = None
+        self.basic_emotion: "Union[Emotion, None]" = None
+        self.basic_opposite: "Union[Emotion, None]" = None
+        self.intense_emotion: "Union[Emotion, None]" = None
+        self.intense_opposite: "Union[Emotion, None]" = None
 
     @property
     def name(self):

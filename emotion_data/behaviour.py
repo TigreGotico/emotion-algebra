@@ -1,3 +1,16 @@
+"""Plutchik's behavioural reactions — maps emotions to adaptive behaviours.
+
+Classes
+-------
+Behaviour
+    An adaptive survival behaviour (e.g. protection, destruction).
+BehavioralReaction
+    A cognitive-appraisal reaction that maps a trigger to an emotion and behaviour.
+"""
+from __future__ import annotations
+
+from typing import List, Optional
+
 from emotion_data.emotions import EMOTIONS
 
 BEHAVIOUR_NAMES = {
@@ -96,10 +109,20 @@ REACTION_NAMES = {
 
 
 class Behaviour(object):
-    def __init__(self, name, purpose = ""):
-        self.name = name
-        self.purpose = purpose
-        self.activated_by = []
+    """An adaptive survival behaviour triggered by one or more emotions.
+
+    Parameters
+    ----------
+    name:
+        Behaviour identifier (e.g. ``"protection"``, ``"destruction"``).
+    purpose:
+        Plain-language description of the adaptive purpose.
+    """
+
+    def __init__(self, name: str, purpose: str = "") -> None:
+        self.name: str = name
+        self.purpose: str = purpose
+        self.activated_by: list = []
 
     def __repr__(self):
         return "BehaviourObject:" + self.name
@@ -123,15 +146,23 @@ BEHAVIOURS = _get_behaviours()
 
 
 class BehavioralReaction(object):
-    def __init__(self, name):
-        self.name = name
-        self.function = ""
-        self.cognite_appraisal = ""
-        self.trigger = ""
-        self.base_emotion = None # emotion object
-        self.behaviour = None # behaviour object
+    """A cognitive-appraisal reaction linking a trigger to an emotion and behaviour.
 
-    def from_data(self, data=None):
+    Parameters
+    ----------
+    name:
+        Reaction identifier (e.g. ``"escape"``, ``"attack"``).
+    """
+
+    def __init__(self, name: str) -> None:
+        self.name: str = name
+        self.function: str = ""
+        self.cognite_appraisal: str = ""
+        self.trigger: str = ""
+        self.base_emotion: Optional[object] = None  # Emotion object
+        self.behaviour: Optional[Behaviour] = None
+
+    def from_data(self, data: Optional[dict] = None) -> None:
         data = data or {}
         self.name = data.get("name") or self.name
         self.function = data.get("function", "")

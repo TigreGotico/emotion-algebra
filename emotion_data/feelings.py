@@ -1,7 +1,17 @@
-from copy import copy
-from emotion_data.plutchik import Emotion, Neutrality
+"""Feelings — composite emotional states composed of two primary :class:`Emotion` objects.
+
+A :class:`Feeling` is created when two emotions from different dimensions are combined
+with ``+``: ``joy + trust == Feeling("love")``.
+"""
+from __future__ import annotations
+
 import random
+from copy import copy
+from typing import List, Optional, Union
+
 import numpy as np
+
+from emotion_data.plutchik import Emotion, Neutrality
 
 
 FEELING_NAMES = {'acknowledgement': ['serenity', 'acceptance'],
@@ -67,7 +77,8 @@ OPPOSITE_FEELINGS_NAMES = {
 }
 
 
-def get_feeling_from_emotions(emotion1, emotion2):
+def get_feeling_from_emotions(emotion1: str, emotion2: str) -> Optional[str]:
+    """Return the feeling name for a pair of emotion names, or ``None`` if not found."""
     for feel in FEELING_NAMES:
         emos = FEELING_NAMES[feel]
         if emotion1 in emos and emotion2 in emos:
@@ -76,12 +87,24 @@ def get_feeling_from_emotions(emotion1, emotion2):
 
 
 class Feeling(object):
-    def __init__(self, name=""):
-        self._name = name
-        self.emotions = []
+    """A composite emotional state composed of two or more :class:`Emotion` objects.
+
+    Feelings are named dyads from Plutchik's Wheel (e.g. joy+trust → love).
+    When no named dyad matches, a descriptive secondary name is generated.
+
+    Parameters
+    ----------
+    name:
+        Optional explicit name override.
+    """
+
+    def __init__(self, name: str = "") -> None:
+        self._name: str = name
+        self.emotions: List[Emotion] = []
 
     @property
-    def name(self):
+    def name(self) -> str:
+        """Named dyad if recognized, otherwise falls back to :attr:`secondary_name`."""
         if self._name:
             return self._name
         if len(self.emotions) == 2:
@@ -156,7 +179,8 @@ class Feeling(object):
         return np.linalg.norm(flow_vector) * -1
 
     @property
-    def valence(self):
+    def valence(self) -> int:
+        """Aggregate valence: ``1`` positive, ``-1`` negative, ``0`` neutral."""
         flows = sum([e.emotional_flow for e in self.emotion_vector])
         if flows < 0:
             return -1

@@ -1,8 +1,24 @@
-from emotion_data.plutchik import Emotion, EmotionalDimension, DIMENSIONS, Neutrality
-from emotion_data.feelings import Feeling
+"""Composite emotions — multi-dimensional emotional states spanning two Hourglass axes.
+
+A :class:`CompositeEmotion` is constructed by multiplying two :class:`Emotion` objects
+(``*``) or by combining them via the ``CompositeEmotion.__add__`` operator.
+
+Classes
+-------
+CompositeEmotion
+    Emotion spanning two :class:`EmotionalDimension` axes.
+CompositeDimension
+    Paired dimension for composite emotion lookup.
+"""
+from __future__ import annotations
 
 from copy import copy
+from typing import List, Optional, Union
+
 import numpy as np
+
+from emotion_data.plutchik import Emotion, EmotionalDimension, DIMENSIONS, Neutrality
+from emotion_data.feelings import Feeling
 
 
 COMPOSITE_EMOTIONS_NAMES = {
@@ -73,14 +89,25 @@ OPPOSITE_EMOTIONS_NAMES = {
 
 
 class CompositeEmotion(Emotion):
+    """An emotion spanning two :class:`EmotionalDimension` axes simultaneously.
+
+    Built from named dyads in ``COMPOSITE_EMOTIONS_NAMES`` (e.g.
+    ``aggressiveness == rage × vigilance``).
+
+    Parameters
+    ----------
+    name:
+        Optional explicit name; auto-resolved from ``COMPOSITE_EMOTIONS_NAMES`` if empty.
+    """
+
     sensitivity_dimension = DIMENSIONS["sensitivity"]
     attention_dimension = DIMENSIONS["attention"]
     pleasantness_dimension = DIMENSIONS["pleasantness"]
     aptitude_dimension = DIMENSIONS["aptitude"]
 
-    def __init__(self, name=""):
+    def __init__(self, name: str = "") -> None:
         Emotion.__init__(self, name)
-        self.components = []
+        self.components: List[Emotion] = []
 
     @staticmethod
     def get_composite_from_emotions(emotion1, emotion2):
@@ -424,8 +451,10 @@ class CompositeEmotion(Emotion):
 
 
 class CompositeDimension(object):
-    def __init__(self):
-        self.dimensions = []
+    """A paired :class:`EmotionalDimension` used for composite emotion resolution."""
+
+    def __init__(self) -> None:
+        self.dimensions: List[EmotionalDimension] = []
 
     @property
     def name(self):
