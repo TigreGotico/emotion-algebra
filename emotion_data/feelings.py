@@ -10,6 +10,7 @@ from copy import copy, deepcopy
 from types import MappingProxyType
 from typing import List, Optional, Union
 
+from emotion_data.base import EmotionBase
 from emotion_data.plutchik import Emotion, Neutrality
 
 
@@ -85,7 +86,7 @@ def get_feeling_from_emotions(emotion1: str, emotion2: str) -> Optional[str]:
     return None
 
 
-class Feeling(object):
+class Feeling(EmotionBase):
     """A composite emotional state composed of two or more :class:`Emotion` objects.
 
     Feelings are named dyads from Plutchik's Wheel (e.g. joy+trust → love).
@@ -113,10 +114,10 @@ class Feeling(object):
         return self.secondary_name
 
     @property
-    def secondary_name(self):
+    def secondary_name(self) -> str:
+        """Descriptive fallback name listing all component emotions."""
         if len(self.emotions):
             name = "mix of "
-            print(self.emotions)
             for emo in self.emotions:
                 name += emo.name + " and "
             return name[:-5]
@@ -190,12 +191,6 @@ class Feeling(object):
         from emotion_data.plutchik import _circumplex_type
         return _circumplex_type(self.valence, self.arousal)
 
-    def __int__(self):
-        return int(self.emotional_flow)
-
-    def __float__(self) -> float:
-        return float(self.emotional_flow)
-
     def __str__(self):
         return self.secondary_name
 
@@ -205,7 +200,7 @@ class Feeling(object):
     def __len__(self):
         return len([e for e in self.emotions if e.emotional_flow != 0])
 
-    def __bool__(self):
+    def __bool__(self) -> bool:
         return len(self) > 0
 
     def __neg__(self):
@@ -303,20 +298,8 @@ class Feeling(object):
             return False
         return self._name == other
 
-    def __lt__(self, other):
-        return self.emotional_flow < int(other)
-
-    def __le__(self, other):
-        return self.emotional_flow <= int(other)
-
     def __ne__(self, other):
         return not self.__eq__(other)
-
-    def __gt__(self, other):
-        return self.emotional_flow > int(other)
-
-    def __ge__(self, other):
-        return self.emotional_flow >= int(other)
 
     def __contains__(self, item):
         if isinstance(item, Neutrality):
@@ -324,105 +307,6 @@ class Feeling(object):
         if isinstance(item, Emotion):
             return item.base_emotion in self.emotion_vector
         return NotImplemented
-
-    """
-    def __mul__(self, other):
-        if isinstance(other, str):
-            other = Emotion.string_to_emotion(other)
-        if isinstance(other, Neutrality):
-            return copy(self)
-        # TODO composite emotion
-        if isinstance(other, Emotion):
-            return NotImplemented
-        # create composite or mutiply flow
-        try:
-            other = int(other)
-            flow = self.emotional_flow * other
-            return self.emotion_from_flow(flow)
-        except:
-            return NotImplemented
-
-    def __truediv__(self, other):
-        if isinstance(other, str):
-            other = Emotion.string_to_emotion(other)
-        if isinstance(other, Neutrality):
-            return copy(self)
-        if isinstance(other, Emotion):
-            return NotImplemented
-
-        try:
-            other = int(other)
-            flow = self.emotional_flow / other
-            return self.emotion_from_flow(flow)
-        except:
-            return NotImplemented
-
-    def __floordiv__(self, other):
-        if isinstance(other, str):
-            other = Emotion.string_to_emotion(other)
-        if isinstance(other, Neutrality):
-            return copy(self)
-        if isinstance(other, Emotion):
-            return NotImplemented
-        try:
-            other = int(other)
-            flow = self.emotional_flow // other
-            return self.emotion_from_flow(flow)
-        except:
-            return NotImplemented
-
-    def __lshift__(self, other):
-        if isinstance(other, str):
-            other = Emotion.string_to_emotion(other)
-        if isinstance(other, Neutrality):
-            return copy(self)
-        if isinstance(other, Emotion):
-            if other.dimension == self.dimension:
-                flow = other.emotional_flow - self.emotional_flow
-                return self.emotion_from_flow(flow)
-            return NotImplemented
-        try:
-            other = int(other)
-            flow = self.emotional_flow - other
-            return self.emotion_from_flow(flow)
-        except:
-            return NotImplemented
-
-    def __rshift__(self, other):
-        if isinstance(other, str):
-            other = Emotion.string_to_emotion(other)
-        if isinstance(other, Neutrality):
-            return copy(self)
-        if isinstance(other, Emotion):
-            if other.dimension == self.dimension:
-                flow = other.emotional_flow + self.emotional_flow
-                return self.emotion_from_flow(flow)
-            return NotImplemented
-        try:
-            other = int(other)
-            flow = self.emotional_flow + other
-            return self.emotion_from_flow(flow)
-        except:
-            return NotImplemented
-
-    # TODO
-    # (+=, -=, *=, @=, /=, //=, %=, **=, <<=, >>=, &=, ^=, |=).
-    #    object.__iadd__(self, other)
-    # object.__isub__(self, other)
-    # object.__imul__(self, other)
-    # object.__imatmul__(self, other)¶
-    # object.__itruediv__(self, other)
-    # object.__ifloordiv__(self, other)
-    # object.__imod__(self, other)
-    # object.__ipow__(self, other[, modulo])
-    # object.__ilshift__(self, other)
-    # object.__irshift__(self, other)
-    # object.__iand__(self, other)
-    # object.__ixor__(self, other)
-    # object.__ior__(self, other)
-
-    
-    """
 
 
 def _get_feeling_emotions():
@@ -469,8 +353,3 @@ def random_feeling():
     return FEELINGS[random.choice(list(FEELINGS.keys()))]
 
 
-if __name__ == "__main__":
-    from pprint import pprint
-
-    pprint(FEELINGS_TO_EMOTION_MAP)
-    pprint(FEELINGS)
