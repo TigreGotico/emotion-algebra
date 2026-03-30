@@ -151,20 +151,17 @@ class TestEmotionVectors:
 
 class TestValence:
     def test_joy_has_positive_valence(self) -> None:
-        assert emo("joy").valence is True
+        assert emo("joy").valence == 1
 
     def test_sadness_has_negative_valence(self) -> None:
-        # sadness has flow=-2 → bool(flow) is True but flow<0 means valence from bool is True
-        # Actually: valence = bool(self.emotional_flow) — non-zero → True
-        assert emo("sadness").valence is True
+        assert emo("sadness").valence == -1
 
     def test_neutrality_valence_is_zero(self) -> None:
-        n = Neutrality()
-        assert n.valence == 0
+        assert Neutrality().valence == 0
 
-    def test_anger_valence_nonzero(self) -> None:
-        # anger flow != 0 → valence is True
-        assert emo("anger").valence is True
+    def test_fear_valence_is_negative(self) -> None:
+        # fear has negative flow on the sensitivity axis
+        assert emo("fear").valence == -1
 
 
 # ---------------------------------------------------------------------------

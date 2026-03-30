@@ -241,9 +241,18 @@ class Emotion(object):
         return 0
 
     @property
-    def valence(self) -> bool:
-        """``True`` when the emotion has a non-zero flow (i.e. is not neutral)."""
-        return bool(self.emotional_flow)
+    def valence(self) -> int:
+        """Signed valence: +1 for positive-flow emotions, -1 for negative-flow, 0 for neutral.
+
+        Note: this is a coarse 3-class approximation.  Full dimensional valence
+        (Russell's Circumplex, PAD model) is outside the scope of this library.
+        """
+        flow = self.emotional_flow
+        if flow > 0:
+            return 1
+        if flow < 0:
+            return -1
+        return 0
 
     @property
     def intensity(self) -> str:

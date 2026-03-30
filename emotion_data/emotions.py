@@ -21,7 +21,7 @@ EMOTIONS = _get_emotion_map()
 
 EMOTION_NAMES = [EMOTIONS[e].name for e in EMOTIONS]
 
-POSITIVE_EMOTIONS = [EMOTIONS[e] for e in EMOTIONS if EMOTIONS[e].valence]
+POSITIVE_EMOTIONS = [EMOTIONS[e] for e in EMOTIONS if EMOTIONS[e].valence > 0]
 
 NEGATIVE_EMOTIONS = [EMOTIONS[e] for e in EMOTIONS if EMOTIONS[e].valence < 0]
 

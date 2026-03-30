@@ -32,11 +32,11 @@ class TestEmotionsDict:
 class TestPositiveNegative:
     def test_positive_emotions_are_positive(self):
         for e in POSITIVE_EMOTIONS:
-            assert e.valence, f"{e.name} should be positive"
+            assert e.valence > 0, f"{e.name} should have valence > 0"
 
     def test_negative_emotions_are_negative(self):
         for e in NEGATIVE_EMOTIONS:
-            assert e.valence < 0 or not e.valence
+            assert e.valence < 0, f"{e.name} should have valence < 0"
 
 
 # ---------------------------------------------------------------------------
