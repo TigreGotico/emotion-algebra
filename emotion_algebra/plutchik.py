@@ -578,6 +578,16 @@ class Emotion(EmotionBase):
             return self._dimension.axis == item
         return NotImplemented
 
+    def to_dict(self) -> dict:
+        """Serialize to a JSON-compatible dict."""
+        return {"type": "emotion", "name": self._name}
+
+    @classmethod
+    def from_dict(cls, data: dict) -> "Emotion":
+        """Deserialize from a dict produced by :meth:`to_dict`."""
+        from emotion_algebra.emotions import get_emotion
+        return get_emotion(data["name"])
+
 
 class Neutrality(Emotion):
     """The identity element of the emotion algebra — zero emotional flow.

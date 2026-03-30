@@ -312,6 +312,30 @@ class Feeling(EmotionBase):
             return item.base_emotion in self.emotion_vector
         return NotImplemented
 
+    def to_dict(self) -> dict:
+        """Serialize to a JSON-compatible dict."""
+        return {
+            "type": "feeling",
+            "name": self._name,
+            "emotions": [e.to_dict() for e in self.emotions],
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict) -> "Feeling":
+        """Deserialize from a dict produced by :meth:`to_dict`."""
+        from emotion_algebra.feelings import get_feeling
+        name = data.get("name", "")
+        f = get_feeling(name)
+        if f is not None:
+            return f
+        feeling = cls(name)
+        from emotion_algebra.emotions import get_emotion
+        feeling.emotions = [
+            get_emotion(e["name"]) for e in data.get("emotions", [])
+            if get_emotion(e["name"]) is not None
+        ]
+        return feeling
+
 
 def _get_feeling_emotions():
     bucket = {}

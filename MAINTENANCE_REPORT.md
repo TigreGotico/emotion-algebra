@@ -221,3 +221,30 @@ Excluded from coverage: `deepmoji.py`, `tag.py` (optional external integrations)
 
 ### Test results
 441 tests, 0 failures, 94% coverage (core algebraic modules 94–100%).
+
+---
+
+## 2026-03-30 — v1.1–v2.0 Feature Implementation
+
+**AI Model**: claude-sonnet-4-6
+**Oversight**: Human-directed ("do it all"); AI executed all changes.
+
+### New modules
+
+| Module | Milestone | Summary |
+|---|---|---|
+| `emotion_algebra/distance.py` | v1.3 | `emotion_distance`, `closest_emotion`, `emotion_clusters` |
+| `emotion_algebra/state.py` | v1.1 | `EmotionalState` (mutable, weighted, decaying), `EmotionTimeline` |
+| `emotion_algebra/text.py` | v1.2 | `from_text`, `score_text`, `HFEmotionAdapter` |
+| `emotion_algebra/appraisal.py` | v1.5 | `Appraisal` dataclass, `appraisal_to_emotion` (Scherer CPM) |
+| `emotion_algebra/float_emotion.py` | v2.0 | `FloatEmotion`, `from_embedding`, `from_emotion` |
+| `emotion_algebra/__main__.py` | v1.4 | CLI: `info`, binary expressions, interactive REPL |
+
+### Modified
+
+- `plutchik.py`, `feelings.py`, `composite_emotions.py`: `to_dict`/`from_dict` serialization on all three concrete types
+- `__init__.py`: all new public symbols + new `EmotionAnalyzer` methods (`analyze_text`, `score_text`, `distance`, `appraise`)
+- `pyproject.toml`: `[transformers]` extra; `emotion-algebra` CLI entry point
+
+### Test results
+596 tests, 0 failures, 93% coverage.

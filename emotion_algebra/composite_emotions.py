@@ -442,6 +442,29 @@ class CompositeEmotion(EmotionBase):
             return self.dimension == item
         return NotImplemented
 
+    def to_dict(self) -> dict:
+        """Serialize to a JSON-compatible dict."""
+        return {
+            "type": "composite",
+            "name": self._name,
+            "components": [c.to_dict() for c in self.components],
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict) -> "CompositeEmotion":
+        """Deserialize from a dict produced by :meth:`to_dict`."""
+        name = data.get("name", "")
+        if name in COMPOSITE_EMOTIONS_NAMES:
+            from emotion_algebra.composite_emotions import COMPOSITE_EMOTIONS
+            return COMPOSITE_EMOTIONS[name]
+        comp = cls(name)
+        from emotion_algebra.emotions import get_emotion
+        comp.components = [
+            get_emotion(c["name"]) for c in data.get("components", [])
+            if get_emotion(c["name"]) is not None
+        ]
+        return comp
+
 
 class CompositeDimension(object):
     """A paired :class:`EmotionalDimension` used for composite emotion resolution."""
