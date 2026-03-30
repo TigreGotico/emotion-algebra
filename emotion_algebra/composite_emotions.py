@@ -421,15 +421,11 @@ class CompositeEmotion(EmotionBase):
 
     def __eq__(self, other):
         if isinstance(other, Emotion):
-            if other._dimension == self.dimension:
-                return self.emotional_flow == other.emotional_flow
             return False
         return self.name == other
 
     def __ne__(self, other):
         if isinstance(other, Emotion):
-            if other._dimension == self.dimension:
-                return self.emotional_flow != other.emotional_flow
             return True
         return self.name != other
 
@@ -489,7 +485,7 @@ class CompositeDimension(object):
             return COMPOSITE_EMOTIONS["optimism"]
         if self.name == "pleasantness/aptitude" or self.name == "aptitude/pleasantness":
             return COMPOSITE_EMOTIONS["love"]
-        # TODO science this
+        # not yet mapped for this dimension combination
         return None
 
     @property
@@ -502,7 +498,7 @@ class CompositeDimension(object):
             return COMPOSITE_EMOTIONS["disapproval"]
         if self.name == "pleasantness/aptitude" or self.name == "aptitude/pleasantness":
             return COMPOSITE_EMOTIONS["remorse"]
-        # TODO science this
+        # not yet mapped for this dimension combination
         return None
 
     @property
@@ -515,7 +511,7 @@ class CompositeDimension(object):
             return COMPOSITE_EMOTIONS["frustration"]
         if self.name == "pleasantness/aptitude" or self.name == "aptitude/pleasantness":
             return COMPOSITE_EMOTIONS["envy"]
-        # TODO science this
+        # not yet mapped for this dimension combination
         return None
 
     @property
@@ -528,17 +524,17 @@ class CompositeDimension(object):
             return COMPOSITE_EMOTIONS["frivolity"]
         if self.name == "pleasantness/aptitude" or self.name == "aptitude/pleasantness":
             return COMPOSITE_EMOTIONS["gloat"]
-        # TODO science this
+        # not yet mapped for this dimension combination
         return None
 
     @property
     def basic_emotion(self):
-        # TODO science this
+        # not yet mapped for this dimension combination
         return None
 
     @property
     def basic_opposite(self):
-        # TODO science this
+        # not yet mapped for this dimension combination
         return None
 
     def __repr__(self):

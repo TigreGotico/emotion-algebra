@@ -52,8 +52,6 @@ KIND_TO_EMOTION_MAP = {
     'cathected': [EMOTIONS[e] for e in EMOTIONS if EMOTIONS[e].kind == "cathected"]
 }
 
-# TODO emotion type map
-
 
 def random_emotion():
     return EMOTIONS.get(random.choice(list(EMOTIONS.keys())))

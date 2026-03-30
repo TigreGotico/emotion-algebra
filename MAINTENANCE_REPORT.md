@@ -248,3 +248,29 @@ Excluded from coverage: `deepmoji.py`, `tag.py` (optional external integrations)
 
 ### Test results
 596 tests, 0 failures, 93% coverage.
+
+## 2026-03-30 — Audit cleanup (v1.0.1)
+
+**AI Model**: claude-sonnet-4-6
+**Oversight**: Human-reviewed; AI executed all changes.
+
+### Actions Taken
+
+1. **A-004 resolved** — Removed dead same-dimension branch from `CompositeEmotion.__eq__`/`__ne__`
+   (`composite_emotions.py`). A `CompositeEmotion` never holds a plain `EmotionalDimension`, so
+   the branch was unreachable. Simplified to name comparison only.
+
+2. **A-005 resolved** — Removed stale `# TODO emotion type map` from `emotions.py:55`.
+   Replaced `# TODO science this` comments in `plutchik.py` and `composite_emotions.py` with
+   accurate inline disclaimers.
+
+3. **A-006 resolved** — Added docstring to `EmotionBase.__int__` clarifying net activation scalar
+   semantics and directing users to `.valence` for hedonic polarity.
+
+4. **A-001 partially resolved** — `# TODO science this` replaced with explicit approximate
+   disclaimer. Issue closed; kind assignments remain curated (by design).
+
+5. **Security note updated** — Removed stale references to removed deepmoji/paralleldots extras.
+
+### Test results
+596 tests, 0 failures, 93% coverage.

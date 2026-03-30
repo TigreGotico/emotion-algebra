@@ -90,8 +90,7 @@ HOURGLASS_OF_EMOTIONS = {"sensitivity": ["rage", "anger", "annoyance", "apprehen
                          "aptitude": ["admiration", "trust", "acceptance", "boredom", "disgust", "loathing"]}
 
 
-# TODO science this instead of eye balling
-# expand emotion contrasts, these are manually tagged and a matter of opinion
+# kind assignments are manually curated from Plutchik's prose (approximate)
 
 EMOTION_KIND_NAMES = EMOTION_CONTRASTS.copy()
 EMOTION_KIND_NAMES['cathected'].append("contempt")
@@ -249,7 +248,7 @@ class Emotion(EmotionBase):
 
     @property
     def kind(self):
-        # TODO science this instead of eye balling
+        # kind assignments are manually curated from Plutchik's prose (approximate)
         for kind in EMOTION_KIND_NAMES:
             if self._name in EMOTION_KIND_NAMES[kind]:
                 return kind

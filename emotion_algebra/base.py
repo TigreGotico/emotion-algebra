@@ -73,6 +73,12 @@ class EmotionBase(ABC):
         return self.emotional_flow != 0
 
     def __int__(self) -> int:
+        """Net activation scalar: sum of all axis emotional_flow values.
+
+        This is *not* a hedonic score. ``int(love)`` returns 4 because joy (flow=2)
+        and trust (flow=2) each contribute 2. Negative flows reduce the total.
+        Use ``valence`` for positive/negative polarity.
+        """
         return self.emotional_flow
 
     def __float__(self) -> float:

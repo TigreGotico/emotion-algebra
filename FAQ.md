@@ -19,8 +19,7 @@ pip install emotion_algebra
 | Extra | Deps | Enables |
 |---|---|---|
 | `[lexicon]` | pandas | `lexicons.py` — word→emotion CSV lookup |
-| `[deepmoji]` | torch, torchMoji | `deepmoji.py` — emoji-based emotion tagging |
-| `[tagging]` | paralleldots | `tag.py` — ParallelDots API tagging |
+| `[transformers]` | transformers>=4.0, torch | `text.py` — HuggingFace pipeline tagging |
 
 ## How does intensity arithmetic work?
 
@@ -73,7 +72,14 @@ Run: `python -m pytest test/ --cov=emotion_algebra --cov-config=.coveragerc`
 
 ## What is the coverage target?
 
-90%+ on core modules. `deepmoji.py` and `tag.py` are excluded (optional external integrations).
+93%+ on core modules. `deepmoji.py` and `tag.py` are excluded (removed; optional HF adapter paths
+require the `[transformers]` extra and are skipped in the default test run).
+
+## What does `int(emotion)` return?
+
+Net activation scalar — the sum of `emotional_flow` across all component axes. This is **not** a
+hedonic score. `int(love)` returns 4 because joy (flow=2) and trust (flow=2) each contribute 2.
+Use `valence` for positive/negative polarity.
 
 ## What changed in the Phase 3 architectural fixes?
 
