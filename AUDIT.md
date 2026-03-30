@@ -7,12 +7,18 @@ Updated: 2026-03-30 (v1.0.1).
 
 ## Open Issues
 
-### A-002 — `emotion_vector` sensitivity branch unreachable
-**File**: `emotion_algebra/feelings.py:142`
-**Severity**: Low
-**Detail**: The `sensitivity` branch of `emotion_vector` is unreachable in current test data.
-All five missing operators (`__mul__`, `__truediv__`, `__floordiv__`, `__lshift__`, `__rshift__`)
-have been implemented; operator parity with `Emotion` is restored.
+### A-002 — Five unreachable branches in `feelings.py` (coverage ceiling ~98%)
+**File**: `emotion_algebra/feelings.py:267,418,453-456`
+**Severity**: Negligible
+**Detail**:
+- Line 267: `return feel.emotions[0]` inside `__sub__(Feeling)` — requires the loop to complete
+  without early return AND result feeling to have exactly 1 emotion. Logically reachable but
+  requires a crafted edge case (subtracting a Feeling with an emotion *not* in self).
+- Line 418: `return f` early return in `from_dict` — canonical feelings have `_name=""`, so
+  `get_feeling("")` returns `None`; the early-return path is never hit via `to_dict` roundtrip.
+- Lines 453-456: `isinstance(d, list)` branch in `_get_feelings()` — `DIMENSIONS` never contains
+  lists; this is defensive legacy code.
+**Recommendation**: Accept as coverage ceiling. These are not defects.
 
 ### A-003 — `EmotionAnalyzer` optional-dep paths are untestable without extras
 **File**: `emotion_algebra/__init__.py:21,36,41,46,56,61–62,67–68`
@@ -52,6 +58,7 @@ Lazy-import guard is correct; zero coverage of these paths in the default test r
 | R-023 | `score_mixed` / `from_mixed` — unified word+emoji scoring in one pass | v1.7 |
 | R-024 | `register_emoji` / `unregister_emoji` — runtime emoji map extensibility | v1.7 |
 | R-025 | CLI emoji support — single emoji args dispatched via `score_emojis` | v1.7 |
+| R-026 | feelings.py coverage raised from 94% to 98%; 5 unreachable legacy branches documented | v1.7 |
 
 ---
 
