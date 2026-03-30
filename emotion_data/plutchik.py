@@ -495,9 +495,12 @@ class Emotion(object):
     # object.__ior__(self, other)
 
     def __bool__(self) -> bool:
-        if self.emotional_flow == 0:
-            return False
-        return bool(self.emotional_flow > 0)
+        """True when this emotion has non-zero intensity (i.e. is not Neutrality).
+
+        Truthiness reflects *presence*, not *valence* — fear and anger are both
+        truthy even though they have negative flow.
+        """
+        return self.emotional_flow != 0
 
     def __neg__(self):
         # get opposite emotion

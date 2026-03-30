@@ -474,10 +474,9 @@ class TestEmotionUnary:
     def test_bool_positive_emotion(self, joy):
         assert bool(joy)
 
-    def test_bool_negative_emotion_returns_false(self, fear):
-        # fear has negative flow → bool is False
-        b = bool(fear)
-        assert b is False or b is NotImplemented or b == False  # noqa: E712
+    def test_bool_negative_emotion_is_true(self, fear):
+        # fear has negative flow but non-zero intensity → truthy (presence, not valence)
+        assert bool(fear) is True
 
     def test_int_emotion(self, anger):
         assert int(anger) == 2
