@@ -18,18 +18,6 @@ dependencies = [
 lexicon = [
     "pandas",
 ]
-deepmoji = [
-    "torch",
-    "torchvision",
-    "torchmoji @ git+https://github.com/huggingface/torchMoji",
-]
-tagging = [
-    "paralleldots",
-]
-all = [
-    "emotion_algebra[lexicon]",
-    "emotion_algebra[tagging]",
-]
 
 [project.urls]
 Homepage = "https://github.com/JarbasAl/emotion-algebra"

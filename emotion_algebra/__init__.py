@@ -1,9 +1,4 @@
-"""emotion_data — public API and EmotionAnalyzer.
-
-Optional integrations (deepmoji, tag) are lazy-imported inside the methods
-that use them so that ``import emotion_algebra`` never fails when those optional
-dependencies are absent.
-"""
+"""emotion_algebra — public API and EmotionAnalyzer."""
 from emotion_algebra.base import EmotionBase
 from emotion_algebra.emotions import get_emotion, emotion_to_dimension, random_emotion, get_dimension
 from emotion_algebra.feelings import get_feeling, random_feeling
@@ -54,18 +49,6 @@ class EmotionAnalyzer(object):
     def random_feeling():
         """Return a random :class:`~emotion_data.feelings.Feeling`."""
         return random_feeling()
-
-    @staticmethod
-    def tag_emotions(sentence: str):
-        """Tag *sentence* with emotions using deepmoji (requires optional dep)."""
-        from emotion_algebra.deepmoji import get_emotions
-        return get_emotions(sentence)
-
-    @staticmethod
-    def tag_emojis(sentence: str):
-        """Tag *sentence* with emojis using deepmoji (requires optional dep)."""
-        from emotion_algebra.deepmoji import get_emojis
-        return get_emojis(sentence)
 
     @staticmethod
     def emotion(emotion_name: str):
