@@ -161,3 +161,49 @@ class TestLexiconAccessors:
         assert get_sentiment("xyzzy_not_a_word") is None
         assert get_subjectivity("xyzzy_not_a_word") is None
         assert get_orientation("xyzzy_not_a_word") is None
+
+
+# ---------------------------------------------------------------------------
+# New lexicon columns — AFINN + Hourglass
+# ---------------------------------------------------------------------------
+
+class TestAfinnAndHourglass:
+    def test_get_afinn_score_known(self):
+        from emotion_algebra.lexicons import get_afinn_score
+        score = get_afinn_score("abhor")
+        assert score is not None
+        assert isinstance(score, int)
+        assert score < 0  # abhor is negative
+
+    def test_get_afinn_score_unknown(self):
+        from emotion_algebra.lexicons import get_afinn_score
+        assert get_afinn_score("xyzzy_not_a_word") is None
+
+    def test_get_hourglass_known(self):
+        from emotion_algebra.lexicons import get_hourglass
+        axes = get_hourglass("rage")
+        assert axes is not None
+        assert set(axes.keys()) == {"pleasantness", "attention", "aptitude", "sensitivity"}
+        for v in axes.values():
+            assert isinstance(v, float)
+            assert -1.0 <= v <= 1.0
+
+    def test_get_hourglass_unknown(self):
+        from emotion_algebra.lexicons import get_hourglass
+        assert get_hourglass("xyzzy_not_a_word") is None
+
+    def test_get_float_emotion_known(self):
+        from emotion_algebra.lexicons import get_float_emotion
+        fe = get_float_emotion("love")
+        assert fe is not None
+        # FloatEmotion has as_array property
+        arr = fe.as_array
+        assert arr.shape == (4,)
+
+    def test_get_float_emotion_unknown(self):
+        from emotion_algebra.lexicons import get_float_emotion
+        assert get_float_emotion("xyzzy_not_a_word") is None
+
+    def test_lexicon_has_fifty_k_entries(self):
+        from emotion_algebra.lexicons import LEXICON
+        assert len(LEXICON) > 40_000  # canonical merge expanded from 14k

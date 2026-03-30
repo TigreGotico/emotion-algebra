@@ -171,3 +171,36 @@ Signed integer intensity: ±1 primary, ±2 secondary, ±3 tertiary, 0 neutral. U
 ## What is Neutrality?
 
 The identity element: `emotion + Neutrality() == emotion`. Also returned when arithmetic reduces flow to zero.
+
+## What is the canonical lexicon and where does it come from?
+
+The bundled `word_emotion_lexicon.csv` (~50k entries) is a single purpose-built lexicon merged from four sources:
+
+| Source | Contribution | Coverage |
+|---|---|---|
+| Original word-emotion CSV | color, orientation, subjectivity | ~14k words |
+| NRC EmoLex (via `nrclex`) | Plutchik emotion label, pos/neg sentiment | ~6.4k words |
+| SenticNet 6 (via `senticnet`) | Four Hourglass float axes (pleasantness/attention/aptitude/sensitivity) | ~200k concepts |
+| AFINN-111 (downloaded, cached to XDG) | Integer sentiment score −5..+5 | ~2.5k words |
+
+Priority for each field: existing CSV > NRC EmoLex > SenticNet > AFINN.
+
+New accessor functions in `lexicons.py`:
+- `get_afinn_score(word)` → `int | None`
+- `get_hourglass(word)` → `dict[str, float] | None`
+- `get_float_emotion(word)` → `FloatEmotion | None`
+
+Regenerate the lexicon with `python scripts/build_lexicon.py` (AFINN cached to `~/.local/share/emotion-algebra/lexicons/`).
+
+## What do the Hourglass axis columns mean?
+
+Four SenticNet axes mapped to Cambria's Hourglass of Emotions:
+
+| CSV column | SenticNet axis | Hourglass axis | Emotion pole (positive) |
+|---|---|---|---|
+| `pleasantness` | introspection | Pleasantness | Joy |
+| `attention` | temper | Attention | Anticipation |
+| `aptitude` | attitude | Aptitude | Trust |
+| `sensitivity` | sensitivity | Sensitivity | Anger |
+
+All values are floats in [-1, 1]. `get_float_emotion(word)` wraps these into a `FloatEmotion` for continuous arithmetic.
