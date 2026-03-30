@@ -494,10 +494,10 @@ class Emotion(object):
     # object.__ixor__(self, other)
     # object.__ior__(self, other)
 
-    def __bool__(self):
+    def __bool__(self) -> bool:
         if self.emotional_flow == 0:
-            return NotImplemented
-        return self.emotional_flow > 0
+            return False
+        return bool(self.emotional_flow > 0)
 
     def __neg__(self):
         # get opposite emotion

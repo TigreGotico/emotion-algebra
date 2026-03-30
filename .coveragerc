@@ -1,0 +1,10 @@
+[run]
+source = emotion_data
+omit =
+    emotion_data/deepmoji.py
+    emotion_data/tag.py
+
+[report]
+omit =
+    emotion_data/deepmoji.py
+    emotion_data/tag.py

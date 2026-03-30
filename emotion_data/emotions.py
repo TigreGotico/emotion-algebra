@@ -67,7 +67,7 @@ def get_dimension(dimension_name):
 
 def emotion_to_dimension(emotion_name):
     emotion = get_emotion(emotion_name)
-    if emotion:
+    if emotion is not None:
         if emotion.is_composite:
             return [e.dimension for e in emotion.components if e.dimension]
         return emotion.dimension

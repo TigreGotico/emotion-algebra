@@ -136,7 +136,7 @@ def _get_behaviours():
         b.purpose = data["purpose"]
         for emo in data["activated_by"]:
             e = EMOTIONS.get(emo)
-            if e:
+            if e is not None:
                 b.activated_by.append(e)
         bucket[behaviour] = b
     return bucket
@@ -169,7 +169,8 @@ class BehavioralReaction(object):
         self.cognite_appraisal = data.get("cognite appraisal", "")
         self.trigger = data.get("trigger", "")
         self.base_emotion = EMOTIONS.get(data.get("base_emotion", ""))
-        self.behaviour = BEHAVIOURS[data["behaviour"]]
+        behaviour_key = data.get("behaviour")
+        self.behaviour = BEHAVIOURS[behaviour_key] if behaviour_key else self.behaviour
 
     def __repr__(self):
         return "BehavioralReactionObject:" + self.name
