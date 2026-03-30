@@ -1,135 +1,70 @@
 # emotion_data
 
-Python library implementing **emotion algebra** — emotions as first-class mathematical objects.
+Python library implementing **emotion algebra** — emotions as first-class mathematical objects,
+grounded in Cambria's Hourglass of Emotions and Plutchik's Wheel.
+
+## Documentation
+
+| Page | Contents |
+|------|----------|
+| [Taxonomy](taxonomy.md) | All 24 named emotions, axes, intensity levels |
+| [Algebra](algebra.md) | Operators: intensity arithmetic, negation, composition |
+| [Valence, Arousal & Type](valence_arousal.md) | Scientific properties; Russell Circumplex |
+| [Feelings](feelings.md) | Named dyads, Feeling vs CompositeEmotion |
+| [API Reference](api_reference.md) | All classes, properties, operators |
 
 ## Model provenance
 
-The library blends two distinct academic frameworks:
+| Model | Authors | Role |
+|-------|---------|------|
+| **Hourglass of Emotions** (2012) | Cambria, Livingstone, Hussain | 4-axis signed-integer representation (PASA), `emotional_flow` |
+| **Plutchik's Wheel** (1980) | Robert Plutchik | Named dyads, opposite pairs, 8-primary structure |
+| **Russell's Circumplex** (1980) | James Russell | `type` classification via valence × arousal quadrants |
 
-| Model | Authors | Role in this library |
-|---|---|---|
-| **Plutchik's Wheel of Emotions** (1980) | Robert Plutchik | Named dyad composition (joy+trust→love), opposite pairs, 8-primary structure |
-| **Hourglass of Emotions** (2012) | Cambria, Livingstone, Hussain | 4-axis signed-integer scale (PASA), `emotional_flow`, `EmotionalDimension` |
-
-**Design decisions (per SPECIFICATION.md):**
-- `Emotion.valence` = Pleasantness axis value only. Anger/fear valence = 0 (arousal ⊥ hedonics).
-- `Emotion.arousal` = `|emotional_flow|` — new property; axis-independent activation intensity.
-- `Emotion.type` / `CompositeEmotion.type` use Russell's (1980) Circumplex quadrants.
-- `EmotionalDimension.valence`: Pleasantness=+1, Aptitude=+1, Sensitivity=0, Attention=0.
-- Cross-axis `+` returns `CompositeEmotion`; `Feeling` is created explicitly via `Feeling(name)`.
-- Behaviours map directly from emotions; the cognitive appraisal layer (Lazarus 1991) is omitted.
+**Key design decisions (per [SPECIFICATION.md](../SPECIFICATION.md)):**
+- `Emotion.valence` = Pleasantness axis only — anger/fear valence = 0 (arousal ⊥ hedonics, Posner 2005)
+- `Emotion.arousal` = `|emotional_flow|` — axis-independent activation intensity
+- `Emotion.type` uses Russell's Circumplex (6 categories)
+- Cross-axis `+` returns `CompositeEmotion`; `Feeling` is a separate named construct
 
 ## Installation
 
 ```bash
-pip install emotion_data            # core (numpy only)
-pip install "emotion_data[lexicon]" # + word-emotion CSV lookup
-pip install "emotion_data[tagging]" # + ParallelDots API tagging
+pip install emotion_data              # core (numpy only)
+pip install "emotion_data[lexicon]"   # + word→emotion CSV lookup (pandas)
+pip install "emotion_data[tagging]"   # + ParallelDots API tagging
 ```
 
-## Algebra
-
-Emotions support arithmetic operators that move along the Hourglass intensity axis.
-
-### Intensity arithmetic
-
-| Expression | Result | Notes |
-|---|---|---|
-| `annoyance + 1` | `anger` | primary → secondary |
-| `anger + 1` | `rage` | secondary → tertiary |
-| `rage + 1` | `mega rage` | offset = 1 |
-| `rage + 3` | `hyper rage` | offset = 3 |
-| `anger - 1` | `annoyance` | down one step |
-| `serenity - 1` | `Neutrality` | below primary → neutral |
+## Quick start
 
 ```python
 from emotion_data.emotions import EMOTIONS
 from copy import copy
 
 anger = copy(EMOTIONS["anger"])
-print(anger + 1)   # rage
-print(anger - 1)   # annoyance
-print(-anger)      # fear
-```
-
-### Negation (opposite emotion)
-
-```python
--anger      # fear
--joy        # sadness
--trust      # disgust
--rage       # terror
-```
-
-### Composition (Feeling dyads)
-
-Adding two emotions from **different** dimensions produces a named `Feeling`:
-
-```python
-from emotion_data.emotions import EMOTIONS
-from copy import copy
-
-joy   = copy(EMOTIONS["joy"])
-trust = copy(EMOTIONS["trust"])
-
-love = joy + trust
-print(love.name)   # "love"
-print(type(love))  # <class 'emotion_data.feelings.Feeling'>
-```
-
-Selected dyads:
-
-| Expression | Feeling |
-|---|---|
-| `joy + trust` | love |
-| `joy + surprise` | delight |
-| `anticipation + trust` | hope |
-| `fear + sadness` | despair |
-| `anticipation + joy` | optimism |
-
-## Emotion Taxonomy
-
-The Hourglass of Emotions defines four axes, each with three intensity levels per polarity.
-
-| Dimension | Intense (+) | Secondary (+) | Primary (+) | Primary (−) | Secondary (−) | Intense (−) |
-|---|---|---|---|---|---|---|
-| **pleasantness** | ecstasy | joy | serenity | pensiveness | sadness | grief |
-| **aptitude** | admiration | trust | acceptance | boredom | disgust | loathing |
-| **sensitivity** | rage | anger | annoyance | apprehension | fear | terror |
-| **attention** | vigilance | anticipation | interest | distraction | surprise | amazement |
-
-## 4D Emotion Vectors
-
-Every emotion has a 4D vector representation (one value per Hourglass axis):
-
-```python
-from emotion_data.emotions import EMOTIONS
-from copy import copy
-import numpy as np
+print(anger + 1)       # rage
+print(anger - 1)       # annoyance
+print(-anger)          # fear
+print(anger.valence)   # 0  (Sensitivity axis — not hedonic)
+print(anger.arousal)   # 2
+print(anger.type)      # "activated neutral"
 
 joy = copy(EMOTIONS["joy"])
-print(joy.emotion_vector)  # [Neutrality, Neutrality, joy, Neutrality]
-print(joy.as_array)        # np.array([0, 0, 2, 0])
+print(joy.valence)     # 2  (Pleasantness +2)
+print(joy.type)        # "excited positive"
+
+composite = joy + copy(EMOTIONS["trust"])
+print(composite.name)  # "love"
+print(composite.type)  # "excited positive"
 ```
 
-## Comparison
+## Key classes
 
-```python
-rage  = copy(EMOTIONS["rage"])
-anger = copy(EMOTIONS["anger"])
-
-rage > anger    # True  (flow 3 > 2)
-anger > annoyance  # True  (flow 2 > 1)
-```
-
-## Key Classes
-
-| Class | File | Role |
-|---|---|---|
-| `Emotion` | `emotion_data/plutchik.py` | Core algebra carrier |
-| `Neutrality` | `emotion_data/plutchik.py` | Identity element |
-| `EmotionalDimension` | `emotion_data/plutchik.py` | Hourglass axis |
-| `Feeling` | `emotion_data/feelings.py` | Named two-emotion dyad |
-| `CompositeEmotion` | `emotion_data/composite_emotions.py` | Cross-axis composite |
-| `Behaviour` | `emotion_data/behaviour.py` | Adaptive reaction |
-| `BehavioralReaction` | `emotion_data/behaviour.py` | Cognitive appraisal mapping |
+| Class | Module | Role |
+|-------|--------|------|
+| `Emotion` | `plutchik.py` | Core algebra carrier — single-axis lattice point |
+| `Neutrality` | `plutchik.py` | Identity element (`e + Neutrality() == e`) |
+| `EmotionalDimension` | `plutchik.py` | One Hourglass axis |
+| `CompositeEmotion` | `composite_emotions.py` | Multi-axis state (result of cross-axis `+`) |
+| `Feeling` | `feelings.py` | Named cultural label for a dyad (Plutchik) |
+| `Behaviour` / `BehavioralReaction` | `behaviour.py` | Adaptive reaction mapping |
