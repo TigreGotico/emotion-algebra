@@ -19,7 +19,21 @@ pip install emotion_algebra
 | Extra | Deps | Enables |
 |---|---|---|
 | `[lexicon]` | pandas | `lexicons.py` — word→emotion CSV lookup |
+| `[fast]` | ahocorasick-ner | Phrase-aware Aho-Corasick backend for `score_text`/`from_text` |
 | `[transformers]` | transformers>=4.0, torch | `text.py` — HuggingFace pipeline tagging |
+
+## How does the Aho-Corasick backend change `score_text` / `from_text`?
+
+Install `pip install "emotion-algebra[fast]"` and the functions automatically switch
+from per-token dict lookup to a phrase-aware Aho-Corasick automaton backed by
+`ahocorasick-ner`.  Benefits:
+
+- **Multi-word matches**: "heart attack" → fear, "cold shoulder" → disgust (if in lexicon)
+- **Greedy longest match**: "cold shoulder" preferred over "cold" alone
+- **No API change**: same function signatures, same return types
+
+The backend is detected and built lazily on first call; subsequent calls use the
+cached automaton.  Fall back to the dict backend if the extra is not installed.
 
 ## How do I score text that contains both words and emoji?
 

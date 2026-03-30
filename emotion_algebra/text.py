@@ -1,22 +1,23 @@
-"""Text-to-emotion utilities — v1.7.
+"""Text-to-emotion utilities — v1.8.
 
-Three tiers:
+Four tiers:
 
-1. **Lexicon pipeline** (no extra deps beyond the bundled CSV) —
-   :func:`from_text` and :func:`score_text` tokenize the input and look up
-   each word in the bundled word-emotion lexicon.
+1. **Lexicon pipeline** (no extra deps) — :func:`from_text` and :func:`score_text`
+   use :func:`~emotion_algebra.lexicons.tag_emotions`, which selects the fastest
+   available backend automatically.
 
-2. **Mixed pipeline** — :func:`score_mixed` and :func:`from_mixed` process both
-   word tokens and emoji characters in a single pass, blending both signals into
-   one :class:`~emotion_algebra.state.EmotionalState`.
+2. **Aho-Corasick backend** (``[fast]`` extra: ``ahocorasick-ner``) — phrase-aware,
+   greedy longest-match.  Enables multi-word matches such as "heart attack" or
+   "cold shoulder".  Activated transparently when the extra is installed.
 
-3. **HuggingFace bridge** (requires the ``[transformers]`` optional extra) —
-   :class:`HFEmotionAdapter` wraps any HF text-classification pipeline that
-   outputs Plutchik-compatible labels.
+3. **Mixed pipeline** — :func:`score_mixed` and :func:`from_mixed` combine word
+   lexicon and emoji signals in a single pass.
+
+4. **HuggingFace bridge** (``[transformers]`` extra) — :class:`HFEmotionAdapter`
+   wraps any HF text-classification pipeline with Plutchik-compatible labels.
 """
 from __future__ import annotations
 
-import re
 from typing import Optional, Dict, TYPE_CHECKING
 
 from emotion_algebra.base import EmotionBase
@@ -28,8 +29,8 @@ if TYPE_CHECKING:
 def from_text(text: str) -> Optional[EmotionBase]:
     """Return the dominant emotion inferred from *text* via lexicon lookup.
 
-    Tokenizes *text*, looks up each token in the bundled word-emotion CSV,
-    and returns the most frequently matched named emotion.
+    Uses :func:`~emotion_algebra.lexicons.tag_emotions` — automatically
+    phrase-aware when ``ahocorasick-ner`` is installed (``[fast]`` extra).
 
     Parameters
     ----------
@@ -41,12 +42,11 @@ def from_text(text: str) -> Optional[EmotionBase]:
     Emotion or None
         Most common lexicon match, or ``None`` if no tokens match.
     """
-    from emotion_algebra.lexicons import get_word_emotion
+    from emotion_algebra.lexicons import tag_emotions
     from emotion_algebra.emotions import get_emotion
-    tokens = re.findall(r'\b\w+\b', text.lower())
     counts: Dict[str, int] = {}
-    for token in tokens:
-        label = get_word_emotion(token)
+    for match in tag_emotions(text):
+        label = match["label"]
         if label:
             counts[label] = counts.get(label, 0) + 1
     if not counts:
@@ -58,9 +58,9 @@ def from_text(text: str) -> Optional[EmotionBase]:
 def score_text(text: str) -> "EmotionalState":
     """Return a full :class:`~emotion_algebra.state.EmotionalState` for *text*.
 
-    All lexicon-matched tokens contribute with equal weight.  The result is a
-    weighted 4-axis accumulation — richer than the single top-1 from
-    :func:`from_text`.
+    All lexicon matches contribute with equal weight (weight=1.0 per match).
+    Uses :func:`~emotion_algebra.lexicons.tag_emotions` — automatically
+    phrase-aware when ``ahocorasick-ner`` is installed (``[fast]`` extra).
 
     Parameters
     ----------
@@ -72,13 +72,12 @@ def score_text(text: str) -> "EmotionalState":
     EmotionalState
         A neutral (zero-vector) state if no tokens match.
     """
-    from emotion_algebra.lexicons import get_word_emotion
+    from emotion_algebra.lexicons import tag_emotions
     from emotion_algebra.emotions import get_emotion
     from emotion_algebra.state import EmotionalState
     state = EmotionalState()
-    tokens = re.findall(r'\b\w+\b', text.lower())
-    for token in tokens:
-        label = get_word_emotion(token)
+    for match in tag_emotions(text):
+        label = match["label"]
         if label:
             emo = get_emotion(label)
             if emo is not None:

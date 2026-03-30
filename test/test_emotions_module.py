@@ -140,34 +140,24 @@ class TestEmotionToDimension:
 
 class TestLexicons:
     def test_get_color_known_word(self):
-        from emotion_algebra.lexicons import get_color, LEXICON
-        word = next(iter(LEXICON))
-        result = get_color(word)
-        assert result is not None
+        from emotion_algebra.lexicons import get_color
+        assert get_color("abhor") is not None  # "abhor" has color="black"
 
     def test_get_emotion_known_word(self):
-        from emotion_algebra.lexicons import get_word_emotion, LEXICON
-        word = next(iter(LEXICON))
-        result = get_word_emotion(word)
-        assert result is not None
+        from emotion_algebra.lexicons import get_word_emotion
+        assert get_word_emotion("abhor") == "anger"
 
     def test_get_sentiment_known_word(self):
-        from emotion_algebra.lexicons import get_sentiment, LEXICON
-        word = next(iter(LEXICON))
-        result = get_sentiment(word)
-        assert result is not None
+        from emotion_algebra.lexicons import get_sentiment
+        assert get_sentiment("abhor") is not None
 
     def test_get_subjectivity_known_word(self):
-        from emotion_algebra.lexicons import get_subjectivity, LEXICON
-        word = next(iter(LEXICON))
-        result = get_subjectivity(word)
-        assert result is not None
+        from emotion_algebra.lexicons import get_subjectivity
+        assert get_subjectivity("abhor") is not None
 
     def test_get_orientation_known_word(self):
-        from emotion_algebra.lexicons import get_orientation, LEXICON
-        word = next(iter(LEXICON))
-        result = get_orientation(word)
-        assert result is not None
+        from emotion_algebra.lexicons import get_orientation
+        assert get_orientation("abhor") is not None
 
     def test_unknown_word_returns_none(self):
         from emotion_algebra.lexicons import get_color, get_word_emotion
@@ -262,10 +252,8 @@ class TestEmotionAnalyzer:
     def test_analyzer_get_color(self):
         try:
             from emotion_algebra import EmotionAnalyzer
-            from emotion_algebra.lexicons import LEXICON
             a = EmotionAnalyzer()
-            word = next(iter(LEXICON))
-            result = a.get_color(word)
+            result = a.get_color("abhor")  # "abhor" has color="black"
             assert result is not None
         except ImportError:
             pytest.skip("deepmoji not available")

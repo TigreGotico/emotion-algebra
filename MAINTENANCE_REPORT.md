@@ -357,3 +357,37 @@ Remaining uncovered: 5 lines — all defensive legacy code; accepted as ceiling 
 - **docs/cli.md** — new: info mode, expression mode, emoji shortcut, REPL
 - **docs/MAINTAINERS_GUIDE.md** — new: repo layout, dev setup, branching, release process, adding modules, emoji map extension policy, AI usage policy
 - **WHITEPAPER.md** — new: 10-section technical whitepaper covering theoretical foundations, design decisions, architecture, emoji-emotion mapping, evaluation, limitations, use cases, references
+
+## 2026-03-30 — feat: Aho-Corasick phrase-aware lexicon backend (v1.8)
+
+**AI Model**: claude-sonnet-4-6
+**Oversight**: Human-specified feature; AI designed and implemented.
+
+### Actions Taken
+
+- **`emotion_algebra/lexicons.py`** — added `tag_emotions(text)` function with two backends:
+  1. **Aho-Corasick** (when `ahocorasick-ner` is installed): phrase-aware, greedy longest-match,
+     word-boundary-respecting; tagger built lazily from LEXICON and cached module-globally.
+  2. **Dict fallback** (always available): per-token regex + dict lookup, same dict/None coercion.
+  Also fixed all `get_*` accessor functions to return `None` for empty CSV fields instead of `""`.
+
+- **`emotion_algebra/text.py`** — `from_text` and `score_text` now delegate to `tag_emotions`
+  instead of inline token loops. Transparent upgrade: no API change.
+
+- **`pyproject.toml`** — added `[fast]` optional extra: `ahocorasick-ner`.
+
+- **`test/test_lexicons_ac.py`** — 22 new tests: backend-agnostic contract, AC-specific
+  (tagger caching, word-boundary, span offsets), dict-fallback (monkeypatched), accessor
+  None-coercion.
+
+- **`test/test_emotions_module.py`** — fixed 5 tests that relied on `next(iter(LEXICON))`
+  returning a fully-populated entry; replaced with "abhor" (known-good populated word).
+
+### Notes
+
+- `pyahocorasick` returns `end` as inclusive last-char index (not exclusive).
+  `text[start:end+1]` extracts the matched span.
+- `rage` + `terror` cancel to zero (same axis, opposite poles) — correct algebra.
+
+### Test results
+735 tests, 0 failures.
