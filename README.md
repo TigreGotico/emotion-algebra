@@ -1,17 +1,17 @@
 # emotion-algebra
 
-Signed integer arithmetic over a 4-axis affective space, based on Plutchik's Wheel of Emotions (1980) and Cambria's Hourglass of Emotions (2012).
+Signed integer arithmetic over a 4-axis affective space, grounded in Plutchik's Wheel of Emotions (1980) and Cambria's Hourglass of Emotions (2012). Emotions are first-class mathematical objects; every operator returns a typed result.
 
 ```python
 from emotion_algebra.emotions import get_emotion
 
-anger = get_emotion("anger")   # sensitivity axis, flow +2
-fear  = get_emotion("fear")    # sensitivity axis, flow -2
+anger = get_emotion("anger")
 
-anger + 1          # → rage   (flow +3)
-anger - 1          # → annoyance (flow +1)
--anger             # → fear   (opposite)
-anger * fear       # → CompositeEmotion  (cross-axis product)
+anger + 1          # → rage          (intensity up)
+anger - 1          # → annoyance     (intensity down)
+-anger             # → fear          (opposite pole)
+anger >> 2         # → hyper anger
+anger * fear       # → CompositeEmotion (cross-axis product)
 ```
 
 ---
@@ -24,36 +24,33 @@ pip install emotion-algebra
 
 Optional extras:
 
-```bash
-pip install "emotion-algebra[lexicon]"   # pandas — NRC/Emolex CSV loading
-pip install "emotion-algebra[deepmoji]"  # torch + torchMoji — text → emotion
-pip install "emotion-algebra[tagging]"   # paralleldots — cloud NLP tagging
-```
+| Extra | Deps | Enables |
+|-------|------|---------|
+| `[lexicon]` | pandas | `lexicons.py` — word→emotion CSV lookup |
+| `[transformers]` | transformers≥4.0, torch | `HFEmotionAdapter` — HuggingFace pipeline bridge |
 
 ---
 
 ## The model
 
-### Axes (Cambria 2012)
+### Four axes (Cambria 2012)
 
-| Axis | Positive pole (flow > 0) | Negative pole (flow < 0) | Hedonic? |
-|---|---|---|---|
-| Sensitivity | rage → anger → annoyance | apprehension → fear → terror | No (activation) |
-| Attention | vigilance → anticipation → interest | distraction → surprise → amazement | No (activation) |
-| Pleasantness | ecstasy → joy → serenity | pensiveness → sadness → grief | Yes |
-| Aptitude | admiration → trust → acceptance | boredom → disgust → loathing | Yes |
+| Axis | Positive pole | Negative pole | Hedonic? |
+|------|--------------|---------------|----------|
+| Sensitivity | rage → anger → annoyance | apprehension → fear → terror | No |
+| Attention | vigilance → anticipation → interest | distraction → surprise → amazement | No |
+| Pleasantness | ecstasy → joy → serenity | pensiveness → sadness → grief | **Yes** |
+| Aptitude | admiration → trust → acceptance | boredom → disgust → loathing | **Yes** |
 
-Each axis has three intensity levels: ±1 (basic), ±2 (secondary), ±3 (tertiary).
+Each axis has three integer intensity levels: ±1 (mild), ±2 (primary), ±3 (intense).
 
 ### Valence and arousal (Russell 1980)
 
-- **Valence** = Pleasantness axis component only. `anger.valence == 0`; `joy.valence == 2`.
-- **Arousal** = `abs(emotional_flow)`. `rage.arousal == 3`.
-- **Type** = Russell Circumplex quadrant: `"excited positive"`, `"calm positive"`, `"excited negative"`, `"calm negative"`, `"activated neutral"`, `"neutral"`.
+- **Valence** — Pleasantness axis only. `anger.valence == 0`; `joy.valence == 2`.
+- **Arousal** — `abs(emotional_flow)`. Axis-independent activation intensity.
+- **Type** — Russell Circumplex quadrant: `"excited positive"`, `"calm positive"`, `"excited negative"`, `"calm negative"`, `"activated neutral"`, `"neutral"`.
 
 ### Feelings (Plutchik dyads)
-
-A `Feeling` is a named combination of two primary emotions from different axes:
 
 ```python
 from emotion_algebra.emotions import get_emotion
@@ -62,48 +59,105 @@ trust = get_emotion("trust")
 joy + trust   # → Feeling("love")
 ```
 
-### Composite emotions
+---
 
-Cross-axis arithmetic produces a `CompositeEmotion` — an unnamed blend preserving full 4D vector information:
+## Feature overview
 
-```python
-anger * fear   # CompositeEmotion  (sensitivity × sensitivity, different poles)
-rage + trust   # CompositeEmotion  (sensitivity + aptitude)
-```
+| Feature | API | Module |
+|---------|-----|--------|
+| Core emotion algebra | `Emotion`, `+`, `-`, `*`, `<<`, `>>` | `plutchik.py` |
+| Named feelings (dyads) | `Feeling`, `get_feeling()` | `feelings.py` |
+| Multi-axis composites | `CompositeEmotion` | `composite_emotions.py` |
+| Continuous space | `FloatEmotion`, `from_embedding()` | `float_emotion.py` |
+| Stateful accumulation | `EmotionalState`, `EmotionTimeline` | `state.py` |
+| Word lexicon | `from_text()`, `score_text()` | `text.py` |
+| Emoji mapping | `from_emoji()`, `score_emojis()`, `DeepMojiAdapter` | `emoji.py` |
+| Mixed word+emoji | `score_mixed()`, `from_mixed()` | `text.py` |
+| Geometry | `emotion_distance()`, `closest_emotion()` | `distance.py` |
+| Cognitive appraisal | `Appraisal`, `appraisal_to_emotion()` | `appraisal.py` |
+| CLI | `python -m emotion_algebra` | `__main__.py` |
 
 ---
 
 ## Quick reference
 
 ```python
-from emotion_algebra.emotions import get_emotion, get_dimension, EMOTIONS
-from emotion_algebra.feelings import get_feeling, FEELINGS
-from emotion_algebra.plutchik import Neutrality
+from emotion_algebra import (
+    get_emotion, get_feeling,
+    EmotionalState, EmotionTimeline,
+    from_text, score_text, score_mixed, from_mixed,
+    from_emoji, score_emojis, DeepMojiAdapter,
+    register_emoji, unregister_emoji,
+    emotion_distance, closest_emotion, emotion_clusters,
+    Appraisal, appraisal_to_emotion,
+    FloatEmotion,
+)
 
-# All 24 named emotions
-list(EMOTIONS.keys())
-
-# All 38 named feelings
-list(FEELINGS.keys())
-
-# Emotion properties
+# --- Emotion properties ---
 e = get_emotion("joy")
 e.emotional_flow   # 2
-e.valence          # 2   (pleasantness axis)
+e.valence          # 2    (pleasantness axis)
 e.arousal          # 2
 e.type             # "excited positive"
-e.dimension.name   # "pleasantness"
 e.opposite_emotion # sadness
+e.as_array         # np.array([0, 0, 2, 0])
 
-# Arithmetic
-e + 1    # ecstasy  (flow +3)
-e - 1    # serenity (flow +1)
-e - 2    # Neutrality
--e       # sadness
-abs(e)   # Neutrality()
+# --- State accumulation ---
+state = EmotionalState()
+state.apply(get_emotion("joy"), weight=0.8)
+state.apply(get_emotion("trust"), weight=0.5)
+state.decay(0.9)
+state.dominant()   # → Emotion or None
+
+# --- Text analysis ---
+from_text("rage and fury")          # → Emotion (lexicon)
+score_mixed("I'm so happy 😄🎉")   # → EmotionalState (words + emoji)
+from_mixed("grief 😭")             # → dominant Emotion
+
+# --- Emoji ---
+from_emoji("😊")                   # → Emotion("serenity")
+register_emoji("🤖", "trust")      # custom mapping
+
+# --- DeepMoji bridge ---
+adapter = DeepMojiAdapter()
+adapter.from_scores({"😂": 0.6, "😭": 0.4})  # → Emotion
+adapter.score_state({"😂": 0.6, "😭": 0.4})  # → EmotionalState
+
+# --- Geometry ---
+a, b = get_emotion("anger"), get_emotion("joy")
+emotion_distance(a, b)             # Euclidean distance in 4D Hourglass space
+closest_emotion([2, 0, 1, 0])     # nearest named Emotion to a float vector
+
+# --- Cognitive appraisal (Scherer CPM) ---
+a = Appraisal(goal_relevance="relevant", goal_congruence="incongruent",
+              agency="other", coping_potential="low")
+appraisal_to_emotion(a)           # → fear
+
+# --- Continuous space ---
+FloatEmotion(sensitivity=1.5, pleasantness=-0.8)
+FloatEmotion.from_embedding(np.array([0.3, -0.1, 0.7, 0.2]))
 ```
 
-See [`examples/`](examples/) for runnable scripts covering every operator and class.
+---
+
+## CLI
+
+```bash
+# Info about an emotion, feeling, or dimension
+python -m emotion_algebra info anger
+python -m emotion_algebra info love
+python -m emotion_algebra info pleasantness
+
+# Evaluate an expression
+python -m emotion_algebra "joy + trust"
+python -m emotion_algebra "rage - 1"
+
+# Single emoji
+python -m emotion_algebra 😊
+
+# Interactive REPL (all 24 emotions pre-loaded)
+python -m emotion_algebra
+```
 
 ---
 
@@ -113,6 +167,8 @@ See [`examples/`](examples/) for runnable scripts covering every operator and cl
 - Cambria, E., Livingstone, A., & Hussain, A. (2012). *The Hourglass of Emotions.* In A. Esposito et al. (Eds.), *Cognitive Behavioural Systems*, LNCS 7403.
 - Russell, J. A. (1980). *A circumplex model of affect.* Journal of Personality and Social Psychology, 39(6), 1161–1178.
 - Posner, J., Russell, J. A., & Peterson, B. S. (2005). *The circumplex model of affect: An integrative approach.* Development and Psychopathology, 17(3), 715–734.
+- Felbo, B., Mislove, A., Søgaard, A., Rahwan, I., & Lehmann, S. (2017). *Using millions of emoji occurrences to learn any-domain representations for detecting sentiment, emotion and sarcasm.* EMNLP 2017.
+- Scherer, K. R. (2001). *Appraisal considered as a process of multilevel sequential checking.* In K. R. Scherer et al. (Eds.), *Appraisal processes in emotion* (pp. 92–120).
 
 ---
 

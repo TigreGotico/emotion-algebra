@@ -156,3 +156,209 @@ Maps emotions to adaptive behavioural responses.
 
 **Note**: The behaviour→emotion mapping skips cognitive appraisal (Lazarus 1991)
 and is not derived from either Plutchik or Cambria — it is a convenience layer only.
+
+---
+
+## `emotion_algebra.state`
+
+### `EmotionalState`
+
+Mutable 4-axis float accumulator. Represents a running affective state that can be
+updated, decayed, and queried. — `state.py:EmotionalState`
+
+| Method / Property | Returns | Description |
+|-------------------|---------|-------------|
+| `apply(emotion, weight=1.0)` | `self` | Add `weight * emotion.as_array` to internal vector |
+| `decay(factor=0.9)` | `self` | Multiply all axes by `factor` (simulates fading) |
+| `reset()` | `self` | Zero all axes |
+| `dominant()` | `Emotion \| None` | `closest_emotion(vector)`, or `None` if zero |
+| `snapshot()` | `np.ndarray` | Copy of current 4-axis float vector |
+| `valence()` | `float` | Pleasantness axis value |
+| `arousal()` | `float` | `max(abs(v))` across all axes |
+| `to_dict() / from_dict()` | `dict / EmotionalState` | Serialization |
+| `__add__(other)` | `EmotionalState` | Vector addition |
+| `__mul__(scalar)` | `EmotionalState` | Scalar multiplication |
+
+```python
+state = EmotionalState()
+state.apply(get_emotion("joy"), weight=0.8).apply(get_emotion("trust"), weight=0.5)
+state.decay(0.9)
+state.dominant()   # → Emotion or None
+state.valence()    # → float
+```
+
+### `EmotionTimeline`
+
+Ordered sequence of `EmotionalState` snapshots. — `state.py:EmotionTimeline`
+
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `append(state)` | `self` | Record a snapshot of `state` |
+| `drift()` | `np.ndarray` | `snapshots[-1] - snapshots[0]` |
+| `dominant_sequence()` | `list[Emotion \| None]` | `closest_emotion` for each snapshot |
+| `to_dict() / from_dict()` | `dict / EmotionTimeline` | Serialization |
+
+---
+
+## `emotion_algebra.distance`
+
+### `emotion_distance(a, b) → float`
+
+Euclidean distance between two `EmotionBase` objects in the 4-axis Hourglass space.
+`a.as_array` and `b.as_array` are cast to float before computation. — `distance.py:emotion_distance`
+
+### `closest_emotion(vector) → Emotion`
+
+Return the named `Emotion` in `EMOTIONS` nearest to `vector` (list or ndarray of 4 floats)
+by Euclidean distance. — `distance.py:closest_emotion`
+
+### `emotion_clusters(threshold=1.5) → list[list[Emotion]]`
+
+Greedy seed-based clustering of all 24 named emotions by Hourglass distance. — `distance.py:emotion_clusters`
+
+---
+
+## `emotion_algebra.appraisal`
+
+### `Appraisal`
+
+Dataclass encoding Scherer's Component Process Model (CPM) appraisal dimensions. — `appraisal.py:Appraisal`
+
+| Field | Type | Values |
+|-------|------|--------|
+| `novelty` | `str \| None` | `"expected"` / `"unexpected"` |
+| `goal_relevance` | `str \| None` | `"relevant"` / `"irrelevant"` |
+| `goal_congruence` | `str \| None` | `"congruent"` / `"incongruent"` |
+| `agency` | `str \| None` | `"self"` / `"other"` / `"circumstance"` |
+| `coping_potential` | `str \| None` | `"high"` / `"low"` |
+
+### `appraisal_to_emotion(appraisal) → Emotion`
+
+Maps an `Appraisal` to a primary emotion via a 16-rule table derived from Scherer (2001).
+Returns `Neutrality()` if no rule matches. — `appraisal.py:appraisal_to_emotion`
+
+```python
+a = Appraisal(goal_relevance="relevant", goal_congruence="incongruent",
+              agency="other", coping_potential="low")
+appraisal_to_emotion(a)   # → fear
+```
+
+---
+
+## `emotion_algebra.float_emotion`
+
+### `FloatEmotion`
+
+Continuous-valued point in the 4-axis Hourglass space. Subclasses `EmotionBase`;
+all arithmetic is float-precision. — `float_emotion.py:FloatEmotion`
+
+| Property | Returns | Description |
+|----------|---------|-------------|
+| `name` | `str` | Explicit name or `"~" + closest_emotion(vector).name` |
+| `as_array` | `np.ndarray[float]` | 4-element float vector |
+| `as_matrix` | `np.ndarray[float]` | 2×2 matrix |
+| `valence` | `float` | Pleasantness axis value |
+| `arousal` | `float` | `max(abs(v))` across all axes |
+| `emotional_flow` | `float` | Sum of all axis values |
+| `type` | `str` | Russell Circumplex category |
+
+**Constructors**:
+
+| Method | Description |
+|--------|-------------|
+| `FloatEmotion(sensitivity, attention, pleasantness, aptitude)` | Direct construction |
+| `FloatEmotion.from_embedding(vec, projection_matrix=None)` | Project ndarray into Hourglass space |
+| `FloatEmotion.from_emotion(emotion)` | Cast a discrete `Emotion` to float |
+
+Supports full arithmetic with `FloatEmotion`, `EmotionBase`, `int`, and `float` operands.
+
+---
+
+## `emotion_algebra.emoji`
+
+### `EMOJI_EMOTION_MAP`
+
+`MappingProxyType[str, str]` — ~90 Unicode emoji → Plutchik emotion name.
+Covers all 8 primary emotion axes at multiple intensity levels. — `emoji.py`
+
+### `from_emoji(emoji_char) → Emotion | None`
+
+Single emoji lookup. Strips whitespace; checks user registry before canonical map. — `emoji.py:from_emoji`
+
+### `score_emojis(text) → EmotionalState`
+
+Scan `text` character-by-character; each mapped emoji contributes weight=1.0 to the returned state. — `emoji.py:score_emojis`
+
+### `from_emojis(text) → Emotion | None`
+
+`score_emojis(text).dominant()`. Returns `None` if no mapped emoji found. — `emoji.py:from_emojis`
+
+### `register_emoji(emoji_char, emotion_name) → None`
+
+Add a runtime mapping that overrides `EMOJI_EMOTION_MAP`. Validates `emotion_name`; raises `ValueError` if unknown. — `emoji.py:register_emoji`
+
+### `unregister_emoji(emoji_char) → bool`
+
+Remove a runtime registration. Returns `True` if removed, `False` if absent. Canonical map is unaffected. — `emoji.py:unregister_emoji`
+
+### `DeepMojiAdapter`
+
+Converts `{emoji: probability}` distributions (as produced by DeepMoji / torchMoji) to named emotions. — `emoji.py:DeepMojiAdapter`
+
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `from_scores(scores)` | `Emotion \| None` | Blend distribution → dominant emotion |
+| `from_ranked(ranked, top_k=None)` | `Emotion \| None` | `[(emoji, score)]` input variant |
+| `score_state(scores)` | `EmotionalState` | Full blended state (no reduction to dominant) |
+
+---
+
+## `emotion_algebra.text`
+
+### `from_text(text) → Emotion | None`
+
+Tokenise `text`, look up each word in the bundled NRC/EmoLex-style CSV, return the most frequent matched emotion. — `text.py:from_text`
+
+### `score_text(text) → EmotionalState`
+
+All matching tokens apply to an `EmotionalState` with equal weight. Richer than `from_text`. — `text.py:score_text`
+
+### `score_mixed(text) → EmotionalState`
+
+Single-pass scoring combining word lexicon and emoji map. Recommended entry point for general text. — `text.py:score_mixed`
+
+### `from_mixed(text) → Emotion | None`
+
+`score_mixed(text).dominant()`. — `text.py:from_mixed`
+
+### `HFEmotionAdapter`
+
+Bridge to any HuggingFace `text-classification` pipeline with Plutchik-compatible labels. Requires `[transformers]` extra. — `text.py:HFEmotionAdapter`
+
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `from_text(text)` | `Emotion \| None` | Run pipeline → dominant emotion |
+| `from_scores(scores)` | `Emotion \| None` | Blend `{label: prob}` dict → dominant emotion |
+
+---
+
+## `emotion_algebra` (top-level)
+
+### `EmotionAnalyzer`
+
+Stateless facade exposing all sub-module entry points as `@staticmethod` methods. — `__init__.py:EmotionAnalyzer`
+
+All functions described above are also importable directly from `emotion_algebra`:
+
+```python
+from emotion_algebra import (
+    get_emotion, get_feeling, get_dimension,
+    EmotionalState, EmotionTimeline,
+    emotion_distance, closest_emotion, emotion_clusters,
+    from_text, score_text, score_mixed, from_mixed,
+    from_emoji, score_emojis, from_emojis,
+    register_emoji, unregister_emoji, DeepMojiAdapter,
+    Appraisal, appraisal_to_emotion,
+    FloatEmotion, EMOJI_EMOTION_MAP,
+)
+```

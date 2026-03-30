@@ -341,3 +341,19 @@ Remaining uncovered: 5 lines — all defensive legacy code; accepted as ceiling 
 
 ### Test results
 713 tests, 0 failures. feelings.py: 98% coverage. Overall: 94%.
+
+## 2026-03-30 — docs: comprehensive documentation + whitepaper
+
+**AI Model**: claude-sonnet-4-6
+**Oversight**: Human-directed; AI wrote all content.
+
+### Actions Taken
+
+- **README.md** — full rewrite: updated optional extras (removed deepmoji/paralleldots, added transformers), added feature overview table, full quick reference covering all v1.1–v1.7 APIs, CLI examples, all 6 scientific references
+- **docs/index.md** — rewritten: added all new modules to page index and key classes table; added model provenance table (Scherer CPM, Felbo 2017)
+- **docs/api_reference.md** — appended 7 new module sections: state, distance, appraisal, float_emotion, emoji, text, top-level `__init__`
+- **docs/state.md** — new: EmotionalState / EmotionTimeline API with worked example
+- **docs/text_emoji.md** — new: all 5 pipeline tiers (lexicon, emoji, mixed, DeepMoji, HuggingFace) with code examples and comparison table
+- **docs/cli.md** — new: info mode, expression mode, emoji shortcut, REPL
+- **docs/MAINTAINERS_GUIDE.md** — new: repo layout, dev setup, branching, release process, adding modules, emoji map extension policy, AI usage policy
+- **WHITEPAPER.md** — new: 10-section technical whitepaper covering theoretical foundations, design decisions, architecture, emoji-emotion mapping, evaluation, limitations, use cases, references
