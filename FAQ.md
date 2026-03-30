@@ -36,7 +36,25 @@ Use negation: `-anger == fear`, `-joy == sadness`.
 
 ## How does joy + trust produce love?
 
-When two emotions from **different** Hourglass dimensions are added, a `Feeling` dyad is created. The pair is looked up in `FEELING_NAMES` and the named feeling is returned.
+Per the spec, cross-axis `+` always returns a `CompositeEmotion`, never a `Feeling` directly.
+To get a named `Feeling`, use `Feeling("love")` or `get_feeling()` explicitly.
+
+## What is the difference between Feeling and CompositeEmotion?
+
+`CompositeEmotion` is the algebraic representation (a point in H spanning two axes).
+`Feeling` is a cultural/psychological label for a named multi-axis experience (Plutchik's dyads).
+The `+` operator always returns `CompositeEmotion`; `Feeling` is a separate named construct.
+
+## What is valence and how is it computed?
+
+`valence` = the **Pleasantness axis component** only. Anger (Sensitivity axis) has `valence=0`.
+This is correct: arousal (reactivity) and hedonics are orthogonal in all validated models
+(Posner et al. 2005). Only Pleasantness-axis emotions carry hedonic information.
+
+## What is arousal?
+
+`arousal = abs(emotional_flow)` — activation intensity, axis-independent. Range 0–3+.
+Maps to Russell's (1980) arousal dimension.
 
 ## What Python versions are supported?
 

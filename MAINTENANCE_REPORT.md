@@ -116,3 +116,38 @@ Excluded from coverage: `deepmoji.py`, `tag.py` (optional external integrations)
 | `plutchik.py`, `composite_emotions.py` | Module docstrings document Plutchik vs Cambria provenance and known limitations |
 
 ### Post-fix coverage: 90% (375 tests, 0 failures)
+
+---
+
+## 2026-03-30 — Phase 4: Scientific Specification Implementation
+
+**AI Model**: claude-sonnet-4-6
+**Oversight**: Human-directed; AI executed all changes.
+
+### Changes
+
+| Area | Change |
+|---|---|
+| `SPECIFICATION.md` | Created — normative scientific contract for the library (Cambria + Plutchik + Russell) |
+| `plutchik.py` | `Emotion.valence` now returns Pleasantness component only (anger → 0, joy → +2) |
+| `plutchik.py` | `Emotion.arousal` new property: `abs(emotional_flow)` |
+| `plutchik.py` | `Emotion.type` rewritten: Russell (1980) Circumplex (6 categories, not heuristic) |
+| `plutchik.py` | `_circumplex_type()` module-level helper; shared by all `type` properties |
+| `plutchik.py` | `EmotionalDimension.valence`: Sensitivity=0, Attention=0 (reactivity ⊥ hedonics) |
+| `plutchik.py` | `EmotionalDimension.kind`: "hedonic" / "activation" (replaces "positive"/"negative") |
+| `plutchik.py` | `Emotion.__add__` cross-axis: returns `CompositeEmotion` (not `Feeling`) |
+| `composite_emotions.py` | `CompositeEmotion.valence`: sum of Pleasantness components |
+| `composite_emotions.py` | `CompositeEmotion.arousal`: max `|e.emotional_flow|` across components |
+| `composite_emotions.py` | `CompositeEmotion.type`: Russell Circumplex |
+| `feelings.py` | `Feeling.valence`: sum of `e.valence` (Pleasantness only) |
+| `feelings.py` | `Feeling.arousal`: new property — max `e.arousal` across components |
+| `feelings.py` | `Feeling.type`: new property — Russell Circumplex |
+| Tests | Updated 8 tests to reflect spec; added 13 new Circumplex/arousal tests |
+
+### Scientific justification
+- Valence = Pleasantness only: Posner et al. (2005) — arousal and valence are orthogonal in all validated models
+- Arousal = |flow|: Russell (1980) Circumplex arousal dimension
+- Type = Circumplex quadrants: Russell (1980), Barrett & Russell (1999)
+- Sensitivity=0 valence: Öhman (1986) — anger is approach, fear is avoidance; neither is inherently pleasant
+
+### Post-fix: 395 tests, 0 failures

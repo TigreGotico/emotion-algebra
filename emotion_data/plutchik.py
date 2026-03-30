@@ -18,14 +18,15 @@ This module blends two distinct theoretical frameworks:
     - Designed for computational sentiment analysis, not psychological modelling.
     - Source: ``HOURGLASS_OF_EMOTIONS``, ``EmotionalDimension``, ``Emotion.emotional_flow``.
 
-Where the library departs from both models
-------------------------------------------
-- ``Emotion.type`` and ``CompositeEmotion.type`` use hand-crafted heuristics
-  (labelled with ``# TODO science this``), not derived from either paper.
-- ``EmotionalDimension.valence`` assigns fixed ±1/0 valence to axes — a
-  simplification not present in Cambria's original scoring.
-- Single-axis valence cannot distinguish arousal from pleasantness (PAD model
-  is out of scope).
+Design decisions (per SPECIFICATION.md)
+----------------------------------------
+- ``Emotion.valence`` = Pleasantness axis component **only**.  Anger (Sensitivity)
+  has valence=0 because arousal and valence are orthogonal (Posner et al. 2005).
+- ``Emotion.arousal`` = ``|emotional_flow|`` — activation intensity, axis-independent.
+- ``Emotion.type`` uses Russell's (1980) Circumplex quadrants: excited/calm ×
+  positive/negative, activated neutral, neutral.
+- ``EmotionalDimension.valence``: Sensitivity=0, Attention=0 (reactivity ⊥ hedonics).
+- Cross-axis ``+`` returns :class:`~emotion_data.composite_emotions.CompositeEmotion`.
 - Behaviour → Emotion mapping skips the cognitive appraisal layer (Lazarus 1991).
 
 Classes
@@ -45,6 +46,35 @@ from typing import Union
 import numpy as np
 
 from emotion_data.reference_maps import EMOTION_CONTRASTS
+
+
+def _circumplex_type(valence: int, arousal: int) -> str:
+    """Russell (1980) Circumplex classification from valence and arousal.
+
+    Parameters
+    ----------
+    valence:
+        Hedonic tone (Pleasantness component).  Positive = pleasant, negative = unpleasant.
+    arousal:
+        Activation intensity (|emotional_flow|).  0 = inert, 1 = low, 2–3 = high.
+
+    Returns
+    -------
+    str
+        One of: ``"neutral"``, ``"activated neutral"``, ``"excited positive"``,
+        ``"excited negative"``, ``"calm positive"``, ``"calm negative"``.
+    """
+    if arousal == 0:
+        return "neutral"
+    if valence == 0:
+        return "activated neutral"
+    if valence > 0 and arousal > 1:
+        return "excited positive"
+    if valence < 0 and arousal > 1:
+        return "excited negative"
+    if valence > 0:
+        return "calm positive"
+    return "calm negative"
 
 
 PRIMARY_EMOTION_NAMES = ["serenity", "pensiveness", "acceptance", "boredom", "apprehension", "annoyance", "distraction",
@@ -200,47 +230,20 @@ class Emotion(object):
         return self.intensity_offset > 0
 
     @property
-    def type(self):
-        types = []
-        valence = 0
-        dim = self.dimension
+    def type(self) -> str:
+        """Russell (1980) Circumplex classification.
 
-        # type by dimension
-        if "sensitivity" in dim.axis and abs(self.emotional_flow) > 1:
-            types.append("lively")
-        if "attention" in dim.axis and abs(self.emotional_flow) > 1:
-            types.append("strong")
+        Uses ``self.valence`` (Pleasantness component) and ``self.arousal``
+        (``|emotional_flow|``) to place this emotion in one of six categories:
 
-        # valence by dimension
-        if "sensitivity" in dim.axis:
-            valence -= abs(self.emotional_flow)
-        if "attention" in dim.axis:
-            valence += abs(self.emotional_flow)
-        if "pleasantness" in dim.axis and self.emotional_flow:
-            valence += self.emotional_flow
-        if "pleasantness" in dim.axis and not self.emotional_flow:
-            valence -= self.emotional_flow
-        if "aptitude" in dim.axis and self.emotional_flow:
-            valence += self.emotional_flow
-        if "aptitude" in dim.axis and not self.emotional_flow:
-            valence -= self.emotional_flow
-
-        # type by column/dyad
-        if abs(self.emotional_flow) == 2:
-            types.append("not in control")
-        elif abs(self.emotional_flow) == 1:
-            types.append("quiet")
-        elif abs(self.emotional_flow) == 3:
-            types.append("forceful")
-
-        # type by valence
-        if valence > 0:
-            types.insert(0, "positive")
-        elif valence == 0:
-            types.insert(0, "neutral")
-        else:
-            types.insert(0, "negative")
-        return " and ".join(types)
+        - ``"excited positive"``  — high arousal, pleasant (joy, ecstasy)
+        - ``"excited negative"``  — high arousal, unpleasant (grief, sadness)
+        - ``"calm positive"``     — low arousal, pleasant (serenity)
+        - ``"calm negative"``     — low arousal, unpleasant (pensiveness)
+        - ``"activated neutral"`` — nonzero arousal, no hedonic polarity (anger, fear)
+        - ``"neutral"``           — zero arousal (Neutrality)
+        """
+        return _circumplex_type(self.valence, self.arousal)
 
 
     @property
@@ -270,17 +273,30 @@ class Emotion(object):
 
     @property
     def valence(self) -> int:
-        """Signed valence: +1 for positive-flow emotions, -1 for negative-flow, 0 for neutral.
+        """Hedonic tone: the Pleasantness axis component only.
 
-        Note: this is a coarse 3-class approximation.  Full dimensional valence
-        (Russell's Circumplex, PAD model) is outside the scope of this library.
+        Per Cambria (2012), Pleasantness is the hedonic axis.  Emotions on
+        Sensitivity or Attention axes return 0 — reactivity is orthogonal to
+        hedonics (Posner et al. 2005, Russell 1980).
+
+        Examples
+        --------
+        joy.valence   → +2  (Pleasantness +2)
+        anger.valence → 0   (Sensitivity axis, no hedonic component)
+        sadness.valence → -2
         """
-        flow = self.emotional_flow
-        if flow > 0:
-            return 1
-        if flow < 0:
-            return -1
+        if self._dimension and self._dimension.axis == "pleasantness":
+            return self.emotional_flow
         return 0
+
+    @property
+    def arousal(self) -> int:
+        """Activation intensity: ``|emotional_flow|``, axis-independent.
+
+        Maps to the arousal dimension of Russell's Circumplex (1980).
+        Range: 0 (neutral) to 3 (intense), higher for hyper-emotions.
+        """
+        return abs(self.emotional_flow)
 
     @property
     def intensity(self) -> str:
@@ -397,15 +413,14 @@ class Emotion(object):
         if isinstance(other, Neutrality):
             return deepcopy(self)
 
-        # create feeling
         if isinstance(other, Emotion):
             if other._dimension == self._dimension:
                 flow = other.emotional_flow + self.emotional_flow
                 return self.emotion_from_flow(flow)
-            from emotion_data.feelings import Feeling
-            feel = Feeling()
-            feel.emotions = [copy(self), other]
-            return feel
+            # Cross-axis: return CompositeEmotion (spec §3.3)
+            from emotion_data.composite_emotions import CompositeEmotion
+            c = CompositeEmotion()
+            return c + self + other
 
         from emotion_data.feelings import Feeling
         if isinstance(other, Feeling):
@@ -712,27 +727,25 @@ class EmotionalDimension(object):
 
     @property
     def valence(self) -> int:
-        """Heuristic signed valence for this axis: sensitivity→-1, attention→+1, others→0.
+        """Hedonic sign of the positive pole of this dimension.
 
-        .. note::
-            This is a hand-crafted approximation, not derived from Cambria's original
-            Hourglass scoring.  Pleasantness and aptitude are assigned 0 here, which
-            understates their contribution to overall affect.
+        Pleasantness is explicitly hedonic (+1).  Aptitude (competence) carries
+        a social-hedonic valence (+1 = desirable, -1 = aversive) per Cambria (2012).
+        Sensitivity (reactivity: anger/fear) and Attention (engagement: vigilance/
+        surprise) encode arousal, which is orthogonal to hedonics (Posner et al. 2005).
         """
-        if "sensitivity" in self.axis:
-            return -1
-        if "attention" in self.axis:
+        if self.axis == "pleasantness":
+            return 1
+        if self.axis == "aptitude":
             return 1
         return 0
 
     @property
-    def kind(self):
-        # type by dimension
-        if "sensitivity" in self.axis:
-            return "negative"
-        if "attention" in self.axis:
-            return "positive"
-        return "neutral"
+    def kind(self) -> str:
+        """Hedonic classification of this axis."""
+        if self.axis in ("pleasantness", "aptitude"):
+            return "hedonic"
+        return "activation"
 
     def __str__(self):
         return self.name

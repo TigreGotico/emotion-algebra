@@ -11,10 +11,12 @@ The library blends two distinct academic frameworks:
 | **Plutchik's Wheel of Emotions** (1980) | Robert Plutchik | Named dyad composition (joy+trust→love), opposite pairs, 8-primary structure |
 | **Hourglass of Emotions** (2012) | Cambria, Livingstone, Hussain | 4-axis signed-integer scale (PASA), `emotional_flow`, `EmotionalDimension` |
 
-**Known departures and limitations:**
-- `Emotion.type` and `CompositeEmotion.type` use hand-crafted heuristics, not model derivations.
-- `EmotionalDimension.valence` is a simplification (sensitivity→−1, attention→+1, others→0).
-- Valence is a single signed integer. Full PAD (Pleasure–Arousal–Dominance) is out of scope.
+**Design decisions (per SPECIFICATION.md):**
+- `Emotion.valence` = Pleasantness axis value only. Anger/fear valence = 0 (arousal ⊥ hedonics).
+- `Emotion.arousal` = `|emotional_flow|` — new property; axis-independent activation intensity.
+- `Emotion.type` / `CompositeEmotion.type` use Russell's (1980) Circumplex quadrants.
+- `EmotionalDimension.valence`: Pleasantness=+1, Aptitude=+1, Sensitivity=0, Attention=0.
+- Cross-axis `+` returns `CompositeEmotion`; `Feeling` is created explicitly via `Feeling(name)`.
 - Behaviours map directly from emotions; the cognitive appraisal layer (Lazarus 1991) is omitted.
 
 ## Installation

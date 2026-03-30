@@ -81,26 +81,28 @@ class TestEmotionalDimension:
         d = DIMENSIONS["sensitivity"]
         assert "sensitivity" in repr(d)
 
-    def test_sensitivity_valence_is_negative(self):
-        assert DIMENSIONS["sensitivity"].valence == -1
+    def test_sensitivity_valence_is_zero(self):
+        # reactivity is orthogonal to hedonics (Posner et al. 2005)
+        assert DIMENSIONS["sensitivity"].valence == 0
 
-    def test_attention_valence_is_positive(self):
-        assert DIMENSIONS["attention"].valence == 1
+    def test_attention_valence_is_zero(self):
+        # engagement is orthogonal to hedonics (Posner et al. 2005)
+        assert DIMENSIONS["attention"].valence == 0
 
-    def test_pleasantness_valence_is_zero(self):
-        assert DIMENSIONS["pleasantness"].valence == 0
+    def test_pleasantness_valence_is_positive(self):
+        assert DIMENSIONS["pleasantness"].valence == 1
 
-    def test_aptitude_valence_is_zero(self):
-        assert DIMENSIONS["aptitude"].valence == 0
+    def test_aptitude_valence_is_positive(self):
+        assert DIMENSIONS["aptitude"].valence == 1
 
-    def test_sensitivity_kind_is_negative(self):
-        assert DIMENSIONS["sensitivity"].kind == "negative"
+    def test_sensitivity_kind_is_activation(self):
+        assert DIMENSIONS["sensitivity"].kind == "activation"
 
-    def test_attention_kind_is_positive(self):
-        assert DIMENSIONS["attention"].kind == "positive"
+    def test_attention_kind_is_activation(self):
+        assert DIMENSIONS["attention"].kind == "activation"
 
-    def test_pleasantness_kind_is_neutral(self):
-        assert DIMENSIONS["pleasantness"].kind == "neutral"
+    def test_pleasantness_kind_is_hedonic(self):
+        assert DIMENSIONS["pleasantness"].kind == "hedonic"
 
     def test_dimension_eq_by_name(self):
         d = DIMENSIONS["sensitivity"]
@@ -292,6 +294,49 @@ class TestEmotionTypeKind:
         t = joy.type
         assert any(w in t for w in ("positive", "negative", "neutral"))
 
+    # Russell Circumplex — spec §2.1
+    def test_joy_is_excited_positive(self):
+        assert copy(EMOTIONS["joy"]).type == "excited positive"
+
+    def test_ecstasy_is_excited_positive(self):
+        assert copy(EMOTIONS["ecstasy"]).type == "excited positive"
+
+    def test_serenity_is_calm_positive(self):
+        assert copy(EMOTIONS["serenity"]).type == "calm positive"
+
+    def test_grief_is_excited_negative(self):
+        assert copy(EMOTIONS["grief"]).type == "excited negative"
+
+    def test_sadness_is_excited_negative(self):
+        assert copy(EMOTIONS["sadness"]).type == "excited negative"
+
+    def test_pensiveness_is_calm_negative(self):
+        assert copy(EMOTIONS["pensiveness"]).type == "calm negative"
+
+    def test_anger_is_activated_neutral(self):
+        assert copy(EMOTIONS["anger"]).type == "activated neutral"
+
+    def test_fear_is_activated_neutral(self):
+        assert copy(EMOTIONS["fear"]).type == "activated neutral"
+
+    def test_anticipation_is_activated_neutral(self):
+        assert copy(EMOTIONS["anticipation"]).type == "activated neutral"
+
+    def test_neutrality_type_is_neutral(self):
+        assert Neutrality().type == "neutral"
+
+    # arousal property — spec §2.1
+    def test_anger_arousal_is_abs_flow(self):
+        anger = copy(EMOTIONS["anger"])
+        assert anger.arousal == abs(anger.emotional_flow) == 2
+
+    def test_fear_arousal_is_abs_flow(self):
+        fear = copy(EMOTIONS["fear"])
+        assert fear.arousal == abs(fear.emotional_flow) == 2
+
+    def test_neutrality_arousal_is_zero(self):
+        assert Neutrality().arousal == 0
+
     def test_kind_returns_string_or_empty(self, anger):
         k = anger.kind
         assert isinstance(k, str)
@@ -361,10 +406,10 @@ class TestEmotionArithmetic:
         result = annoyance + annoyance
         assert result.emotional_flow == 2
 
-    def test_add_different_dim_creates_feeling(self, joy, trust):
-        from emotion_data.feelings import Feeling
+    def test_add_different_dim_creates_composite(self, joy, trust):
+        from emotion_data.composite_emotions import CompositeEmotion
         result = joy + trust
-        assert isinstance(result, Feeling)
+        assert isinstance(result, CompositeEmotion)
 
     def test_add_neutrality_returns_self(self, anger):
         result = anger + Neutrality()

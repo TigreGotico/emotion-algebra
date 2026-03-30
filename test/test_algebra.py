@@ -96,23 +96,20 @@ class TestHyperintensity:
 # ---------------------------------------------------------------------------
 
 class TestComposition:
-    def test_joy_plus_trust_returns_feeling_named_love(self) -> None:
-        from emotion_data.feelings import Feeling
+    def test_joy_plus_trust_returns_composite(self) -> None:
+        from emotion_data.composite_emotions import CompositeEmotion
         result = emo("joy") + emo("trust")
-        assert isinstance(result, Feeling), f"Expected Feeling, got {type(result)}"
-        assert result.name == "love", f"Expected 'love', got {result.name!r}"
+        assert isinstance(result, CompositeEmotion), f"Expected CompositeEmotion, got {type(result)}"
 
-    def test_joy_plus_surprise_returns_feeling_named_delight(self) -> None:
-        from emotion_data.feelings import Feeling
+    def test_joy_plus_surprise_returns_composite(self) -> None:
+        from emotion_data.composite_emotions import CompositeEmotion
         result = emo("joy") + emo("surprise")
-        assert isinstance(result, Feeling), f"Expected Feeling, got {type(result)}"
-        assert result.name == "delight", f"Expected 'delight', got {result.name!r}"
+        assert isinstance(result, CompositeEmotion), f"Expected CompositeEmotion, got {type(result)}"
 
-    def test_fear_plus_sadness_returns_feeling_named_despair(self) -> None:
-        from emotion_data.feelings import Feeling
+    def test_fear_plus_sadness_returns_composite(self) -> None:
+        from emotion_data.composite_emotions import CompositeEmotion
         result = emo("fear") + emo("sadness")
-        assert isinstance(result, Feeling), f"Expected Feeling, got {type(result)}"
-        assert result.name == "despair", f"Expected 'despair', got {result.name!r}"
+        assert isinstance(result, CompositeEmotion), f"Expected CompositeEmotion, got {type(result)}"
 
 
 # ---------------------------------------------------------------------------
@@ -150,18 +147,43 @@ class TestEmotionVectors:
 # ---------------------------------------------------------------------------
 
 class TestValence:
-    def test_joy_has_positive_valence(self) -> None:
-        assert emo("joy").valence == 1
+    def test_joy_valence_is_pleasantness_flow(self) -> None:
+        # joy is Pleasantness +2
+        assert emo("joy").valence == 2
 
-    def test_sadness_has_negative_valence(self) -> None:
-        assert emo("sadness").valence == -1
+    def test_ecstasy_valence_is_plus_3(self) -> None:
+        assert emo("ecstasy").valence == 3
+
+    def test_serenity_valence_is_plus_1(self) -> None:
+        assert emo("serenity").valence == 1
+
+    def test_sadness_valence_is_minus_2(self) -> None:
+        assert emo("sadness").valence == -2
+
+    def test_grief_valence_is_minus_3(self) -> None:
+        assert emo("grief").valence == -3
+
+    def test_pensiveness_valence_is_minus_1(self) -> None:
+        assert emo("pensiveness").valence == -1
 
     def test_neutrality_valence_is_zero(self) -> None:
         assert Neutrality().valence == 0
 
-    def test_fear_valence_is_negative(self) -> None:
-        # fear has negative flow on the sensitivity axis
-        assert emo("fear").valence == -1
+    def test_anger_valence_is_zero(self) -> None:
+        # Sensitivity axis — arousal is orthogonal to hedonics
+        assert emo("anger").valence == 0
+
+    def test_fear_valence_is_zero(self) -> None:
+        # Sensitivity axis — arousal is orthogonal to hedonics
+        assert emo("fear").valence == 0
+
+    def test_anticipation_valence_is_zero(self) -> None:
+        # Attention axis — engagement is orthogonal to hedonics
+        assert emo("anticipation").valence == 0
+
+    def test_trust_valence_is_zero(self) -> None:
+        # Aptitude axis — not Pleasantness, so valence = 0
+        assert emo("trust").valence == 0
 
 
 # ---------------------------------------------------------------------------

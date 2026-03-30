@@ -36,7 +36,7 @@ from typing import List, Optional, Union
 
 import numpy as np
 
-from emotion_data.plutchik import Emotion, EmotionalDimension, DIMENSIONS, Neutrality
+from emotion_data.plutchik import Emotion, EmotionalDimension, DIMENSIONS, Neutrality, _circumplex_type
 from emotion_data.feelings import Feeling
 
 
@@ -204,54 +204,28 @@ class CompositeEmotion(Emotion):
         return "neutrality"
 
     @property
-    def type(self) -> str:
-        """Heuristic type label based on net flow sign and axis combination.
+    def valence(self) -> int:
+        """Pleasantness-axis sum across all components (spec §2.4).
 
-        .. warning::
-            This is an approximation, not a derivation from Plutchik or Cambria.
-            The categories (forceful, caring, quiet, not in control) are
-            hand-crafted and should not be treated as scientifically grounded.
+        Only components on the Pleasantness axis contribute to hedonic tone.
         """
-        types = []
-        valence = 0
-        for dim in self.dimensions:
-            if self.emotional_flow < 0:  # 2 x low
-                if "attention" in dim.axis:
-                    valence -= 1
-                    if "not in control" not in types:
-                        types.append("not in control")
-                if "aptitude" in dim.axis:
-                    valence -= 1
-                    if "forceful" not in types:
-                        types.append("forceful")
-            elif self.emotional_flow == 0:  # low + high
-                if "attention" in dim.axis:
-                    valence -= 1
-                    if "forceful" not in types:
-                        types.append("forceful")
+        return sum(
+            e.emotional_flow
+            for e in self.components
+            if e._dimension and e._dimension.axis == "pleasantness"
+        )
 
-                if "aptitude" in dim.axis:
-                    valence -= 1
-                    if "not in control" not in types:
-                        types.append("not in control")
-            else:  # 2 x high
-                if "aptitude" in dim.axis:
-                    valence += 1
-                    if "caring" not in types:
-                        types.append("caring")
-                if "sensitivity" in dim.axis:
-                    valence -= 1
-                    if "not in control" not in types:
-                        types.append("not in control")
-                if "pleasantness" in dim.axis:
-                    valence += 1
-                    if "quiet" not in types:
-                        types.append("quiet")
-        if valence:
-            return "positive " + " and ".join(types)
-        elif valence == 0:
-            return "neutral " + " and ".join(types)
-        return "negative " + " and ".join(types)
+    @property
+    def arousal(self) -> int:
+        """Peak activation across all components: ``max(|e.emotional_flow|)``."""
+        if not self.components:
+            return 0
+        return max(abs(e.emotional_flow) for e in self.components)
+
+    @property
+    def type(self) -> str:
+        """Russell (1980) Circumplex classification using composite valence and arousal."""
+        return _circumplex_type(self.valence, self.arousal)
 
     @property
     def kind(self):

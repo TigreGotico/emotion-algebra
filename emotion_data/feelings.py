@@ -172,13 +172,24 @@ class Feeling(object):
 
     @property
     def valence(self) -> int:
-        """Aggregate valence: ``1`` positive, ``-1`` negative, ``0`` neutral."""
-        flows = sum([e.emotional_flow for e in self.emotion_vector])
-        if flows < 0:
-            return -1
-        if flows > 0:
-            return 1
-        return 0
+        """Pleasantness-axis sum across all component emotions (spec §2.5).
+
+        Only emotions on the Pleasantness axis contribute to hedonic tone.
+        """
+        return sum(e.valence for e in self.emotions)
+
+    @property
+    def arousal(self) -> int:
+        """Peak activation across component emotions: ``max(|e.emotional_flow|)``."""
+        if not self.emotions:
+            return 0
+        return max(e.arousal for e in self.emotions)
+
+    @property
+    def type(self) -> str:
+        """Russell (1980) Circumplex classification using feeling valence and arousal."""
+        from emotion_data.plutchik import _circumplex_type
+        return _circumplex_type(self.valence, self.arousal)
 
     def __int__(self):
         return int(self.emotional_flow)
