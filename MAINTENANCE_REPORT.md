@@ -46,3 +46,47 @@
 - `test/test_algebra.py`
 - `docs/index.md`
 - `MAINTENANCE_REPORT.md` (this file)
+
+---
+
+## 2026-03-30 — Phase 2 Production Pass (90% coverage)
+
+**AI Model**: claude-sonnet-4-6
+**Oversight**: Human-directed; AI executed all changes.
+
+### Bug Fixes
+
+| File | Line | Bug | Fix |
+|------|------|-----|-----|
+| `plutchik.py` | 497-500 | `Emotion.__bool__` returned `numpy.bool_` (TypeError in Python 3.11+) | Return `bool(...)` explicitly |
+| `behaviour.py` | 139 | `if e:` silently skips negative-flow emotions (fear, terror) in `_get_behaviours()` | `if e is not None:` |
+| `emotions.py` | 70 | `if emotion:` same negative-flow skip bug in `emotion_to_dimension()` | `if emotion is not None:` |
+| `behaviour.py` | 172 | `from_data({})` raises `KeyError` on missing `'behaviour'` key | Graceful fallback when key absent |
+
+### Test Suite Added
+
+374 tests across 5 new files; all pass. Core coverage: 90% total.
+
+| File | Tests | Coverage |
+|------|-------|----------|
+| `test/test_plutchik.py` | ~100 | 90% (`plutchik.py`) |
+| `test/test_feelings.py` | ~80 | 88% (`feelings.py`) |
+| `test/test_composite.py` | ~120 | 90% (`composite_emotions.py`) |
+| `test/test_behaviour.py` | ~30 | 93% (`behaviour.py`) |
+| `test/test_emotions_module.py` | ~44 | 87% (`__init__.py`), 82% (`emotions.py`), 86% (`lexicons.py`) |
+
+Excluded from coverage: `deepmoji.py`, `tag.py` (optional external integrations) — configured in `.coveragerc`.
+
+### Files Created
+- `.coveragerc`
+- `test/test_plutchik.py`
+- `test/test_feelings.py`
+- `test/test_composite.py`
+- `test/test_behaviour.py`
+- `test/test_emotions_module.py`
+
+### Files Modified
+- `emotion_data/plutchik.py` — `__bool__` bug fix
+- `emotion_data/behaviour.py` — `if e is not None:` + `from_data()` guard
+- `emotion_data/emotions.py` — `if emotion is not None:`
+- `FAQ.md` — documented bugs, tests, coverage

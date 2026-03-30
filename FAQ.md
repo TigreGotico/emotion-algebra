@@ -44,7 +44,25 @@ Python 3.10 and above.
 
 ## Where are the tests?
 
-`test/test_algebra.py` — covers all core algebra operators, composition, vectors, valence, and comparison.
+Five test files in `test/`:
+- `test_plutchik.py` — `Emotion`, `Neutrality`, `EmotionalDimension` (all operators, classification, vectors)
+- `test_feelings.py` — `Feeling`, `FEELINGS`, factory functions, arithmetic
+- `test_composite.py` — `CompositeEmotion`, `CompositeDimension` (construction, dimension properties, operators)
+- `test_behaviour.py` — `Behaviour`, `BehavioralReaction`, `BEHAVIOURS`, `REACTIONS`
+- `test_emotions_module.py` — `emotions.py`, `lexicons.py`, `EmotionAnalyzer`
+
+Run: `python -m pytest test/ --cov=emotion_data --cov-config=.coveragerc`
+
+## What is the coverage target?
+
+90%+ on core modules. `deepmoji.py` and `tag.py` are excluded (optional external integrations).
+
+## Known bugs fixed in production pass
+
+- `Emotion.__bool__` was returning `numpy.bool_` (not Python `bool`), causing `TypeError` in Python 3.11+.
+- `_get_behaviours()` used `if e:` to guard emotion lookup, silently skipping negative-flow emotions (fear, terror). Fixed to `if e is not None:`.
+- `emotion_to_dimension()` had the same `if emotion:` guard bug.
+- `BehavioralReaction.from_data({})` crashed with `KeyError` on missing `'behaviour'` key.
 
 ## What is the emotional_flow property?
 
