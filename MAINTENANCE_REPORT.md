@@ -391,3 +391,23 @@ Remaining uncovered: 5 lines — all defensive legacy code; accepted as ceiling 
 
 ### Test results
 735 tests, 0 failures.
+
+---
+
+## 2026-03-30 — v1.0.0 Release Preparation
+
+**AI Model**: Claude Sonnet 4.6
+**Actions Taken**:
+- Built canonical 50k-entry lexicon merging NRC EmoLex + SenticNet 6 + AFINN-111 + original CSV
+- Added Hourglass float axes (pleasantness/attention/aptitude/sensitivity) and afinn_score columns
+- New accessors: `get_afinn_score()`, `get_hourglass()`, `get_float_emotion()`
+- Added `DeepMojiONNXAdapter` in `emotion_algebra/deepmoji.py`; `deepmoji-onnx` made canonical dependency
+- Removed `HFEmotionAdapter` and `[transformers]` extra
+- Added `emotion_algebra/version.py` with OVOS version block
+- Applied 11 standard OVOS GitHub Actions workflows via `ovos-workflows-adder`
+- Added type hints to 6 public API functions (final audit fix)
+- Removed local `[tool.uv.sources]` path override for deepmoji-onnx (now on PyPI)
+- Fixed README extras table; updated AUDIT.md security section
+
+**Test Results**: 753 passed, 0 failed — 94% coverage
+**Oversight**: AI-generated; human review required before pushing to GitHub

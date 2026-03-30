@@ -1,7 +1,13 @@
+from __future__ import annotations
+
 import random
+from typing import Optional, TYPE_CHECKING
 from types import MappingProxyType
 
 from emotion_algebra.plutchik import DIMENSIONS
+
+if TYPE_CHECKING:
+    from emotion_algebra.plutchik import Emotion, EmotionalDimension
 
 
 def _get_emotion_map():
@@ -53,15 +59,18 @@ KIND_TO_EMOTION_MAP = {
 }
 
 
-def random_emotion():
+def random_emotion() -> "Emotion":
+    """Return a random :class:`~emotion_algebra.plutchik.Emotion` from the 24 primary emotions."""
     return EMOTIONS.get(random.choice(list(EMOTIONS.keys())))
 
 
-def get_emotion(emotion_name):
+def get_emotion(emotion_name: str) -> Optional["Emotion"]:
+    """Return the :class:`~emotion_algebra.plutchik.Emotion` for *emotion_name*, or ``None``."""
     return EMOTIONS.get(emotion_name)
 
 
-def get_dimension(dimension_name):
+def get_dimension(dimension_name: str) -> Optional["EmotionalDimension"]:
+    """Return the :class:`~emotion_algebra.plutchik.EmotionalDimension` for *dimension_name*, or ``None``."""
     return DIMENSIONS.get(dimension_name)
 
 

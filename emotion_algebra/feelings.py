@@ -461,11 +461,13 @@ def _get_feelings():
 FEELINGS: MappingProxyType = MappingProxyType(_get_feelings())
 
 
-def get_feeling(name):
+def get_feeling(name: str) -> Optional["Feeling"]:
+    """Return the :class:`Feeling` for *name*, or ``None`` if not found."""
     return FEELINGS.get(name)
 
 
-def random_feeling():
+def random_feeling() -> "Feeling":
+    """Return a random :class:`Feeling` from the named dyads."""
     return FEELINGS[random.choice(list(FEELINGS.keys()))]
 
 

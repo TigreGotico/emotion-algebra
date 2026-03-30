@@ -1,7 +1,7 @@
 # AUDIT.md — emotion-algebra
 
 Evidence-based register of technical debt, known issues, and security observations.
-Updated: 2026-03-30 (v1.0.1).
+Updated: 2026-03-30 (v1.0.0 release).
 
 ---
 
@@ -59,11 +59,16 @@ Lazy-import guard is correct; zero coverage of these paths in the default test r
 | R-024 | `register_emoji` / `unregister_emoji` — runtime emoji map extensibility | v1.7 |
 | R-025 | CLI emoji support — single emoji args dispatched via `score_emojis` | v1.7 |
 | R-026 | feelings.py coverage raised from 94% to 98%; 5 unreachable legacy branches documented | v1.7 |
+| R-027 | word_emotion_lexicon.csv replaced with 50k canonical merged lexicon (NRC+SenticNet+AFINN+original) | v1.9 |
+| R-028 | `deepmoji-onnx` added as canonical dep; `HFEmotionAdapter` removed; `DeepMojiONNXAdapter` is sole neural engine | v1.9 |
+| R-029 | Missing type hints on `get_emotion`, `get_dimension`, `random_emotion`, `get_feeling`, `random_feeling`, `appraisal_to_emotion` | v1.9 |
+| R-030 | README `[transformers]` extra row corrected to `[fast]` | v1.9 |
+| R-031 | `version.py` added with OVOS version block; OVOS standard CI/CD workflows added | v1.9 |
 
 ---
 
 ## Security
 
-No network I/O, no file-system writes, no `exec`/`eval` in the core library.
-The optional `[transformers]` extra loads a HuggingFace model via the `transformers` pipeline;
-model weights are downloaded to the HF cache on first use.
+No `exec`/`eval` in the core library.
+`deepmoji-onnx` (canonical dep): downloads model weights from HuggingFace on first use, cached to `~/.cache/deepmoji`.
+`scripts/build_lexicon.py`: downloads AFINN-111 from GitHub, cached to `~/.local/share/emotion-algebra/lexicons/`. Not run at import time; bundled CSV is the runtime artifact.

@@ -20,7 +20,10 @@ Oxford University Press.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Optional, Literal
+from typing import Optional, Literal, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from emotion_algebra.base import EmotionBase
 
 NoveltyT     = Literal["expected", "unexpected"]
 RelevanceT   = Literal["relevant", "irrelevant"]
@@ -114,7 +117,7 @@ def _matches(rule: tuple, appraisal: Appraisal) -> bool:
     return True
 
 
-def appraisal_to_emotion(appraisal: Appraisal):
+def appraisal_to_emotion(appraisal: Appraisal) -> "EmotionBase":
     """Map a cognitive :class:`Appraisal` to the best-fit primary emotion.
 
     Checks rules top-to-bottom (first match wins).  Returns

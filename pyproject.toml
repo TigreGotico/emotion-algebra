@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "emotion-algebra"
-version = "1.0.0"
+dynamic = ["version"]
 description = "Emotion algebra based on Plutchik's Wheel and Cambria's Hourglass of Emotions — signed integer arithmetic over a 4-axis affective space"
 license = { text = "Apache-2.0" }
 authors = [{ name = "jarbasAI", email = "jarbasai@mailfence.com" }]
@@ -14,9 +14,6 @@ dependencies = [
     "numpy",
     "deepmoji-onnx>=0.1.0",
 ]
-
-[tool.uv.sources]
-deepmoji-onnx = { path = "../../Machine Learning Workspace/deepmoji-onnx", editable = true }
 
 [project.optional-dependencies]
 lexicon = [
@@ -35,6 +32,9 @@ Homepage = "https://github.com/JarbasAl/emotion-algebra"
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["emotion_algebra*"]
+
+[tool.setuptools.dynamic]
+version = {attr = "emotion_algebra.version.__version__"}
 
 [tool.setuptools.package-data]
 emotion_algebra = ["*.csv"]

@@ -1,3 +1,21 @@
+Metadata-Version: 2.4
+Name: emotion-algebra
+Version: 1.0.0
+Summary: Emotion algebra based on Plutchik's Wheel and Cambria's Hourglass of Emotions — signed integer arithmetic over a 4-axis affective space
+Author-email: jarbasAI <jarbasai@mailfence.com>
+License: Apache-2.0
+Project-URL: Homepage, https://github.com/JarbasAl/emotion-algebra
+Requires-Python: >=3.10
+Description-Content-Type: text/markdown
+Requires-Dist: numpy
+Provides-Extra: lexicon
+Requires-Dist: pandas; extra == "lexicon"
+Provides-Extra: fast
+Requires-Dist: ahocorasick-ner; extra == "fast"
+Provides-Extra: transformers
+Requires-Dist: transformers>=4.0; extra == "transformers"
+Requires-Dist: torch; extra == "transformers"
+
 # emotion-algebra
 
 Signed integer arithmetic over a 4-axis affective space, grounded in Plutchik's Wheel of Emotions (1980) and Cambria's Hourglass of Emotions (2012). Emotions are first-class mathematical objects; every operator returns a typed result.
@@ -27,9 +45,7 @@ Optional extras:
 | Extra | Deps | Enables |
 |-------|------|---------|
 | `[lexicon]` | pandas | `lexicons.py` — word→emotion CSV lookup |
-| `[fast]` | ahocorasick-ner | Phrase-aware Aho-Corasick backend for `score_text`/`from_text` |
-
-`deepmoji-onnx` is a **core dependency** — neural text→emoji→emotion scoring via `DeepMojiONNXAdapter` is always available.
+| `[transformers]` | transformers≥4.0, torch | `HFEmotionAdapter` — HuggingFace pipeline bridge |
 
 ---
 
