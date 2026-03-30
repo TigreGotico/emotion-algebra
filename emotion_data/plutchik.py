@@ -1,4 +1,32 @@
-"""Plutchik's Wheel and Hourglass of Emotions — core Emotion and Dimension algebra.
+"""Core emotion algebra — Plutchik's Wheel + Cambria's Hourglass of Emotions.
+
+Model provenance
+----------------
+This module blends two distinct theoretical frameworks:
+
+**Plutchik's Wheel of Emotions** (Robert Plutchik, 1980)
+    - 8 primary emotions arranged in opposite pairs on a colour wheel.
+    - Dyad composition: adjacent emotions combine into named feelings
+      (joy + trust → love, anticipation + joy → optimism).
+    - Intensity cone: each primary has a mild (petals) and intense (inner) form.
+    - Source: ``FEELING_NAMES`` (feelings.py), ``COMPOSITE_EMOTIONS_NAMES`` (composite_emotions.py).
+
+**Hourglass of Emotions** (Cambria et al., 2012)
+    - Maps emotions onto 4 independent signed-integer axes:
+      Pleasantness, Attention, Sensitivity, Aptitude (PASA).
+    - Each axis runs from −3 (intense negative) to +3 (intense positive).
+    - Designed for computational sentiment analysis, not psychological modelling.
+    - Source: ``HOURGLASS_OF_EMOTIONS``, ``EmotionalDimension``, ``Emotion.emotional_flow``.
+
+Where the library departs from both models
+------------------------------------------
+- ``Emotion.type`` and ``CompositeEmotion.type`` use hand-crafted heuristics
+  (labelled with ``# TODO science this``), not derived from either paper.
+- ``EmotionalDimension.valence`` assigns fixed ±1/0 valence to axes — a
+  simplification not present in Cambria's original scoring.
+- Single-axis valence cannot distinguish arousal from pleasantness (PAD model
+  is out of scope).
+- Behaviour → Emotion mapping skips the cognitive appraisal layer (Lazarus 1991).
 
 Classes
 -------
@@ -683,10 +711,16 @@ class EmotionalDimension(object):
         return str(self.axis)
 
     @property
-    def valence(self):
-        # valence by dimension
+    def valence(self) -> int:
+        """Heuristic signed valence for this axis: sensitivity→-1, attention→+1, others→0.
+
+        .. note::
+            This is a hand-crafted approximation, not derived from Cambria's original
+            Hourglass scoring.  Pleasantness and aptitude are assigned 0 here, which
+            understates their contribution to overall affect.
+        """
         if "sensitivity" in self.axis:
-            return - 1
+            return -1
         if "attention" in self.axis:
             return 1
         return 0

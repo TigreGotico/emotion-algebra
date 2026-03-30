@@ -1,7 +1,26 @@
 """Composite emotions — multi-dimensional emotional states spanning two Hourglass axes.
 
 A :class:`CompositeEmotion` is constructed by multiplying two :class:`Emotion` objects
-(``*``) or by combining them via the ``CompositeEmotion.__add__`` operator.
+from *different* Hourglass dimensions (``rage * vigilance → aggressiveness``).
+
+Model provenance
+----------------
+``COMPOSITE_EMOTIONS_NAMES`` lists the named 2-axis combinations from Plutchik's
+Wheel.  The numeric algebra (``emotional_flow``, ``emotion_vector``, operators) uses
+the Hourglass integer scale from Cambria et al. (2012).
+
+The ``type`` property in this module is a **heuristic approximation** — it
+classifies composites by the sign of their net flow and which axes are involved,
+but this mapping has no direct basis in either Plutchik or Cambria.  It is retained
+for downstream convenience but should not be treated as scientifically grounded.
+
+Note on ``CompositeEmotion`` vs ``Feeling``
+-------------------------------------------
+Both represent combinations of basic emotions.  ``Feeling`` (feelings.py) models
+Plutchik's named dyads (two adjacent wheel sectors) with a flat emotion list.
+``CompositeEmotion`` (this file) models two-dimensional Hourglass combinations and
+inherits the full ``Emotion`` operator algebra.  They are related but not identical
+concepts; a full merge would break the public API.
 
 Classes
 -------
@@ -185,8 +204,14 @@ class CompositeEmotion(Emotion):
         return "neutrality"
 
     @property
-    def type(self):
-        # TODO science this instead of eye balling
+    def type(self) -> str:
+        """Heuristic type label based on net flow sign and axis combination.
+
+        .. warning::
+            This is an approximation, not a derivation from Plutchik or Cambria.
+            The categories (forceful, caring, quiet, not in control) are
+            hand-crafted and should not be treated as scientifically grounded.
+        """
         types = []
         valence = 0
         for dim in self.dimensions:
