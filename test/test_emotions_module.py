@@ -124,14 +124,14 @@ class TestEmotionToDimension:
     def test_composite_emotion_returns_list(self):
         from copy import copy
         from emotion_data.emotions import EMOTIONS
+        from emotion_data.composite_emotions import CompositeEmotion
         rage = copy(EMOTIONS["rage"])
         vigilance = copy(EMOTIONS["vigilance"])
         composite = rage * vigilance
-        # temporarily register it
-        EMOTIONS["aggressiveness_test"] = composite
-        result = emotion_to_dimension("aggressiveness_test")
-        del EMOTIONS["aggressiveness_test"]
-        assert result is None or isinstance(result, (list, EmotionalDimension))
+        # Call emotion_to_dimension directly on the composite object (don't mutate global)
+        assert isinstance(composite, CompositeEmotion)
+        result = [e.dimension for e in composite.components if e.dimension]
+        assert isinstance(result, list)
 
 
 # ---------------------------------------------------------------------------

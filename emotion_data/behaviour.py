@@ -9,6 +9,7 @@ BehavioralReaction
 """
 from __future__ import annotations
 
+from types import MappingProxyType
 from typing import List, Optional
 
 from emotion_data.emotions import EMOTIONS
@@ -142,7 +143,7 @@ def _get_behaviours():
     return bucket
 
 
-BEHAVIOURS = _get_behaviours()
+BEHAVIOURS: MappingProxyType = MappingProxyType(_get_behaviours())
 
 
 class BehavioralReaction(object):
@@ -190,7 +191,9 @@ def _get_reactions():
     return bucket, bucket2
 
 
-REACTIONS, REACTION_TO_EMOTION_MAP = _get_reactions()
+_reactions, _reaction_map = _get_reactions()
+REACTIONS: MappingProxyType = MappingProxyType(_reactions)
+REACTION_TO_EMOTION_MAP: MappingProxyType = MappingProxyType(_reaction_map)
 
 
 if __name__ == "__main__":

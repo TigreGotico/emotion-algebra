@@ -1,4 +1,6 @@
 import random
+from types import MappingProxyType
+
 from emotion_data.plutchik import DIMENSIONS
 
 
@@ -17,7 +19,7 @@ def _get_emotion_map():
     return bucket
 
 
-EMOTIONS = _get_emotion_map()
+EMOTIONS: MappingProxyType = MappingProxyType(_get_emotion_map())
 
 EMOTION_NAMES = [EMOTIONS[e].name for e in EMOTIONS]
 

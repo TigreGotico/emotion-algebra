@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import random
 from copy import copy, deepcopy
+from types import MappingProxyType
 from typing import List, Optional, Union
 
 import numpy as np
@@ -447,7 +448,7 @@ def _get_feelings():
     return bucket
 
 
-FEELINGS = _get_feelings()
+FEELINGS: MappingProxyType = MappingProxyType(_get_feelings())
 
 
 def get_feeling(name):
