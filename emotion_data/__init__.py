@@ -4,6 +4,7 @@ Optional integrations (deepmoji, tag) are lazy-imported inside the methods
 that use them so that ``import emotion_data`` never fails when those optional
 dependencies are absent.
 """
+from emotion_data.base import EmotionBase
 from emotion_data.emotions import get_emotion, emotion_to_dimension, random_emotion, get_dimension
 from emotion_data.feelings import get_feeling, random_feeling
 from emotion_data.lexicons import (
