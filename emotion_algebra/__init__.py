@@ -8,6 +8,9 @@ from emotion_algebra.lexicons import (
 from emotion_algebra.distance import emotion_distance, closest_emotion, emotion_clusters
 from emotion_algebra.state import EmotionalState, EmotionTimeline
 from emotion_algebra.text import from_text, score_text
+from emotion_algebra.emoji import (
+    EMOJI_EMOTION_MAP, from_emoji, score_emojis, from_emojis, DeepMojiAdapter,
+)
 from emotion_algebra.appraisal import Appraisal, appraisal_to_emotion
 from emotion_algebra.float_emotion import FloatEmotion
 
@@ -95,3 +98,18 @@ class EmotionAnalyzer(object):
     def appraise(appraisal: "Appraisal"):
         """Map a cognitive :class:`~emotion_algebra.appraisal.Appraisal` to a primary emotion."""
         return appraisal_to_emotion(appraisal)
+
+    @staticmethod
+    def from_emoji(emoji_char: str):
+        """Return the :class:`~emotion_algebra.plutchik.Emotion` for *emoji_char*, or ``None``."""
+        return from_emoji(emoji_char)
+
+    @staticmethod
+    def score_emojis(text: str):
+        """Return a full :class:`~emotion_algebra.state.EmotionalState` from emoji characters in *text*."""
+        return score_emojis(text)
+
+    @staticmethod
+    def analyze_emojis(text: str):
+        """Return the dominant emotion inferred from emoji characters in *text*."""
+        return from_emojis(text)

@@ -21,6 +21,27 @@ pip install emotion_algebra
 | `[lexicon]` | pandas | `lexicons.py` — word→emotion CSV lookup |
 | `[transformers]` | transformers>=4.0, torch | `text.py` — HuggingFace pipeline tagging |
 
+## How do I map emojis to emotions?
+
+Three entry points in `emotion_algebra.emoji`:
+
+```python
+from emotion_algebra.emoji import from_emoji, score_emojis, from_emojis, DeepMojiAdapter
+
+from_emoji("😊")               # → Emotion("serenity")
+from_emojis("Best day! 😄🎉") # → Emotion("joy")  (dominant)
+score_emojis("😭😭😊")        # → EmotionalState  (full 4-axis accumulation)
+
+# DeepMoji / torchMoji output:
+adapter = DeepMojiAdapter()
+adapter.from_scores({"😂": 0.45, "😊": 0.30, "😭": 0.25})  # → Emotion
+adapter.from_ranked([("😂", 0.45), ("😊", 0.30)], top_k=1)  # → Emotion
+adapter.score_state({"😂": 0.6, "😊": 0.4})                 # → EmotionalState
+```
+
+The canonical map is `EMOJI_EMOTION_MAP` — ~90 emojis covering all 8 Plutchik primaries
+and their intensity variants (serenity/joy/ecstasy, apprehension/fear/terror, etc.).
+
 ## How does intensity arithmetic work?
 
 Emotions sit on a signed integer axis per dimension. Adding an integer moves up the axis:

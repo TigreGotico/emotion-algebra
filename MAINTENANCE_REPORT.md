@@ -274,3 +274,24 @@ Excluded from coverage: `deepmoji.py`, `tag.py` (optional external integrations)
 
 ### Test results
 596 tests, 0 failures, 93% coverage.
+
+## 2026-03-30 — feat: emoji-to-emotion mapping (v1.6)
+
+**AI Model**: claude-sonnet-4-6
+**Oversight**: Human-specified feature; AI designed and implemented.
+
+### Actions Taken
+
+New module `emotion_algebra/emoji.py`:
+- `EMOJI_EMOTION_MAP` — `MappingProxyType` of ~90 Unicode emoji → Plutchik emotion name,
+  covering all 8 primaries and intensity variants; grounded in Felbo et al. (2017) + Novak et al. (2015)
+- `from_emoji(char)` — single emoji lookup
+- `score_emojis(text)` — scan free-form text, accumulate into `EmotionalState`
+- `from_emojis(text)` — dominant emotion from emoji scan
+- `DeepMojiAdapter` — consumes `{emoji: probability}` distributions (deepmoji/torchMoji output format);
+  methods: `from_scores`, `from_ranked`, `score_state`
+- All symbols re-exported from `emotion_algebra/__init__` and wired into `EmotionAnalyzer`
+  (`from_emoji`, `score_emojis`, `analyze_emojis`)
+
+### Test results
+643 tests, 0 failures (47 new tests in `test/test_emoji.py`)
