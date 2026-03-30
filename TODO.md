@@ -46,6 +46,22 @@ Issues are grouped by severity. Each item maps to one commit.
 
 ---
 
+## Phase 4 fixes (done)
+
+- [x] `Feeling.emotional_flow` used `np.linalg.norm` — always ≥ 0, same bug as CompositeEmotion *(fixed: Phase 4)*
+- [x] `Feeling.__float__` returned `numpy.float64` — DeprecationWarning in Python 3.11+ *(fixed: Phase 4)*
+- [x] `numpy` import removed from `feelings.py` (no longer used) *(fixed: Phase 4)*
+- [x] `AUDIT.md` created — evidence-based debt register with 7 open issues *(Phase 4)*
+
+## Open (from AUDIT.md)
+
+- [ ] **A-002** `CompositeEmotion` inherits `Emotion` — conceptually wrong hierarchy; defer to next major version
+- [ ] **A-005** `CompositeEmotion.__truediv__` / `__floordiv__` return `None` instead of `NotImplemented` for Emotion operands
+- [ ] **A-003** `emotions.py` `__main__` debug print block — remove or convert to CLI entry point
+- [ ] **A-006** `Feeling` operator suite undocumented and partially untested
+
+---
+
 ## Won't Fix (by design)
 
 - **Single valence axis** — `Emotion.valence` is 1D. Full PAD (Pleasure–Arousal–Dominance) would require a redesign of the entire numeric representation. Out of scope.

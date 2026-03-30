@@ -370,7 +370,7 @@ class CompositeEmotion(Emotion):
             emo = deepcopy(self)
             return emo
         elif isinstance(other, CompositeEmotion):
-            pass
+            return NotImplemented
         elif isinstance(other, Emotion):
             emo = deepcopy(self)
             if other in emo.components:
@@ -385,7 +385,7 @@ class CompositeEmotion(Emotion):
             emo = deepcopy(self)
             return emo
         if isinstance(other, CompositeEmotion):
-            pass
+            return NotImplemented
         elif isinstance(other, Emotion):
             emo = deepcopy(self)
             if other in emo.components:

@@ -118,13 +118,13 @@ class TestFeelingValence:
 # ---------------------------------------------------------------------------
 
 class TestFeelingEmotionalFlow:
-    def test_emotional_flow_is_numeric(self, love):
+    def test_emotional_flow_is_int(self, love):
         flow = love.emotional_flow
-        assert isinstance(flow, float)
+        assert isinstance(flow, int)
 
     def test_empty_feeling_flow_is_zero(self):
         f = Feeling()
-        assert f.emotional_flow == 0.0
+        assert f.emotional_flow == 0
 
 
 # ---------------------------------------------------------------------------

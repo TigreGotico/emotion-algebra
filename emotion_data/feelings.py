@@ -10,8 +10,6 @@ from copy import copy, deepcopy
 from types import MappingProxyType
 from typing import List, Optional, Union
 
-import numpy as np
-
 from emotion_data.plutchik import Emotion, Neutrality
 
 
@@ -162,13 +160,14 @@ class Feeling(object):
         return [emo.dimension for emo in self.emotions]
 
     @property
-    def emotional_flow(self):
-        # scalar product
-        flows = [e.emotional_flow for e in self.emotion_vector]
-        flow_vector = np.array(flows)
-        if self.valence > 0:
-            return np.linalg.norm(flow_vector)
-        return np.linalg.norm(flow_vector) * -1
+    def emotional_flow(self) -> int:
+        """Signed net intensity: sum of component flows (spec §2.5).
+
+        Previously used ``np.linalg.norm``, which is always ≥ 0 and made the
+        signed branches of ``type`` permanently dead.  Now matches
+        ``CompositeEmotion.emotional_flow`` semantics.
+        """
+        return sum(e.emotional_flow for e in self.emotions)
 
     @property
     def valence(self) -> int:
@@ -194,8 +193,8 @@ class Feeling(object):
     def __int__(self):
         return int(self.emotional_flow)
 
-    def __float__(self):
-        return self.emotional_flow
+    def __float__(self) -> float:
+        return float(self.emotional_flow)
 
     def __str__(self):
         return self.secondary_name
