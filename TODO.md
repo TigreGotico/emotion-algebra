@@ -55,10 +55,10 @@ Issues are grouped by severity. Each item maps to one commit.
 
 ## Open (from AUDIT.md)
 
-- [ ] **A-002** `CompositeEmotion` inherits `Emotion` — conceptually wrong hierarchy; defer to next major version
-- [ ] **A-005** `CompositeEmotion.__truediv__` / `__floordiv__` return `None` instead of `NotImplemented` for Emotion operands
-- [ ] **A-003** `emotions.py` `__main__` debug print block — remove or convert to CLI entry point
-- [ ] **A-006** `Feeling` operator suite undocumented and partially untested
+- [x] **A-002** `CompositeEmotion` no longer inherits `Emotion` — `EmotionBase` ABC introduced; all three types are independent peers *(fixed: Phase 4 refactor)*
+- [x] **A-005** `CompositeEmotion.__truediv__` / `__floordiv__` now return `NotImplemented` for Emotion operands *(fixed: Phase 4)*
+- [x] **A-003** `emotions.py` `__main__` debug print block removed *(fixed: Phase 4)*
+- [ ] **A-006** `Feeling` operator suite partially untested (coverage gaps in shift/div/mul operators)
 
 ---
 
