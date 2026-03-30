@@ -6,7 +6,7 @@ with ``+``: ``joy + trust == Feeling("love")``.
 from __future__ import annotations
 
 import random
-from copy import copy
+from copy import copy, deepcopy
 from typing import List, Optional, Union
 
 import numpy as np
@@ -220,7 +220,7 @@ class Feeling(object):
 
     def __add__(self, other):
         if isinstance(other, Feeling):
-            feel = copy(self)
+            feel = deepcopy(self)
             for emo in other.emotions:
                 feel = feel + emo
             if len(feel) == 1:
@@ -233,18 +233,18 @@ class Feeling(object):
                 return self.name + other
 
         if isinstance(other, Neutrality):
-            feel = copy(self)
+            feel = deepcopy(self)
             return feel
 
         if isinstance(other, Emotion):
-            feel = copy(self)
+            feel = deepcopy(self)
             feel.emotions.append(other)
             return feel
 
         # upgrade emotions
         try:
             other = int(other)
-            feel = copy(self)
+            feel = deepcopy(self)
             for idx, emo in enumerate(feel.emotions):
                 feel.emotions[idx] = emo + other
             feel.emotions = [e for e in feel.emotions if isinstance(e, Emotion)]
@@ -259,7 +259,7 @@ class Feeling(object):
             other = self.string_to_emotion(other)
 
         if isinstance(other, Feeling):
-            feel = copy(self)
+            feel = deepcopy(self)
             for emo in other.emotions:
                 feel = feel - emo
             if len(feel) == 1:
@@ -270,11 +270,11 @@ class Feeling(object):
             return self.name + other
 
         if isinstance(other, Neutrality):
-            feel = copy(self)
+            feel = deepcopy(self)
             return feel
 
         if isinstance(other, Emotion):
-            feel = copy(self)
+            feel = deepcopy(self)
             if other in feel.emotions:
                 feel.emotions.remove(other)
             else:
@@ -286,7 +286,7 @@ class Feeling(object):
         # upgrade emotions
         try:
             other = int(other)
-            feel = copy(self)
+            feel = deepcopy(self)
             for idx, emo in enumerate(feel.emotions):
                 feel.emotions[idx] = emo - other
             return feel

@@ -11,7 +11,7 @@ EmotionalDimension
 """
 from __future__ import annotations
 
-from copy import copy
+from copy import copy, deepcopy
 from typing import Union
 
 import numpy as np
@@ -358,7 +358,7 @@ class Emotion(object):
             if isinstance(other, str):
                 return self.name + other
         if isinstance(other, Neutrality):
-            return copy(self)
+            return deepcopy(self)
 
         # create feeling
         if isinstance(other, Emotion):
@@ -389,7 +389,7 @@ class Emotion(object):
             if isinstance(other, str):
                 return self.name - other
         if isinstance(other, Neutrality):
-            return copy(self)
+            return deepcopy(self)
         if isinstance(other, Emotion):
             # add opposite emotion
             other = - other
@@ -406,7 +406,7 @@ class Emotion(object):
         if isinstance(other, str):
             other = self.string_to_emotion(other)
         if isinstance(other, Neutrality):
-            return copy(self)
+            return deepcopy(self)
 
         if isinstance(other, Emotion):
             from emotion_data.composite_emotions import CompositeEmotion
@@ -419,7 +419,7 @@ class Emotion(object):
         if isinstance(other, str):
             other = self.string_to_emotion(other)
         if isinstance(other, Neutrality):
-            return copy(self)
+            return deepcopy(self)
         if isinstance(other, Emotion):
             return NotImplemented
 
@@ -434,7 +434,7 @@ class Emotion(object):
         if isinstance(other, str):
             other = self.string_to_emotion(other)
         if isinstance(other, Neutrality):
-            return copy(self)
+            return deepcopy(self)
         if isinstance(other, Emotion):
             return NotImplemented
         try:
@@ -448,7 +448,7 @@ class Emotion(object):
         if isinstance(other, str):
             other = self.string_to_emotion(other)
         if isinstance(other, Neutrality):
-            return copy(self)
+            return deepcopy(self)
         if isinstance(other, Emotion):
             if other._dimension == self._dimension:
                 flow = other.emotional_flow - self.emotional_flow
@@ -465,7 +465,7 @@ class Emotion(object):
         if isinstance(other, str):
             other = self.string_to_emotion(other)
         if isinstance(other, Neutrality):
-            return copy(self)
+            return deepcopy(self)
         if isinstance(other, Emotion):
             if other._dimension == self._dimension:
                 flow = other.emotional_flow + self.emotional_flow
@@ -505,7 +505,7 @@ class Emotion(object):
 
     def __pos__(self):
         if self.emotional_flow:
-            return copy(self)
+            return deepcopy(self)
         return copy(self.opposite_emotion)
 
     def __abs__(self):

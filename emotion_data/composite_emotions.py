@@ -12,7 +12,7 @@ CompositeDimension
 """
 from __future__ import annotations
 
-from copy import copy
+from copy import copy, deepcopy
 from typing import List, Optional, Union
 
 import numpy as np
@@ -299,11 +299,11 @@ class CompositeEmotion(Emotion):
             other = self.string_to_emotion(other)
 
         if isinstance(other, Neutrality):
-            emo = copy(self)
+            emo = deepcopy(self)
             return emo
 
         if isinstance(other, Feeling):
-            c = copy(self)
+            c = deepcopy(self)
             for e in other.emotions:
                 c = c + e
             return c
@@ -327,11 +327,11 @@ class CompositeEmotion(Emotion):
             other = self.string_to_emotion(other)
 
         if isinstance(other, Neutrality):
-            emo = copy(self)
+            emo = deepcopy(self)
             return emo
 
         if isinstance(other, Feeling):
-            c = copy(self)
+            c = deepcopy(self)
             for e in other.emotions:
                 c = c - e
             return c
@@ -356,7 +356,7 @@ class CompositeEmotion(Emotion):
 
     def __mul__(self, other):
         if isinstance(other, Neutrality):
-            emo = copy(self)
+            emo = deepcopy(self)
             return emo
         if isinstance(other, Emotion):
             m = self.as_matrix * other.as_matrix
@@ -368,12 +368,12 @@ class CompositeEmotion(Emotion):
         if isinstance(other, str):
             other = self.string_to_emotion(other)
         if isinstance(other, Neutrality):
-            emo = copy(self)
+            emo = deepcopy(self)
             return emo
         elif isinstance(other, CompositeEmotion):
             pass
         elif isinstance(other, Emotion):
-            emo = copy(self)
+            emo = deepcopy(self)
             if other in emo.components:
                 emo.components.remove(other)
                 return emo
@@ -383,12 +383,12 @@ class CompositeEmotion(Emotion):
         if isinstance(other, str):
             other = self.string_to_emotion(other)
         if isinstance(other, Neutrality):
-            emo = copy(self)
+            emo = deepcopy(self)
             return emo
         if isinstance(other, CompositeEmotion):
             pass
         elif isinstance(other, Emotion):
-            emo = copy(self)
+            emo = deepcopy(self)
             if other in emo.components:
                 emo.components.remove(other)
                 return emo
@@ -398,7 +398,7 @@ class CompositeEmotion(Emotion):
         if isinstance(other, str):
             other = self.string_to_emotion(other)
         if isinstance(other, Neutrality):
-            emo = copy(self)
+            emo = deepcopy(self)
             return emo
         return NotImplemented
 
@@ -406,7 +406,7 @@ class CompositeEmotion(Emotion):
         if isinstance(other, str):
             other = self.string_to_emotion(other)
         if isinstance(other, Neutrality):
-            emo = copy(self)
+            emo = deepcopy(self)
             return emo
         return NotImplemented
 
@@ -534,14 +534,14 @@ class CompositeDimension(object):
 
     def __add__(self, other):
         if isinstance(other, EmotionalDimension):
-            d = copy(self)
+            d = deepcopy(self)
             d.dimensions.append(other)
             return d
         return NotImplemented
 
     def __sub__(self, other):
         if isinstance(other, EmotionalDimension):
-            d = copy(self)
+            d = deepcopy(self)
             if other in d.dimensions:
                 d.dimensions.remove(other)
             else:
