@@ -16,18 +16,12 @@ with `CompositeEmotion`. However `__int__` and `__float__` delegate to it, makin
 the codebase relies on it; it should be documented as "net activation scalar, not a hedonic score".
 **Recommendation**: Add a docstring to `__int__`/`__float__` clarifying the interpretation.
 
-### A-002 — `CompositeEmotion` inherits `Emotion` (wrong conceptual hierarchy)
-**File**: `emotion_data/composite_emotions.py:110`
-**Severity**: Medium
-**Detail**: `CompositeEmotion(Emotion)` inherits single-axis methods (`emotion_from_flow`,
-`is_primary`, `is_secondary`, `is_tertiary`, `base_emotion`, `parent_emotion`, `opposite_emotion`)
-that are meaningless or wrong for multi-axis states. e.g. `is_primary` on a composite always
-returns `False` due to the name not being in `PRIMARY_EMOTION_NAMES`, which is correct but
-accidental. The `_dimension` attribute is `None` on composites, causing silent fallback behaviour
-in several inherited methods.
-**Recommendation**: Extract a `_EmotionBase` ABC with only the shared interface; have both
-`Emotion` and `CompositeEmotion` implement it without inheritance between them. Blocked by API
-compatibility — defer to next major version.
+### ~~A-002~~ — `CompositeEmotion` inherits `Emotion` (RESOLVED 2026-03-30)
+**File**: `emotion_data/composite_emotions.py`
+**Resolution**: `EmotionBase` ABC introduced in `emotion_data/base.py`. `CompositeEmotion`,
+`Emotion`, and `Feeling` now all independently implement `EmotionBase`. The erroneous
+single-axis inherited methods (`is_primary`, `is_secondary`, `is_tertiary`, `intensity_offset`,
+`emotion_from_flow`, `parent_emotion`) are no longer present on `CompositeEmotion`.
 
 ### A-003 — `emotions.py:80–87` dead `__main__` print block
 **File**: `emotion_data/emotions.py:79–87`

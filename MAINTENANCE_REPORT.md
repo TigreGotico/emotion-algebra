@@ -49,6 +49,46 @@
 
 ---
 
+## 2026-03-30 — Phase 2 Architectural Refactor
+
+**AI Model**: claude-sonnet-4-6
+**Oversight**: Human-specified step-by-step plan; AI executed all changes.
+
+### Actions Taken
+
+1. **Created `emotion_data/base.py`** — `EmotionBase` ABC
+   - Abstract properties: `name`, `emotional_flow`, `valence`, `arousal`, `type`, `emotion_vector`
+   - Concrete shared implementations: `as_array`, `as_matrix`, `__bool__`, `__int__`, `__float__`, `__lt__`, `__le__`, `__gt__`, `__ge__`
+
+2. **`Emotion(EmotionBase)`** — `emotion_data/plutchik.py`
+   - Removed methods now provided by `EmotionBase`: `as_array`, `as_matrix`, `__bool__`, `__lt__`, `__le__`, `__gt__`, `__ge__`
+   - Retained `__int__` (includes `intensity_offset`), `__float__`, `__eq__`, `__ne__`
+   - Removed dead TODO comment block
+
+3. **`CompositeEmotion(EmotionBase)`** — `emotion_data/composite_emotions.py`
+   - Broke inheritance from `Emotion` — `CompositeEmotion` is now a peer, not a subclass
+   - `__init__` no longer calls `Emotion.__init__`; no `intensity_offset`
+   - Added `string_to_emotion` static method (was previously inherited)
+   - Removed duplicate `__lt__`, `__le__`, `__gt__`, `__ge__` (now from `EmotionBase`)
+   - Removed commented-out print and dead TODO block in `kind` property
+
+4. **`Feeling(EmotionBase)`** — `emotion_data/feelings.py`
+   - Added `EmotionBase` as base class
+   - Removed debug `print(self.emotions)` in `secondary_name`
+   - Removed duplicate `__int__`, `__float__`, `__lt__`, `__le__`, `__gt__`, `__ge__`
+   - Removed large commented-out dead operator code block
+   - Removed `if __name__ == '__main__'` block
+
+5. **`emotion_data/__init__.py`** — exported `EmotionBase`
+
+### Coverage
+- Before: 87% total (1,350 stmts, 169 missed)
+- After: 90% total (1,314 stmts, 126 missed — code deletion reduced total)
+- `emotion_data/base.py`: 100%
+- All 395 tests pass
+
+---
+
 ## 2026-03-30 — Phase 2 Production Pass (90% coverage)
 
 **AI Model**: claude-sonnet-4-6
