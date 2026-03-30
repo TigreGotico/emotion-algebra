@@ -57,7 +57,22 @@ Run: `python -m pytest test/ --cov=emotion_data --cov-config=.coveragerc`
 
 90%+ on core modules. `deepmoji.py` and `tag.py` are excluded (optional external integrations).
 
-## Known bugs fixed in production pass
+## What changed in the Phase 3 architectural fixes?
+
+| Fix | Details |
+|---|---|
+| `get_emotion` import shadow | `lexicons.get_emotion` renamed `get_word_emotion`; `EmotionAnalyzer.emotion()` now returns `Emotion` not a string |
+| `CompositeEmotion.emotional_flow` | Was `np.linalg.norm` (always ≥ 0); now `sum(component.emotional_flow)` — signed |
+| `copy()` aliased state | All operator `copy(self)` calls replaced with `deepcopy(self)` |
+| `Emotion.__bool__` | Now reflects presence (non-zero intensity), not valence — fear is truthy |
+| `Emotion.valence` | Returns `int` (+1/−1/0), not `bool`; `POSITIVE_EMOTIONS` filter fixed |
+| `np.matrix` deprecated | `as_matrix` now returns `np.ndarray`; `__mul__` uses `np.matmul` |
+| Dead `__sub__` branch | `self.name - other` (TypeError) replaced with `NotImplemented` |
+| `string_to_emotion` duplication | `Feeling` now calls `Emotion.string_to_emotion` directly |
+| `acknowledgement` spelling | `OPPOSITE_FEELINGS_NAMES` key normalised to match `FEELING_NAMES` |
+| Global dict mutation | `EMOTIONS`, `FEELINGS`, `BEHAVIOURS`, `REACTIONS` wrapped in `MappingProxyType` |
+
+## Known bugs fixed in production pass (Phase 2)
 
 - `Emotion.__bool__` was returning `numpy.bool_` (not Python `bool`), causing `TypeError` in Python 3.11+.
 - `_get_behaviours()` used `if e:` to guard emotion lookup, silently skipping negative-flow emotions (fear, terror). Fixed to `if e is not None:`.

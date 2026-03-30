@@ -90,3 +90,29 @@ Excluded from coverage: `deepmoji.py`, `tag.py` (optional external integrations)
 - `emotion_data/behaviour.py` — `if e is not None:` + `from_data()` guard
 - `emotion_data/emotions.py` — `if emotion is not None:`
 - `FAQ.md` — documented bugs, tests, coverage
+
+---
+
+## 2026-03-30 — Phase 3: Architectural & Scientific Remediation
+
+**AI Model**: claude-sonnet-4-6
+**Oversight**: Human-directed; AI executed all changes.
+
+### Changes
+
+| Area | Change |
+|---|---|
+| `lexicons.py` | `get_emotion` → `get_word_emotion` — resolved import shadow in `__init__.py` |
+| `__init__.py` | Rewritten — lazy deepmoji/tag imports; `EmotionAnalyzer` methods corrected |
+| `composite_emotions.py` | `emotional_flow` changed from `np.linalg.norm` to signed sum; `type` property now has live branches |
+| `plutchik.py`, `feelings.py`, `composite_emotions.py` | `copy(self)` → `deepcopy(self)` in all operator methods |
+| `plutchik.py` | `Emotion.__bool__` reflects presence (non-zero), not valence |
+| `plutchik.py` | `Emotion.valence` returns `int` (+1/−1/0) not `bool`; `POSITIVE_EMOTIONS` filter fixed |
+| `plutchik.py` | `as_matrix` uses `np.ndarray` (deprecated `np.matrix` removed) |
+| `plutchik.py` | Dead `self.name - other` branch in `__sub__` → `NotImplemented` |
+| `feelings.py` | Removed duplicate `string_to_emotion`; `acknowledgement` spelling normalised; `FEELINGS` wrapped in `MappingProxyType` |
+| `emotions.py` | `EMOTIONS` wrapped in `MappingProxyType`; `POSITIVE_EMOTIONS` filter fixed |
+| `behaviour.py` | `BEHAVIOURS`, `REACTIONS`, `REACTION_TO_EMOTION_MAP` wrapped in `MappingProxyType` |
+| `plutchik.py`, `composite_emotions.py` | Module docstrings document Plutchik vs Cambria provenance and known limitations |
+
+### Post-fix coverage: 90% (375 tests, 0 failures)

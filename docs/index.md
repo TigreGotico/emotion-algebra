@@ -1,6 +1,21 @@
 # emotion_data
 
-Python library implementing **emotion algebra** — emotions as first-class mathematical objects. Built on two academic models: Plutchik's Wheel of Emotions and the Hourglass of Emotions.
+Python library implementing **emotion algebra** — emotions as first-class mathematical objects.
+
+## Model provenance
+
+The library blends two distinct academic frameworks:
+
+| Model | Authors | Role in this library |
+|---|---|---|
+| **Plutchik's Wheel of Emotions** (1980) | Robert Plutchik | Named dyad composition (joy+trust→love), opposite pairs, 8-primary structure |
+| **Hourglass of Emotions** (2012) | Cambria, Livingstone, Hussain | 4-axis signed-integer scale (PASA), `emotional_flow`, `EmotionalDimension` |
+
+**Known departures and limitations:**
+- `Emotion.type` and `CompositeEmotion.type` use hand-crafted heuristics, not model derivations.
+- `EmotionalDimension.valence` is a simplification (sensitivity→−1, attention→+1, others→0).
+- Valence is a single signed integer. Full PAD (Pleasure–Arousal–Dominance) is out of scope.
+- Behaviours map directly from emotions; the cognitive appraisal layer (Lazarus 1991) is omitted.
 
 ## Installation
 
