@@ -252,11 +252,15 @@ class CompositeEmotion(Emotion):
         return self.__neg__()
 
     @property
-    def emotional_flow(self):
-        # scalar product
-        flows = [e.emotional_flow for e in self.emotion_vector]
-        flow_vector = np.array(flows)
-        return np.linalg.norm(flow_vector)
+    def emotional_flow(self) -> int:
+        """Signed net intensity: sum of component flows along each axis.
+
+        Positive when the aggregate flow is positive (approach), negative when
+        aversive (avoidance), zero when the components cancel out.  Previously
+        this was ``np.linalg.norm``, which is always ≥ 0 and made the negative
+        branches of :attr:`type` permanently dead code.
+        """
+        return sum(e.emotional_flow for e in self.components)
 
     @property
     def is_composite(self):

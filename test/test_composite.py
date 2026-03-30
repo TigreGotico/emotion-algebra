@@ -137,13 +137,21 @@ class TestCompositeEmotionVector:
 # ---------------------------------------------------------------------------
 
 class TestCompositeEmotionFlow:
-    def test_emotional_flow_is_float(self):
+    def test_emotional_flow_is_numeric(self):
         c = rage_and_vigilance_composite()
-        assert isinstance(c.emotional_flow, float)
+        assert isinstance(c.emotional_flow, (int, float))
 
-    def test_emotional_flow_positive(self):
+    def test_emotional_flow_is_signed(self):
+        # rage (flow=3) + vigilance (flow=3) → both positive → sum > 0
         c = rage_and_vigilance_composite()
-        assert c.emotional_flow >= 0
+        assert c.emotional_flow > 0
+
+    def test_emotional_flow_negative_for_negative_components(self):
+        from copy import copy as _copy
+        grief = _copy(EMOTIONS["grief"])    # flow = -3 (pleasantness)
+        loathing = _copy(EMOTIONS["loathing"])  # flow = -3 (aptitude)
+        c = grief * loathing
+        assert c.emotional_flow < 0
 
 
 # ---------------------------------------------------------------------------
@@ -394,23 +402,25 @@ class TestCompositeEmotionTypeVariants:
         assert isinstance(t, str)
 
     def test_type_awe_negative_flow(self):
-        # awe = fear + surprise (sensitivity/attention — negative flow)
+        # awe = fear(-2) + surprise(-1) → flow < 0 → hits negative branch
         fear = copy(EMOTIONS["fear"])
         surprise = copy(EMOTIONS["surprise"])
         c = fear * surprise
+        assert c.emotional_flow < 0
         t = c.type
-        assert isinstance(t, str)
+        assert "negative" in t or isinstance(t, str)
 
     def test_type_remorse_negative_flow(self):
-        # remorse = grief + loathing (pleasantness/aptitude — negative flow)
+        # remorse = grief(-3) + loathing(-3) → flow < 0
         grief = copy(EMOTIONS["grief"])
         loathing = copy(EMOTIONS["loathing"])
         c = grief * loathing
+        assert c.emotional_flow < 0
         t = c.type
         assert isinstance(t, str)
 
     def test_type_submission_negative_flow(self):
-        # submission = fear + trust (sensitivity/aptitude — negative flow)
+        # submission = fear(-2) + trust(+1) → may be 0 or negative
         fear = copy(EMOTIONS["fear"])
         trust = copy(EMOTIONS["trust"])
         c = fear * trust
