@@ -10,7 +10,9 @@ from emotion_algebra.state import EmotionalState, EmotionTimeline
 from emotion_algebra.text import from_text, score_text
 from emotion_algebra.emoji import (
     EMOJI_EMOTION_MAP, from_emoji, score_emojis, from_emojis, DeepMojiAdapter,
+    register_emoji, unregister_emoji,
 )
+from emotion_algebra.text import score_mixed, from_mixed
 from emotion_algebra.appraisal import Appraisal, appraisal_to_emotion
 from emotion_algebra.float_emotion import FloatEmotion
 
@@ -113,3 +115,13 @@ class EmotionAnalyzer(object):
     def analyze_emojis(text: str):
         """Return the dominant emotion inferred from emoji characters in *text*."""
         return from_emojis(text)
+
+    @staticmethod
+    def score_mixed(text: str):
+        """Return a full :class:`~emotion_algebra.state.EmotionalState` from both words and emoji in *text*."""
+        return score_mixed(text)
+
+    @staticmethod
+    def analyze_mixed(text: str):
+        """Return the dominant emotion from both word lexicon and emoji signals in *text*."""
+        return from_mixed(text)

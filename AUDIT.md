@@ -7,12 +7,12 @@ Updated: 2026-03-30 (v1.0.1).
 
 ## Open Issues
 
-### A-002 — `Feeling` operator suite has coverage gaps
-**File**: `emotion_algebra/feelings.py:142,251–252,267,294–295,303,341–344`
+### A-002 — `emotion_vector` sensitivity branch unreachable
+**File**: `emotion_algebra/feelings.py:142`
 **Severity**: Low
-**Detail**: `Feeling` has no `__lshift__`, `__rshift__`, `__floordiv__`, `__truediv__`, or `__mul__`.
-The sensitivity branch of `emotion_vector` (line 142) is unreachable in current test data.
-**Recommendation**: Acceptable for v1.0. Document unsupported operators.
+**Detail**: The `sensitivity` branch of `emotion_vector` is unreachable in current test data.
+All five missing operators (`__mul__`, `__truediv__`, `__floordiv__`, `__lshift__`, `__rshift__`)
+have been implemented; operator parity with `Emotion` is restored.
 
 ### A-003 — `EmotionAnalyzer` optional-dep paths are untestable without extras
 **File**: `emotion_algebra/__init__.py:21,36,41,46,56,61–62,67–68`
@@ -48,6 +48,10 @@ Lazy-import guard is correct; zero coverage of these paths in the default test r
 | R-019 | Stale `# TODO` comments removed from `emotions.py`, `plutchik.py`, `composite_emotions.py` | v1.0.1 |
 | R-020 | `EmotionBase.__int__` docstring added — clarifies net activation scalar semantics | v1.0.1 |
 | R-021 | `Emotion.kind` inline comment updated — explicit approximate disclaimer | v1.0.1 |
+| R-022 | A-002 partial: `Feeling` operators `__mul__`/`__truediv__`/`__floordiv__`/`__lshift__`/`__rshift__` added | v1.7 |
+| R-023 | `score_mixed` / `from_mixed` — unified word+emoji scoring in one pass | v1.7 |
+| R-024 | `register_emoji` / `unregister_emoji` — runtime emoji map extensibility | v1.7 |
+| R-025 | CLI emoji support — single emoji args dispatched via `score_emojis` | v1.7 |
 
 ---
 

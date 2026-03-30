@@ -1,12 +1,16 @@
-"""Text-to-emotion utilities — v1.2.
+"""Text-to-emotion utilities — v1.7.
 
-Two tiers:
+Three tiers:
 
 1. **Lexicon pipeline** (no extra deps beyond the bundled CSV) —
    :func:`from_text` and :func:`score_text` tokenize the input and look up
    each word in the bundled word-emotion lexicon.
 
-2. **HuggingFace bridge** (requires the ``[transformers]`` optional extra) —
+2. **Mixed pipeline** — :func:`score_mixed` and :func:`from_mixed` process both
+   word tokens and emoji characters in a single pass, blending both signals into
+   one :class:`~emotion_algebra.state.EmotionalState`.
+
+3. **HuggingFace bridge** (requires the ``[transformers]`` optional extra) —
    :class:`HFEmotionAdapter` wraps any HF text-classification pipeline that
    outputs Plutchik-compatible labels.
 """
@@ -156,3 +160,45 @@ class HFEmotionAdapter:
             if emo is not None:
                 state.apply(emo, weight=float(score))
         return state.dominant()
+
+
+def score_mixed(text: str) -> "EmotionalState":
+    """Score *text* using both the word lexicon and emoji map in a single pass.
+
+    Word tokens and emoji characters contribute equally (weight=1.0 each).
+    This is the recommended entry point for general-purpose text that may
+    contain both natural language and emoji.
+
+    Parameters
+    ----------
+    text:
+        Any string, e.g. ``"I'm so happy 😄🎉"``.
+
+    Returns
+    -------
+    EmotionalState
+        Zero-vector if no tokens or emoji match.
+    """
+    from emotion_algebra.emoji import score_emojis
+    state = score_text(text)
+    emoji_state = score_emojis(text)
+    state._vector += emoji_state._vector
+    return state
+
+
+def from_mixed(text: str) -> Optional[EmotionBase]:
+    """Return the dominant emotion from *text* using both word and emoji signals.
+
+    Convenience wrapper around :func:`score_mixed`.
+
+    Parameters
+    ----------
+    text:
+        Any string.
+
+    Returns
+    -------
+    Emotion or None
+        ``None`` if neither the lexicon nor the emoji map produce any match.
+    """
+    return score_mixed(text).dominant()

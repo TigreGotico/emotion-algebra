@@ -295,3 +295,30 @@ New module `emotion_algebra/emoji.py`:
 
 ### Test results
 643 tests, 0 failures (47 new tests in `test/test_emoji.py`)
+
+## 2026-03-30 — feat: operator parity, mixed scoring, emoji registry, CLI emoji (v1.7)
+
+**AI Model**: claude-sonnet-4-6
+**Oversight**: Human-specified feature set; AI designed and implemented.
+
+### Actions Taken
+
+1. **A-002 resolved (partial)** — Added `__mul__`, `__truediv__`, `__floordiv__`, `__lshift__`,
+   `__rshift__` to `Feeling` (`feelings.py`). Operator parity with `Emotion` restored.
+   Note: `Feeling.__mul__(int)` uses intensity step-up (`emo + n`) since `Emotion.__mul__(int)`
+   is undefined in Plutchik semantics.
+
+2. **`score_mixed` / `from_mixed`** (`text.py`) — unified single-pass scoring that accumulates
+   both word lexicon hits and emoji character hits into one `EmotionalState`.
+
+3. **`register_emoji` / `unregister_emoji`** (`emoji.py`) — runtime extensibility layer over the
+   immutable `EMOJI_EMOTION_MAP`. User registrations take priority; validated against `get_emotion`.
+   Internal `_lookup()` helper unifies canonical + user registry resolution.
+
+4. **CLI emoji support** (`__main__.py`) — single emoji-only arguments now dispatch via
+   `score_emojis` and print the dominant emotion rather than failing in the expression parser.
+
+5. **`EmotionAnalyzer`** gains `score_mixed`, `analyze_mixed` methods.
+
+### Test results
+690 tests, 0 failures (47 new in test_feeling_operators.py + test_mixed_and_registry.py)

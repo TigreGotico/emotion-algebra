@@ -164,11 +164,14 @@ _EMOJI_EMOTION_MAP_RAW: Dict[str, str] = {
 }
 
 EMOJI_EMOTION_MAP: MappingProxyType = MappingProxyType(_EMOJI_EMOTION_MAP_RAW)
-"""Immutable mapping of Unicode emoji → Plutchik emotion name.
+"""Immutable view of the canonical emoji → Plutchik emotion name mapping.
 
 Values are emotion names accepted by
 :func:`~emotion_algebra.emotions.get_emotion`.  Intensity variants (serenity,
 joy, ecstasy; apprehension, fear, terror; etc.) are preserved where meaningful.
+
+Use :func:`register_emoji` / :func:`unregister_emoji` to extend or override
+mappings at runtime without modifying this constant.
 """
 
 # Pre-compiled pattern matching any character in the map.
@@ -176,6 +179,69 @@ joy, ecstasy; apprehension, fear, terror; etc.) are preserved where meaningful.
 _EMOJI_RE = re.compile(
     "[" + re.escape("".join(_EMOJI_EMOTION_MAP_RAW.keys())) + "]"
 )
+
+# ---------------------------------------------------------------------------
+# Runtime registry — user-defined overrides layered on top of the canonical map
+# ---------------------------------------------------------------------------
+
+_USER_REGISTRY: Dict[str, str] = {}
+
+
+def register_emoji(emoji_char: str, emotion_name: str) -> None:
+    """Register a custom emoji → emotion mapping at runtime.
+
+    Overrides the canonical :data:`EMOJI_EMOTION_MAP` for *emoji_char*.
+    The registration persists for the lifetime of the process.
+
+    Parameters
+    ----------
+    emoji_char:
+        A single Unicode emoji (or multi-codepoint sequence).
+    emotion_name:
+        Name of any emotion known to
+        :func:`~emotion_algebra.emotions.get_emotion`.
+
+    Raises
+    ------
+    ValueError
+        If *emotion_name* is not a recognised emotion name.
+
+    Examples
+    --------
+    >>> register_emoji("🤖", "trust")
+    >>> from_emoji("🤖").name
+    'trust'
+    """
+    from emotion_algebra.emotions import get_emotion
+    if get_emotion(emotion_name) is None:
+        raise ValueError(
+            f"{emotion_name!r} is not a recognised emotion name. "
+            "Use get_emotion() to verify valid names."
+        )
+    _USER_REGISTRY[emoji_char.strip()] = emotion_name
+
+
+def unregister_emoji(emoji_char: str) -> bool:
+    """Remove a runtime emoji registration.
+
+    Has no effect on the canonical :data:`EMOJI_EMOTION_MAP`.
+
+    Parameters
+    ----------
+    emoji_char:
+        The emoji character to remove from the runtime registry.
+
+    Returns
+    -------
+    bool
+        ``True`` if the entry existed and was removed, ``False`` otherwise.
+    """
+    return _USER_REGISTRY.pop(emoji_char.strip(), None) is not None
+
+
+def _lookup(emoji_char: str) -> Optional[str]:
+    """Return the emotion name for *emoji_char*, checking user registry first."""
+    return _USER_REGISTRY.get(emoji_char) or _EMOJI_EMOTION_MAP_RAW.get(emoji_char)
 
 
 def from_emoji(emoji_char: str) -> Optional[EmotionBase]:
@@ -194,7 +260,7 @@ def from_emoji(emoji_char: str) -> Optional[EmotionBase]:
     """
     from emotion_algebra.emotions import get_emotion
     key = emoji_char.strip()
-    label = EMOJI_EMOTION_MAP.get(key)
+    label = _lookup(key)
     if label is None:
         return None
     return get_emotion(label)
@@ -221,7 +287,7 @@ def score_emojis(text: str) -> "EmotionalState":
     from emotion_algebra.emotions import get_emotion
     state = EmotionalState()
     for char in text:
-        label = EMOJI_EMOTION_MAP.get(char)
+        label = _lookup(char)
         if label:
             emo = get_emotion(label)
             if emo is not None:
@@ -292,7 +358,7 @@ class DeepMojiAdapter:
         from emotion_algebra.emotions import get_emotion
         state = EmotionalState()
         for emoji_char, score in scores.items():
-            label = EMOJI_EMOTION_MAP.get(emoji_char)
+            label = _lookup(emoji_char)
             if label:
                 emo = get_emotion(label)
                 if emo is not None:
@@ -338,7 +404,7 @@ class DeepMojiAdapter:
         from emotion_algebra.emotions import get_emotion
         state = EmotionalState()
         for emoji_char, score in scores.items():
-            label = EMOJI_EMOTION_MAP.get(emoji_char)
+            label = _lookup(emoji_char)
             if label:
                 emo = get_emotion(label)
                 if emo is not None:

@@ -21,6 +21,32 @@ pip install emotion_algebra
 | `[lexicon]` | pandas | `lexicons.py` — word→emotion CSV lookup |
 | `[transformers]` | transformers>=4.0, torch | `text.py` — HuggingFace pipeline tagging |
 
+## How do I score text that contains both words and emoji?
+
+Use `score_mixed` / `from_mixed` — they run both the word lexicon and emoji map in a single pass:
+
+```python
+from emotion_algebra.text import score_mixed, from_mixed
+
+state = score_mixed("I'm so happy 😄🎉")   # EmotionalState — both signals blended
+emotion = from_mixed("grief and sorrow 😭") # dominant Emotion
+```
+
+`EmotionAnalyzer.score_mixed(text)` and `EmotionAnalyzer.analyze_mixed(text)` expose the same API.
+
+## How do I add custom emoji mappings?
+
+```python
+from emotion_algebra.emoji import register_emoji, unregister_emoji
+
+register_emoji("🤖", "trust")    # 🤖 now maps to trust
+unregister_emoji("🤖")           # remove — canonical map restored
+```
+
+`register_emoji` validates the emotion name and raises `ValueError` for unknown names.
+Custom registrations layer on top of `EMOJI_EMOTION_MAP` and affect all functions
+(`from_emoji`, `score_emojis`, `DeepMojiAdapter`).
+
 ## How do I map emojis to emotions?
 
 Three entry points in `emotion_algebra.emoji`:

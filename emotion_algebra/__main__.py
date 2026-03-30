@@ -191,6 +191,17 @@ def main() -> None:
         _show_info(" ".join(args[1:]))
         return
 
+    # Emoji shortcut: single token where every non-whitespace char is a mapped emoji
+    if len(args) == 1:
+        from emotion_algebra.emoji import score_emojis, EMOJI_EMOTION_MAP
+        candidate = args[0]
+        chars = [ch for ch in candidate if ch.strip()]
+        if chars and all(ch in EMOJI_EMOTION_MAP for ch in chars):
+            state = score_emojis(candidate)
+            result = state.dominant()
+            _print_result(result, candidate)
+            return
+
     _eval_expr(args)
 
 
