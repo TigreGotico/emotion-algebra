@@ -359,7 +359,7 @@ class CompositeEmotion(Emotion):
             emo = deepcopy(self)
             return emo
         if isinstance(other, Emotion):
-            m = self.as_matrix * other.as_matrix
+            m = np.matmul(self.as_matrix, other.as_matrix)
 
             return m
         return NotImplemented

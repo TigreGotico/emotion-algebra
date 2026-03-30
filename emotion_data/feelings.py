@@ -68,7 +68,7 @@ OPPOSITE_FEELINGS_NAMES = {
     "shame": "dominance",
     "bemusement": "dismay",
     "zeal": "horror",
-    "acknowledgment": "listlessness",
+    "acknowledgement": "listlessness",
     "devotion": "shame",
     "acquiescence": "impatience",
     "subservience": "hatred",
@@ -160,15 +160,6 @@ class Feeling(object):
     def dimensions(self):
         return [emo.dimension for emo in self.emotions]
 
-    @staticmethod
-    def string_to_emotion(string=""):
-        from emotion_data.emotions import EMOTIONS
-        if string in EMOTIONS:
-            return copy(EMOTIONS[string])
-        if string in FEELINGS:
-            return FEELINGS[string]
-        return string
-
     @property
     def emotional_flow(self):
         # scalar product
@@ -228,7 +219,7 @@ class Feeling(object):
             return feel
 
         if isinstance(other, str):
-            other = self.string_to_emotion(other)
+            other = Emotion.string_to_emotion(other)
             if isinstance(other, str):
                 return self.name + other
 
@@ -256,7 +247,7 @@ class Feeling(object):
 
     def __sub__(self, other):
         if isinstance(other, str):
-            other = self.string_to_emotion(other)
+            other = Emotion.string_to_emotion(other)
 
         if isinstance(other, Feeling):
             feel = deepcopy(self)
@@ -326,7 +317,7 @@ class Feeling(object):
     """
     def __mul__(self, other):
         if isinstance(other, str):
-            other = self.string_to_emotion(other)
+            other = Emotion.string_to_emotion(other)
         if isinstance(other, Neutrality):
             return copy(self)
         # TODO composite emotion
@@ -342,7 +333,7 @@ class Feeling(object):
 
     def __truediv__(self, other):
         if isinstance(other, str):
-            other = self.string_to_emotion(other)
+            other = Emotion.string_to_emotion(other)
         if isinstance(other, Neutrality):
             return copy(self)
         if isinstance(other, Emotion):
@@ -357,7 +348,7 @@ class Feeling(object):
 
     def __floordiv__(self, other):
         if isinstance(other, str):
-            other = self.string_to_emotion(other)
+            other = Emotion.string_to_emotion(other)
         if isinstance(other, Neutrality):
             return copy(self)
         if isinstance(other, Emotion):
@@ -371,7 +362,7 @@ class Feeling(object):
 
     def __lshift__(self, other):
         if isinstance(other, str):
-            other = self.string_to_emotion(other)
+            other = Emotion.string_to_emotion(other)
         if isinstance(other, Neutrality):
             return copy(self)
         if isinstance(other, Emotion):
@@ -388,7 +379,7 @@ class Feeling(object):
 
     def __rshift__(self, other):
         if isinstance(other, str):
-            other = self.string_to_emotion(other)
+            other = Emotion.string_to_emotion(other)
         if isinstance(other, Neutrality):
             return copy(self)
         if isinstance(other, Emotion):

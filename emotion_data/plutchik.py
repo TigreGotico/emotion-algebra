@@ -355,8 +355,8 @@ class Emotion(object):
     @property
     def as_matrix(self):
         sensitivity, attention, pleasantness, aptitude = self.emotion_vector
-        return np.matrix(((int(sensitivity), int(attention)),
-                          (int(pleasantness), int(aptitude))))
+        return np.array([[int(sensitivity), int(attention)],
+                         [int(pleasantness), int(aptitude)]])
 
     def __len__(self):
         return len([e for e in self.emotion_vector if e.emotional_flow != 0])
@@ -396,7 +396,7 @@ class Emotion(object):
         if isinstance(other, str):
             other = self.string_to_emotion(other)
             if isinstance(other, str):
-                return self.name - other
+                return NotImplemented
         if isinstance(other, Neutrality):
             return deepcopy(self)
         if isinstance(other, Emotion):
