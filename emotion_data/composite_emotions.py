@@ -36,6 +36,7 @@ from typing import List, Optional, Union
 
 import numpy as np
 
+from emotion_data.base import EmotionBase
 from emotion_data.plutchik import Emotion, EmotionalDimension, DIMENSIONS, Neutrality, _circumplex_type
 from emotion_data.feelings import Feeling
 
@@ -107,7 +108,7 @@ OPPOSITE_EMOTIONS_NAMES = {
 }
 
 
-class CompositeEmotion(Emotion):
+class CompositeEmotion(EmotionBase):
     """An emotion spanning two :class:`EmotionalDimension` axes simultaneously.
 
     Built from named dyads in ``COMPOSITE_EMOTIONS_NAMES`` (e.g.
@@ -125,8 +126,21 @@ class CompositeEmotion(Emotion):
     aptitude_dimension = DIMENSIONS["aptitude"]
 
     def __init__(self, name: str = "") -> None:
-        Emotion.__init__(self, name)
+        self._name: str = name
+        self._kind: str = ""
         self.components: List[Emotion] = []
+
+    @staticmethod
+    def string_to_emotion(string: str = "") -> "Union[Emotion, Feeling, str]":
+        """Resolve a string to an Emotion or Feeling object, or return the string unchanged."""
+        from emotion_data.emotions import EMOTIONS
+        from emotion_data.feelings import FEELINGS
+        if string in EMOTIONS:
+            from copy import copy
+            return copy(EMOTIONS[string])
+        if string in FEELINGS:
+            return FEELINGS[string]
+        return string
 
     @staticmethod
     def get_composite_from_emotions(emotion1, emotion2):
@@ -228,11 +242,8 @@ class CompositeEmotion(Emotion):
         return _circumplex_type(self.valence, self.arousal)
 
     @property
-    def kind(self):
-        # TODO science this instead of eye balling
-        #for kind in EMOTION_KIND_NAMES:
-        #    if self._name in EMOTION_KIND_NAMES[kind]:
-        #        return kind
+    def kind(self) -> str:
+        """Category classification for this composite emotion."""
         return self._kind
 
     @property
@@ -271,7 +282,6 @@ class CompositeEmotion(Emotion):
         if len(self.components) == 2:
             from emotion_data.feelings import FEELINGS_TO_EMOTION_MAP, FEELINGS
             for feel in FEELINGS_TO_EMOTION_MAP:
-                # print(self.components[0].name, self.components[1].name)
                 feel = feel.lower()
                 if self.components[0].name in [f.name.lower() for f in FEELINGS_TO_EMOTION_MAP[feel]] and self.components[
                     1].name in [f.name.lower() for f in FEELINGS_TO_EMOTION_MAP[feel]]:
@@ -409,16 +419,6 @@ class CompositeEmotion(Emotion):
             return emo
         return NotImplemented
 
-    def __lt__(self, other):
-        if isinstance(other, Emotion):
-            return self.emotional_flow < other.emotional_flow
-        return self.emotional_flow < other
-
-    def __le__(self, other):
-        if isinstance(other, Emotion):
-            return self.emotional_flow <= other.emotional_flow
-        return self.emotional_flow <= other
-
     def __eq__(self, other):
         if isinstance(other, Emotion):
             if other._dimension == self.dimension:
@@ -432,16 +432,6 @@ class CompositeEmotion(Emotion):
                 return self.emotional_flow != other.emotional_flow
             return True
         return self.name != other
-
-    def __gt__(self, other):
-        if isinstance(other, Emotion):
-            return self.emotional_flow > other.emotional_flow
-        return self.emotional_flow > other
-
-    def __ge__(self, other):
-        if isinstance(other, Emotion):
-            return self.emotional_flow >= other.emotional_flow
-        return self.emotional_flow >= other
 
     def __contains__(self, item):
         if isinstance(item, str):
