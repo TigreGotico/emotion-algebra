@@ -146,9 +146,9 @@ class TestLexicons:
         assert result is not None
 
     def test_get_emotion_known_word(self):
-        from emotion_data.lexicons import get_emotion as lex_get_emotion, LEXICON
+        from emotion_data.lexicons import get_word_emotion, LEXICON
         word = next(iter(LEXICON))
-        result = lex_get_emotion(word)
+        result = get_word_emotion(word)
         assert result is not None
 
     def test_get_sentiment_known_word(self):
@@ -170,9 +170,9 @@ class TestLexicons:
         assert result is not None
 
     def test_unknown_word_returns_none(self):
-        from emotion_data.lexicons import get_color, get_emotion as lex_get_emotion
+        from emotion_data.lexicons import get_color, get_word_emotion
         assert get_color("xyz_not_in_lexicon_abcdef") is None
-        assert lex_get_emotion("xyz_not_in_lexicon_abcdef") is None
+        assert get_word_emotion("xyz_not_in_lexicon_abcdef") is None
 
     def test_lexicon_has_entries(self):
         from emotion_data.lexicons import LEXICON
@@ -212,33 +212,22 @@ class TestEmotionAnalyzer:
         assert isinstance(d, EmotionalDimension)
 
     def test_analyzer_get_method(self):
-        try:
-            from emotion_data import EmotionAnalyzer
-            a = EmotionAnalyzer()
-            # get() calls lexicons.get_emotion (name collision in __init__.py)
-            result = a.get("anger")
-            assert result is not None
-        except ImportError:
-            pytest.skip("deepmoji not available")
+        from emotion_data import EmotionAnalyzer
+        a = EmotionAnalyzer()
+        result = a.get("anger")
+        assert isinstance(result, Emotion)
 
     def test_analyzer_random_emotion(self):
-        try:
-            from emotion_data import EmotionAnalyzer
-            a = EmotionAnalyzer()
-            e = a.random_emotion()
-            assert isinstance(e, Emotion)
-        except ImportError:
-            pytest.skip("deepmoji not available")
+        from emotion_data import EmotionAnalyzer
+        a = EmotionAnalyzer()
+        e = a.random_emotion()
+        assert isinstance(e, Emotion)
 
     def test_analyzer_emotion_method(self):
-        try:
-            from emotion_data import EmotionAnalyzer
-            a = EmotionAnalyzer()
-            # emotion() calls lexicons.get_emotion due to import shadowing in __init__.py
-            e = a.emotion("anger")
-            assert e is not None
-        except ImportError:
-            pytest.skip("deepmoji not available")
+        from emotion_data import EmotionAnalyzer
+        a = EmotionAnalyzer()
+        e = a.emotion("anger")
+        assert isinstance(e, Emotion)
 
     def test_analyzer_feeling_method(self):
         try:

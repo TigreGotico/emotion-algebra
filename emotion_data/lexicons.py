@@ -7,7 +7,7 @@ def get_color(word):
     return None
 
 
-def get_emotion(word):
+def get_word_emotion(word):
     if word in LEXICON:
         return LEXICON[word]["emotion"]
     return None
