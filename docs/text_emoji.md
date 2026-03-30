@@ -85,23 +85,19 @@ Emojis not in `EMOJI_EMOTION_MAP` (or the user registry) are silently skipped.
 
 ---
 
-## 5. HuggingFace bridge
+## 5. Neural engine — DeepMojiONNXAdapter
 
-`HFEmotionAdapter` (`text.py:HFEmotionAdapter`) wraps any HuggingFace `text-classification` pipeline whose label set contains Plutchik-compatible names.
+`DeepMojiONNXAdapter` (`deepmoji.py:DeepMojiONNXAdapter`) is the canonical neural text-to-emotion engine. It runs the DeepMoji ONNX model, converts top-k emoji probabilities through `DeepMojiAdapter`, and returns `Emotion` / `EmotionalState`.
 
-Requires the `[transformers]` extra:
-
-```bash
-pip install "emotion-algebra[transformers]"
-```
+`deepmoji-onnx` is a **core dependency** — no extra required. The model is downloaded from HuggingFace on first use and cached to `~/.cache/deepmoji`.
 
 ```python
-from emotion_algebra.text import HFEmotionAdapter
+from emotion_algebra.deepmoji import DeepMojiONNXAdapter
 
-# Works with any model whose labels overlap with EMOTIONS keys
-adapter = HFEmotionAdapter("j-hartmann/emotion-english-distilroberta-base")
-adapter.from_text("I'm absolutely furious!")    # → Emotion
-adapter.from_scores({"anger": 0.8, "joy": 0.1, "fear": 0.1})  # → Emotion
+adapter = DeepMojiONNXAdapter()                        # downloads model once
+emotion = adapter.analyze("I'm absolutely furious!")   # → Emotion or None
+state   = adapter.score("Best day ever! 😄")           # → EmotionalState
+scores  = adapter.top_emoji_scores("rainy days")       # → {emoji: prob, ...}
 ```
 
 ---
@@ -110,8 +106,8 @@ adapter.from_scores({"anger": 0.8, "joy": 0.1, "fear": 0.1})  # → Emotion
 
 | Pipeline | Input | Deps | Best for |
 |----------|-------|------|----------|
-| `from_text` / `score_text` | words | none | Clean English prose |
+| `from_text` / `score_text` | words | none (lexicon) | Clean English prose |
 | `from_emoji` / `score_emojis` | emoji chars | none | Social media, chat |
 | `score_mixed` / `from_mixed` | words + emoji | none | General unstructured text |
-| `DeepMojiAdapter` | `{emoji: prob}` | none | DeepMoji / torchMoji output |
-| `HFEmotionAdapter` | text | `[transformers]` | High-accuracy transformer models |
+| `DeepMojiAdapter` | `{emoji: prob}` | none | Raw emoji probability dicts |
+| `DeepMojiONNXAdapter` | text | `deepmoji-onnx` (core) | Neural inference, highest accuracy |

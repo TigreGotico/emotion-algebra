@@ -24,7 +24,10 @@ Python library implementing **emotion algebra** — emotions as first-class math
 | **Plutchik's Wheel** (1980) | Robert Plutchik | 8 primaries, named dyads, opposite pairs |
 | **Russell's Circumplex** (1980) | James Russell | `type` classification via valence × arousal quadrants |
 | **Scherer CPM** (2001) | Klaus Scherer | Cognitive appraisal → primary emotion mapping |
-| **Felbo et al.** (2017) | DeepMoji team | Emoji label set for `DeepMojiAdapter` |
+| **Felbo et al.** (2017) | DeepMoji team | Emoji label set for `DeepMojiAdapter`; ONNX model via `deepmoji-onnx` |
+| **NRC EmoLex** (2013) | Mohammad & Turney | Plutchik emotion labels in canonical lexicon |
+| **SenticNet 6** (2022) | Cambria et al. | Hourglass float axes in canonical lexicon |
+| **AFINN-111** (2011) | Nielsen | Integer sentiment scores in canonical lexicon |
 
 ## Key design decisions
 
@@ -48,5 +51,5 @@ Python library implementing **emotion algebra** — emotions as first-class math
 | `EmotionTimeline` | `state.py:EmotionTimeline` | Sequence of EmotionalState snapshots |
 | `Appraisal` | `appraisal.py:Appraisal` | Scherer CPM appraisal dimensions |
 | `DeepMojiAdapter` | `emoji.py:DeepMojiAdapter` | Bridge from emoji probability distributions |
-| `HFEmotionAdapter` | `text.py:HFEmotionAdapter` | Bridge from HuggingFace text classifiers |
+| `DeepMojiONNXAdapter` | `deepmoji.py:DeepMojiONNXAdapter` | Neural text→emoji→emotion (canonical engine) |
 | `EmotionAnalyzer` | `__init__.py:EmotionAnalyzer` | High-level facade over all sub-modules |

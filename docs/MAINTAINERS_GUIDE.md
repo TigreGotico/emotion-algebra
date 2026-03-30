@@ -14,14 +14,18 @@ emotion-algebra/
 │   ├── lexicons.py          # Word→emotion CSV loader
 │   ├── state.py             # EmotionalState, EmotionTimeline
 │   ├── distance.py          # emotion_distance, closest_emotion, emotion_clusters
-│   ├── text.py              # from_text, score_text, score_mixed, HFEmotionAdapter
+│   ├── text.py              # from_text, score_text, score_mixed, from_mixed
+│   ├── deepmoji.py          # DeepMojiONNXAdapter (canonical neural engine)
 │   ├── emoji.py             # EMOJI_EMOTION_MAP, DeepMojiAdapter, register_emoji
 │   ├── appraisal.py         # Appraisal dataclass, appraisal_to_emotion
 │   ├── float_emotion.py     # FloatEmotion (continuous space)
 │   ├── reference_maps.py    # Raw reference data (Parrott, HUMAINE, etc.)
 │   ├── __init__.py          # Public API + EmotionAnalyzer facade
+│   ├── version.py           # OVOS version block (source of truth for versioning)
 │   ├── __main__.py          # CLI entry point
-│   └── word_emotion_lexicon.csv
+│   └── word_emotion_lexicon.csv  # 50k canonical lexicon (NRC+SenticNet+AFINN+original)
+├── scripts/
+│   └── build_lexicon.py     # Regenerate word_emotion_lexicon.csv from sources
 ├── test/                    # pytest test suite
 ├── docs/                    # This documentation
 ├── examples/                # Runnable example scripts
@@ -122,9 +126,32 @@ For per-process overrides without modifying the source, use `register_emoji()`.
 | Extra | Trigger | Test strategy |
 |-------|---------|--------------|
 | `[lexicon]` | `pandas` import in `lexicons.py` | CSV loaded at import; no mock needed |
-| `[transformers]` | `HFEmotionAdapter.__init__` lazy import | Mock `transformers` in `test_text.py` |
+| `[fast]` | `ahocorasick_ner` import in `lexicons.py` | `monkeypatch._ac_available` in `test_lexicons_ac.py` |
+| core: `deepmoji-onnx` | `deepmoji_onnx` import in `deepmoji.py` | Mocked in `test_deepmoji_adapter.py` |
 
-Never add a hard dependency to the core package. All optional imports must be inside the function/method body with a clear `ImportError` message pointing to the correct extra.
+Optional extras use lazy imports inside the function body. Core deps (`numpy`, `deepmoji-onnx`) are always available.
+
+---
+
+## Canonical lexicon
+
+`emotion_algebra/word_emotion_lexicon.csv` (~50k entries) is a merged artifact from:
+
+| Source | Provides | Coverage |
+|--------|----------|----------|
+| Original word-emotion CSV | color, orientation, subjectivity | ~14k words |
+| NRC EmoLex (via `nrclex`) | Plutchik emotion label | ~6.4k words |
+| SenticNet 6 (via `senticnet`) | 4 Hourglass float axes | ~200k concepts |
+| AFINN-111 (downloaded, cached) | Integer sentiment score | ~2.5k words |
+
+To regenerate after updating source data:
+
+```bash
+pip install nrclex senticnet
+python scripts/build_lexicon.py
+```
+
+AFINN-111 is cached to `~/.local/share/emotion-algebra/lexicons/AFINN-111.txt` on first run.
 
 ---
 

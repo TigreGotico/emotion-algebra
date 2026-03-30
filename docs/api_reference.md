@@ -331,14 +331,17 @@ Single-pass scoring combining word lexicon and emoji map. Recommended entry poin
 
 `score_mixed(text).dominant()`. — `text.py:from_mixed`
 
-### `HFEmotionAdapter`
+### `DeepMojiONNXAdapter`
 
-Bridge to any HuggingFace `text-classification` pipeline with Plutchik-compatible labels. Requires `[transformers]` extra. — `text.py:HFEmotionAdapter`
+Canonical neural text-to-emotion engine wrapping `deepmoji-onnx`. Core dependency — always available. — `deepmoji.py:DeepMojiONNXAdapter`
 
 | Method | Returns | Description |
 |--------|---------|-------------|
-| `from_text(text)` | `Emotion \| None` | Run pipeline → dominant emotion |
-| `from_scores(scores)` | `Emotion \| None` | Blend `{label: prob}` dict → dominant emotion |
+| `analyze(text)` | `Emotion \| None` | DeepMoji ONNX → top-k emoji → dominant emotion |
+| `score(text)` | `EmotionalState` | DeepMoji ONNX → full 4-axis accumulation |
+| `top_emoji_scores(text)` | `dict[str, float]` | Raw `{emoji: probability}` from model |
+
+Constructor: `DeepMojiONNXAdapter(variant='fp32', cache_dir=None, top_k=10)`
 
 ---
 
