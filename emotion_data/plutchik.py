@@ -45,6 +45,7 @@ from typing import Union
 
 import numpy as np
 
+from emotion_data.base import EmotionBase
 from emotion_data.reference_maps import EMOTION_CONTRASTS
 
 
@@ -125,7 +126,7 @@ EMOTION_KIND_NAMES['future appraisal'].append("serenity")
 EMOTION_KIND_NAMES['future appraisal'].append("anticipation")
 
 
-class Emotion(object):
+class Emotion(EmotionBase):
     """A single emotion from the Hourglass of Emotions model.
 
     Supports arithmetic operators that move the emotion along its dimensional axis:
@@ -359,8 +360,6 @@ class Emotion(object):
 
     def __str__(self):
         return self.name
-    # +, -, *, @, /, //, %, divmod(), <<, >>, &, ^, |
-    # TODO radds
 
     @staticmethod
     def string_to_emotion(string=""):
@@ -391,16 +390,6 @@ class Emotion(object):
                 pleasantness = copy(self)
 
         return [sensitivity, attention, pleasantness, aptitude]
-
-    @property
-    def as_array(self):
-        return np.array([emo.emotional_flow for emo in self.emotion_vector])
-
-    @property
-    def as_matrix(self):
-        sensitivity, attention, pleasantness, aptitude = self.emotion_vector
-        return np.array([[int(sensitivity), int(attention)],
-                         [int(pleasantness), int(aptitude)]])
 
     def __len__(self):
         return len([e for e in self.emotion_vector if e.emotional_flow != 0])
@@ -546,14 +535,6 @@ class Emotion(object):
     # object.__ixor__(self, other)
     # object.__ior__(self, other)
 
-    def __bool__(self) -> bool:
-        """True when this emotion has non-zero intensity (i.e. is not Neutrality).
-
-        Truthiness reflects *presence*, not *valence* — fear and anger are both
-        truthy even though they have negative flow.
-        """
-        return self.emotional_flow != 0
-
     def __neg__(self):
         # get opposite emotion
         return copy(self.opposite_emotion)
@@ -569,14 +550,8 @@ class Emotion(object):
     def __int__(self):
         return self.emotional_flow + self.intensity_offset
 
-    def __float__(self):
+    def __float__(self) -> float:
         return float(self.emotional_flow)
-
-    def __lt__(self, other):
-        return int(self) < int(other)
-
-    def __le__(self, other):
-        return int(self) <= int(other)
 
     def __eq__(self, other):
         if isinstance(other, Emotion):
@@ -591,12 +566,6 @@ class Emotion(object):
                 return self.emotional_flow != other.emotional_flow
             return True
         return self._name != other
-
-    def __gt__(self, other):
-        return int(self) > int(other)
-
-    def __ge__(self, other):
-        return int(self) >= int(other)
 
     def __contains__(self, item):
         if isinstance(item, Neutrality):
