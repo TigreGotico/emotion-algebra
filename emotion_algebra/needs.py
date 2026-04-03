@@ -58,11 +58,25 @@ MAXNEEF_DEFICIT_EMOTIONS: dict[str, str] = {
 # ---------------------------------------------------------------------------
 
 MURRAY_DEFICIT_EMOTIONS: dict[str, str] = {
-    "sentience":      "boredom",       # need for aesthetic/sensory experience
-    "exhibition":     "pensiveness",   # need for social attention/display
-    "nurturance":     "sadness",       # need to care for others
-    "harm_avoidance": "fear",          # need to avoid pain/danger
-    "achievement":    "annoyance",     # need for accomplishment → frustration
+    # Murray (1938) — all 17 psychogenic needs
+    # Each mapped to the primary Plutchik emotion that arises when the need is blocked.
+    "achievement":    "annoyance",     # accomplish difficult tasks → frustration
+    "affiliation":    "sadness",       # form friendships → loneliness/grief
+    "aggression":     "anger",         # overcome opposition → rage at impotence
+    "autonomy":       "anger",         # resist constraint → obstacle to remove
+    "counteraction":  "annoyance",     # overcome weakness → frustrated determination
+    "defendance":     "fear",          # defend self against criticism → threat
+    "deference":      "apprehension",  # follow a superior → uncertainty without guidance
+    "dominance":      "annoyance",     # control environment → frustrated agency
+    "exhibition":     "pensiveness",   # make an impression → melancholy invisibility
+    "harm_avoidance": "fear",          # avoid pain/danger → threat response
+    "infavoidance":   "apprehension",  # avoid humiliation → social anxiety
+    "nurturance":     "sadness",       # care for others → grief at helplessness
+    "order":          "boredom",       # arrange/organise → disengaged chaos
+    "play":           "boredom",       # fun/humour → dull disengagement
+    "rejection":      "disgust",       # exclude inferior → revulsion unmet
+    "sentience":      "boredom",       # aesthetic/sensory experience → dull deprivation
+    "understanding":  "distraction",   # enquire/analyse → disoriented confusion
 }
 
 # Combined mapping
