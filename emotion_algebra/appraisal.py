@@ -41,22 +41,14 @@ AgencyT      = Literal["self", "other", "circumstance"]
 CopingT      = Literal["high", "low"]
 PleasantnessT = Literal["pleasant", "unpleasant"]
 
-# Mapping from categorical values to floats for continuous appraisal
-_CATEGORICAL_TO_FLOAT: dict[str | None, float] = {
-    # Novelty
-    "unexpected": 1.0, "expected": 0.0,
-    # Relevance
-    "relevant": 1.0, "irrelevant": 0.0,
-    # Congruence
-    "congruent": 1.0, "incongruent": 0.0,
-    # Agency
-    "self": 1.0, "other": 0.5, "circumstance": 0.0,
-    # Coping
-    "high": 1.0, "low": 0.0,
-    # Intrinsic pleasantness
-    "pleasant": 1.0, "unpleasant": 0.0,
-    # None = neutral / unknown
-    None: 0.5,
+# Per-field categorical → float mappings (validates cross-field misuse)
+_FIELD_CATEGORICAL: dict[str, dict[str, float]] = {
+    "novelty":                {"unexpected": 1.0, "expected": 0.0},
+    "goal_relevance":         {"relevant": 1.0, "irrelevant": 0.0},
+    "goal_congruence":        {"congruent": 1.0, "incongruent": 0.0},
+    "agency":                 {"self": 1.0, "other": 0.5, "circumstance": 0.0},
+    "coping_potential":       {"high": 1.0, "low": 0.0},
+    "intrinsic_pleasantness": {"pleasant": 1.0, "unpleasant": 0.0},
 }
 
 
@@ -96,24 +88,35 @@ class Appraisal:
     def to_float(self) -> _FloatAppraisal:
         """Return a normalised copy with all fields as floats in [0, 1].
 
-        Categorical values are mapped via the Scherer scale:
+        Categorical values are mapped via per-field Scherer scales:
         ``"unexpected"`` → 1.0, ``"expected"`` → 0.0, ``None`` → 0.5, etc.
         Float values are passed through unchanged (clamped to [0, 1]).
+
+        Raises
+        ------
+        ValueError
+            If a string value is not valid for its field (e.g. ``agency="low"``).
         """
-        def _convert(val: object) -> float:
+        def _convert(field_name: str, val: object) -> float:
             if val is None:
                 return 0.5
             if isinstance(val, (int, float)):
                 return max(0.0, min(1.0, float(val)))
-            return _CATEGORICAL_TO_FLOAT.get(val, 0.5)
+            allowed = _FIELD_CATEGORICAL.get(field_name, {})
+            if val not in allowed:
+                raise ValueError(
+                    f"Invalid value {val!r} for field {field_name!r}; "
+                    f"expected one of {set(allowed)} or a float"
+                )
+            return allowed[val]
 
         return _FloatAppraisal(
-            novelty=_convert(self.novelty),
-            goal_relevance=_convert(self.goal_relevance),
-            goal_congruence=_convert(self.goal_congruence),
-            agency=_convert(self.agency),
-            coping_potential=_convert(self.coping_potential),
-            intrinsic_pleasantness=_convert(self.intrinsic_pleasantness),
+            novelty=_convert("novelty", self.novelty),
+            goal_relevance=_convert("goal_relevance", self.goal_relevance),
+            goal_congruence=_convert("goal_congruence", self.goal_congruence),
+            agency=_convert("agency", self.agency),
+            coping_potential=_convert("coping_potential", self.coping_potential),
+            intrinsic_pleasantness=_convert("intrinsic_pleasantness", self.intrinsic_pleasantness),
         )
 
     def to_dict(self) -> dict:
@@ -252,29 +255,37 @@ def appraisal_to_float_emotion(appraisal: Appraisal) -> "FloatEmotion":
 
     a = appraisal.to_float()
 
-    # Scherer SEC → Hourglass axes
-    # 1. Sensitivity: threat without coping capacity
-    #    High when: relevant + incongruent + can't cope
-    sensitivity = (1.0 - a.coping_potential) * a.goal_relevance * (1.0 - a.goal_congruence)
+    # Centre inputs at 0 (signed space) so neutral appraisals → zero vector
+    cp  = a.coping_potential - 0.5       # >0 = can cope, <0 = can't
+    gr  = a.goal_relevance - 0.5         # >0 = relevant
+    gc  = a.goal_congruence - 0.5        # >0 = congruent, <0 = incongruent
+    nov = a.novelty - 0.5                # >0 = unexpected
+    ip  = a.intrinsic_pleasantness - 0.5 # >0 = pleasant
+    ag  = a.agency - 0.5                 # >0 = self, 0 = other, <0 = circumstance
 
-    # 2. Attention: novelty-driven engagement
-    #    High when: unexpected + relevant
-    attention = a.novelty * 0.6 + a.goal_relevance * 0.4
+    # Scherer SEC → Hourglass axes (in signed space, no post-centering needed)
+    # 1. Sensitivity (positive = anger, negative = fear/terror):
+    #    Threat (incongruent + relevant + can't cope) → negative pole (fear).
+    #    Coping against obstacle → positive pole (anger).
+    sensitivity = cp * 2.0 * max(0.0, -gc) * max(0.0, gr + 0.5)
 
-    # 3. Pleasantness: hedonic valence
-    #    Goal congruence (weighted by relevance) + intrinsic pleasantness
-    pleasantness = a.goal_congruence * a.goal_relevance * 0.7 + a.intrinsic_pleasantness * 0.3
+    # 2. Attention (positive = vigilance/interest, negative = surprise/amazement):
+    #    High novelty → negative pole (surprise); relevance → positive (vigilance).
+    attention = -nov * 0.6 + gr * 0.4
 
-    # 4. Aptitude: competence + alignment
-    #    High when: can cope + goal-congruent
-    aptitude = a.coping_potential * 0.6 + a.goal_congruence * 0.4
+    # 3. Pleasantness (positive = joy, negative = sadness):
+    #    Goal congruence weighted by relevance + intrinsic hedonic tone.
+    pleasantness = gc * (gr + 0.5) * 0.7 + ip * 0.3
 
-    # Centre at 0 and scale to [-1, +1]
+    # 4. Aptitude (positive = trust, negative = disgust):
+    #    Competence + alignment + agency (self-caused congruent → trust).
+    aptitude = cp * 0.5 + gc * 0.3 + ag * 0.2
+
     return FloatEmotion(
-        sensitivity=(sensitivity - 0.5) * 2.0,
-        attention=(attention - 0.5) * 2.0,
-        pleasantness=(pleasantness - 0.5) * 2.0,
-        aptitude=(aptitude - 0.5) * 2.0,
+        sensitivity=max(-1.0, min(1.0, sensitivity)),
+        attention=max(-1.0, min(1.0, attention)),
+        pleasantness=max(-1.0, min(1.0, pleasantness)),
+        aptitude=max(-1.0, min(1.0, aptitude)),
     )
 
 
@@ -323,9 +334,8 @@ def float_emotion_to_neuro_deltas(
     """
     vec = fe.as_array  # [sensitivity, attention, pleasantness, aptitude]
 
-    # Arousal → dopamine: attention is the primary driver (novelty/salience),
-    # sensitivity contributes but can be negative (no threat = no arousal penalty)
-    dopamine_delta = float(vec[1]) / 2.0 * scale  # attention-driven
+    # Arousal → dopamine: sensitivity (arousal) + attention (salience)
+    dopamine_delta = (float(vec[0]) + float(vec[1])) / 4.0 * scale
 
     # Valence → serotonin (positive) or adrenaline (negative)
     net_valence = (float(vec[2]) + float(vec[3])) / 4.0 * scale

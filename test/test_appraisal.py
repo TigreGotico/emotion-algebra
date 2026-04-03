@@ -203,6 +203,15 @@ class TestAppraisalToFloat:
         assert a.intrinsic_pleasantness == "pleasant"
         assert a.novelty == "unexpected"
 
+    def test_invalid_cross_field_value_raises(self):
+        """e.g. agency='low' should be rejected, not silently mapped."""
+        with pytest.raises(ValueError, match="agency"):
+            Appraisal(agency="low").to_float()
+
+    def test_unknown_string_value_raises(self):
+        with pytest.raises(ValueError, match="novelty"):
+            Appraisal(novelty="bogus").to_float()
+
 
 def _axes(fe):
     """Extract named axes from a FloatEmotion as_array [sens, attn, pleas, apt]."""
@@ -225,11 +234,11 @@ class TestAppraisalToFloatEmotion:
         sens, attn, pleas, apt = _axes(appraisal_to_float_emotion(a))
         assert pleas > 0
 
-    def test_incongruent_low_coping_high_sensitivity(self):
-        """Relevant + incongruent + can't cope → high sensitivity (threat)."""
+    def test_incongruent_low_coping_negative_sensitivity(self):
+        """Relevant + incongruent + can't cope → negative sensitivity (fear)."""
         a = Appraisal(goal_relevance=1.0, goal_congruence=0.0, coping_potential=0.0)
         sens, attn, pleas, apt = _axes(appraisal_to_float_emotion(a))
-        assert sens > 0
+        assert sens < 0
 
     def test_congruent_high_coping_positive_aptitude(self):
         """Congruent + can cope → high aptitude (trust)."""
@@ -237,18 +246,19 @@ class TestAppraisalToFloatEmotion:
         sens, attn, pleas, apt = _axes(appraisal_to_float_emotion(a))
         assert apt > 0
 
-    def test_novel_high_attention(self):
-        """Unexpected → high attention."""
-        a = Appraisal(novelty=1.0, goal_relevance=1.0)
+    def test_novel_negative_attention(self):
+        """Unexpected → negative attention (surprise pole)."""
+        a = Appraisal(novelty=1.0, goal_relevance=0.5)
         sens, attn, pleas, apt = _axes(appraisal_to_float_emotion(a))
-        assert attn > 0
+        assert attn < 0
 
-    def test_all_neutral_moderate(self):
-        """All 0.5 → moderate values; attention and aptitude near zero."""
+    def test_all_neutral_near_zero(self):
+        """All None → 0.5 → all four axes near zero."""
         a = Appraisal()  # all None → 0.5
         sens, attn, pleas, apt = _axes(appraisal_to_float_emotion(a))
-        # Attention and aptitude should be near zero at neutral
+        assert abs(sens) < 0.1
         assert abs(attn) < 0.1
+        assert abs(pleas) < 0.1
         assert abs(apt) < 0.1
 
     def test_categorical_inputs_work(self):
@@ -257,7 +267,6 @@ class TestAppraisalToFloatEmotion:
                        goal_congruence="congruent")
         sens, attn, pleas, apt = _axes(appraisal_to_float_emotion(a))
         assert pleas > 0
-        assert attn > 0
 
     def test_unpleasant_lowers_pleasantness(self):
         """Unpleasant stimulus lowers pleasantness axis."""
@@ -302,13 +311,12 @@ class TestFloatEmotionToNeuroDeltas:
         d2, _, _ = float_emotion_to_neuro_deltas(fe, scale=0.30)
         assert d2 == pytest.approx(d1 * 2.0)
 
-    def test_round_trip_novel_congruent(self):
-        """novel + relevant + congruent → positive dopamine + serotonin."""
-        a = Appraisal(novelty=1.0, goal_relevance=1.0, goal_congruence=1.0,
+    def test_round_trip_relevant_congruent(self):
+        """relevant + congruent + high coping → positive serotonin."""
+        a = Appraisal(novelty=0.5, goal_relevance=1.0, goal_congruence=1.0,
                        coping_potential=1.0, intrinsic_pleasantness=0.8)
         fe = appraisal_to_float_emotion(a)
         d, s, adr = float_emotion_to_neuro_deltas(fe)
-        assert d > 0, "Novel+relevant should produce dopamine"
         assert s > 0, "Congruent+pleasant should produce serotonin"
 
     def test_round_trip_threatening(self):
