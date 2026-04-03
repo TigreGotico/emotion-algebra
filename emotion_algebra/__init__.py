@@ -17,6 +17,10 @@ from emotion_algebra.appraisal import (
     Appraisal, appraisal_to_emotion, appraisal_to_float_emotion,
     float_emotion_to_neuro_deltas,
 )
+from emotion_algebra.needs import (
+    need_deficit_to_emotion, need_deficit_to_float_emotion,
+    NEED_DEFICIT_EMOTIONS, MAXNEEF_DEFICIT_EMOTIONS, MURRAY_DEFICIT_EMOTIONS,
+)
 from emotion_algebra.float_emotion import FloatEmotion
 from emotion_algebra.lexicons import get_afinn_score, get_hourglass, get_float_emotion
 from emotion_algebra.deepmoji import DeepMojiONNXAdapter

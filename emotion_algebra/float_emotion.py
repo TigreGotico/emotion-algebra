@@ -230,3 +230,61 @@ class FloatEmotion(EmotionBase):
         """
         arr = emotion.as_array.astype(float)
         return cls(*arr)
+
+    @classmethod
+    def blend(
+        cls,
+        *emotions: EmotionBase,
+        weights: "list[float] | None" = None,
+        scale: float = 1.0,
+    ) -> "FloatEmotion":
+        """Blend multiple emotions into a single continuous vector.
+
+        Useful for constructing multi-axis ideal vectors from named Plutchik
+        emotions — e.g. ``FloatEmotion.blend(joy, trust)`` produces a vector
+        in the joy-trust quadrant of the Hourglass.
+
+        Parameters
+        ----------
+        *emotions:
+            Two or more :class:`~emotion_algebra.base.EmotionBase` instances.
+        weights:
+            Optional per-emotion weights (default: equal). Need not sum to 1;
+            they are normalised internally.
+        scale:
+            Final scaling factor applied to the blended vector (default 1.0).
+            Use values < 1.0 to produce "mild" blends.
+
+        Returns
+        -------
+        FloatEmotion
+            Weighted average of the input emotion vectors, scaled.
+
+        Examples
+        --------
+        >>> from emotion_algebra.emotions import get_emotion
+        >>> joy = get_emotion("joy")
+        >>> trust = get_emotion("trust")
+        >>> fe = FloatEmotion.blend(joy, trust)
+        >>> float(fe.as_array[2]) > 0  # pleasantness from joy
+        True
+        >>> float(fe.as_array[3]) > 0  # aptitude from trust
+        True
+        """
+        if len(emotions) < 1:
+            return cls()
+        if weights is None:
+            weights = [1.0] * len(emotions)
+        if len(weights) != len(emotions):
+            raise ValueError(f"Expected {len(emotions)} weights, got {len(weights)}")
+
+        total_w = sum(weights)
+        if total_w <= 0:
+            return cls()
+
+        result = np.zeros(4, dtype=float)
+        for emo, w in zip(emotions, weights):
+            result += emo.as_array.astype(float) * (w / total_w)
+
+        result *= scale
+        return cls(*result)
