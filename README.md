@@ -77,6 +77,10 @@ joy + trust   # → Feeling("love")
 | Mixed word+emoji | `score_mixed()`, `from_mixed()` | `text.py` |
 | Geometry | `emotion_distance()`, `closest_emotion()` | `distance.py` |
 | Cognitive appraisal | `Appraisal`, `appraisal_to_emotion()` | `appraisal.py` |
+| Continuous appraisal | `appraisal_to_float_emotion()`, `float_emotion_to_neuro_deltas()` | `appraisal.py` |
+| Emotion blending | `FloatEmotion.blend(joy, trust)` | `float_emotion.py` |
+| Need-deficit emotions | `need_deficit_to_emotion()`, `CIADrive`, `MaxNeefNeed`, `MurrayNeed` | `needs.py` |
+| Behavioural reactions | `REACTIONS`, `REACTION_TO_EMOTION_MAP` | `behaviour.py` |
 | CLI | `python -m emotion_algebra` | `__main__.py` |
 
 ---
@@ -91,8 +95,11 @@ from emotion_algebra import (
     from_emoji, score_emojis, DeepMojiAdapter,
     register_emoji, unregister_emoji,
     emotion_distance, closest_emotion, emotion_clusters,
-    Appraisal, appraisal_to_emotion,
+    Appraisal, appraisal_to_emotion, appraisal_to_float_emotion,
+    float_emotion_to_neuro_deltas,
     FloatEmotion,
+    CIADrive, MaxNeefNeed, MurrayNeed,
+    need_deficit_to_emotion, need_deficit_to_float_emotion,
 )
 
 # --- Emotion properties ---
@@ -131,9 +138,27 @@ emotion_distance(a, b)             # Euclidean distance in 4D Hourglass space
 closest_emotion([2, 0, 1, 0])     # nearest named Emotion to a float vector
 
 # --- Cognitive appraisal (Scherer CPM) ---
+# Discrete (v1): categorical fields → named Emotion
 a = Appraisal(goal_relevance="relevant", goal_congruence="incongruent",
               agency="other", coping_potential="low")
 appraisal_to_emotion(a)           # → fear
+
+# Continuous (v2): float fields → FloatEmotion → neuro deltas
+a = Appraisal(novelty=0.8, goal_relevance=0.9, goal_congruence=0.3,
+              coping_potential=0.2, intrinsic_pleasantness=0.4)
+fe = appraisal_to_float_emotion(a)
+d, s, adr = float_emotion_to_neuro_deltas(fe)  # (dopamine, serotonin, adrenaline)
+
+# --- Emotion blending ---
+joy   = get_emotion("joy")
+trust = get_emotion("trust")
+FloatEmotion.blend(joy, trust)                 # → pleasantness + aptitude
+FloatEmotion.blend(joy, trust, weights=[0.7, 0.3], scale=0.8)
+
+# --- Need-deficit emotions (Max-Neef + Murray) ---
+need_deficit_to_emotion(MaxNeefNeed.PROTECTION)  # → fear
+need_deficit_to_emotion(MurrayNeed.NURTURANCE)   # → sadness
+need_deficit_to_float_emotion("freedom")          # → FloatEmotion (anger axis)
 
 # --- Continuous space ---
 FloatEmotion(sensitivity=1.5, pleasantness=-0.8)
@@ -171,6 +196,9 @@ python -m emotion_algebra
 - Posner, J., Russell, J. A., & Peterson, B. S. (2005). *The circumplex model of affect: An integrative approach.* Development and Psychopathology, 17(3), 715–734.
 - Felbo, B., Mislove, A., Søgaard, A., Rahwan, I., & Lehmann, S. (2017). *Using millions of emoji occurrences to learn any-domain representations for detecting sentiment, emotion and sarcasm.* EMNLP 2017.
 - Scherer, K. R. (2001). *Appraisal considered as a process of multilevel sequential checking.* In K. R. Scherer et al. (Eds.), *Appraisal processes in emotion* (pp. 92–120).
+- Max-Neef, M. (1991). *Human Scale Development: Conception, Application and Further Reflections.* Apex Press.
+- Murray, H. A. (1938). *Explorations in Personality.* Oxford University Press.
+- Lövheim, H. (2012). *A new three-dimensional model for emotions and monoamine neurotransmitters.* Medical Hypotheses, 78(2), 341–348.
 
 ---
 
