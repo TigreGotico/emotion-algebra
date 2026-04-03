@@ -5,8 +5,10 @@ needs are deficient.  Grounded in:
 
 * **Max-Neef (1991)** — 9 fundamental needs: subsistence, protection, freedom,
   identity, participation, creation, understanding, idleness, affection.
-* **Murray (1938)** — 17 psychogenic needs (subset): sentience, exhibition,
-  nurturance, harm_avoidance, achievement.
+* **Murray (1938)** — 17 psychogenic needs: achievement, affiliation, aggression,
+  autonomy, counteraction, defendance, deference, dominance, exhibition,
+  harm_avoidance, infavoidance, nurturance, order, play, rejection, sentience,
+  understanding.
 * **Plutchik (1980)** — 8 primary emotions mapped to 4 Hourglass axes.
 
 The mapping follows appraisal logic: a deficient need implies a blocked goal
@@ -26,63 +28,112 @@ Plutchik, R. (1980). *Emotion: A Psychoevolutionary Synthesis*.
 
 from __future__ import annotations
 
+from enum import StrEnum
 from typing import Optional, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from emotion_algebra.base import EmotionBase
     from emotion_algebra.float_emotion import FloatEmotion
 
+
 # ---------------------------------------------------------------------------
-# Max-Neef need → primary Plutchik emotion when deficient
+# CIA meta-drives (Control / Identity / Arousal)
 # ---------------------------------------------------------------------------
 
-MAXNEEF_DEFICIT_EMOTIONS: dict[str, str] = {
+class CIADrive(StrEnum):
+    """Three meta-drives from the CIA framework."""
+    CONTROL = "control"
+    IDENTITY = "identity"
+    AROUSAL = "arousal"
+
+
+# ---------------------------------------------------------------------------
+# Max-Neef 9 fundamental needs
+# ---------------------------------------------------------------------------
+
+class MaxNeefNeed(StrEnum):
+    """Max-Neef's (1991) nine fundamental human needs."""
+    SUBSISTENCE = "subsistence"
+    PROTECTION = "protection"
+    FREEDOM = "freedom"
+    IDENTITY = "identity"
+    PARTICIPATION = "participation"
+    CREATION = "creation"
+    UNDERSTANDING = "understanding"
+    IDLENESS = "idleness"
+    AFFECTION = "affection"
+
+
+# ---------------------------------------------------------------------------
+# Murray 17 psychogenic needs
+# ---------------------------------------------------------------------------
+
+class MurrayNeed(StrEnum):
+    """Murray's (1938) seventeen psychogenic needs."""
+    ACHIEVEMENT = "achievement"
+    AFFILIATION = "affiliation"
+    AGGRESSION = "aggression"
+    AUTONOMY = "autonomy"
+    COUNTERACTION = "counteraction"
+    DEFENDANCE = "defendance"
+    DEFERENCE = "deference"
+    DOMINANCE = "dominance"
+    EXHIBITION = "exhibition"
+    HARM_AVOIDANCE = "harm_avoidance"
+    INFAVOIDANCE = "infavoidance"
+    NURTURANCE = "nurturance"
+    ORDER = "order"
+    PLAY = "play"
+    REJECTION = "rejection"
+    SENTIENCE = "sentience"
+    UNDERSTANDING = "understanding"
+
+
+# ---------------------------------------------------------------------------
+# Need → deficit emotion mappings
+# ---------------------------------------------------------------------------
+
+MAXNEEF_DEFICIT_EMOTIONS: dict[MaxNeefNeed, str] = {
     # Control needs — deficiency threatens safety/autonomy
-    "subsistence":   "sadness",       # deprivation of nourishment → grief/loss
-    "protection":    "fear",          # vulnerability → threat response
-    "freedom":       "anger",         # constraint → obstacle to remove
+    MaxNeefNeed.SUBSISTENCE:   "sadness",       # deprivation → grief/loss
+    MaxNeefNeed.PROTECTION:    "fear",           # vulnerability → threat
+    MaxNeefNeed.FREEDOM:       "anger",          # constraint → obstacle
 
     # Identity needs — deficiency threatens self-concept/belonging
-    "identity":      "pensiveness",   # weakened self → introspection/melancholy
-    "participation": "apprehension",  # exclusion → social uncertainty
-    "creation":      "boredom",       # blocked creativity → disengagement
-    "understanding": "distraction",   # confusion → disorientation
+    MaxNeefNeed.IDENTITY:      "pensiveness",    # weakened self → melancholy
+    MaxNeefNeed.PARTICIPATION: "apprehension",   # exclusion → uncertainty
+    MaxNeefNeed.CREATION:      "boredom",        # blocked creativity → disengagement
+    MaxNeefNeed.UNDERSTANDING: "distraction",    # confusion → disorientation
 
     # Arousal needs — deficiency threatens stimulation balance
-    "idleness":      "annoyance",     # over-stimulation → irritability
-    "affection":     "sadness",       # loneliness → loss/grief
+    MaxNeefNeed.IDLENESS:      "annoyance",      # over-stimulation → irritability
+    MaxNeefNeed.AFFECTION:     "sadness",         # loneliness → loss/grief
 }
 
-# ---------------------------------------------------------------------------
-# Murray psychogenic need → primary Plutchik emotion when deficient
-# ---------------------------------------------------------------------------
-
-MURRAY_DEFICIT_EMOTIONS: dict[str, str] = {
-    # Murray (1938) — all 17 psychogenic needs
-    # Each mapped to the primary Plutchik emotion that arises when the need is blocked.
-    "achievement":    "annoyance",     # accomplish difficult tasks → frustration
-    "affiliation":    "sadness",       # form friendships → loneliness/grief
-    "aggression":     "anger",         # overcome opposition → rage at impotence
-    "autonomy":       "anger",         # resist constraint → obstacle to remove
-    "counteraction":  "annoyance",     # overcome weakness → frustrated determination
-    "defendance":     "fear",          # defend self against criticism → threat
-    "deference":      "apprehension",  # follow a superior → uncertainty without guidance
-    "dominance":      "annoyance",     # control environment → frustrated agency
-    "exhibition":     "pensiveness",   # make an impression → melancholy invisibility
-    "harm_avoidance": "fear",          # avoid pain/danger → threat response
-    "infavoidance":   "apprehension",  # avoid humiliation → social anxiety
-    "nurturance":     "sadness",       # care for others → grief at helplessness
-    "order":          "boredom",       # arrange/organise → disengaged chaos
-    "play":           "boredom",       # fun/humour → dull disengagement
-    "rejection":      "disgust",       # exclude inferior → revulsion unmet
-    "sentience":      "boredom",       # aesthetic/sensory experience → dull deprivation
-    "understanding":  "distraction",   # enquire/analyse → disoriented confusion
+MURRAY_DEFICIT_EMOTIONS: dict[MurrayNeed, str] = {
+    MurrayNeed.ACHIEVEMENT:    "annoyance",      # blocked accomplishment → frustration
+    MurrayNeed.AFFILIATION:    "sadness",         # isolation → loneliness
+    MurrayNeed.AGGRESSION:     "anger",           # impotence → rage
+    MurrayNeed.AUTONOMY:       "anger",           # constraint → obstacle
+    MurrayNeed.COUNTERACTION:  "annoyance",       # weakness → frustrated determination
+    MurrayNeed.DEFENDANCE:     "fear",            # criticism → threat
+    MurrayNeed.DEFERENCE:      "apprehension",    # no guidance → uncertainty
+    MurrayNeed.DOMINANCE:      "annoyance",       # loss of control → frustration
+    MurrayNeed.EXHIBITION:     "pensiveness",     # invisibility → melancholy
+    MurrayNeed.HARM_AVOIDANCE: "fear",            # danger → threat
+    MurrayNeed.INFAVOIDANCE:   "apprehension",    # humiliation risk → anxiety
+    MurrayNeed.NURTURANCE:     "sadness",         # can't help → grief
+    MurrayNeed.ORDER:          "boredom",          # chaos → disengagement
+    MurrayNeed.PLAY:           "boredom",          # no fun → dullness
+    MurrayNeed.REJECTION:      "disgust",          # contamination → revulsion
+    MurrayNeed.SENTIENCE:      "boredom",          # sensory deprivation → dullness
+    MurrayNeed.UNDERSTANDING:  "distraction",      # confusion → disorientation
 }
 
-# Combined mapping
+# Combined mapping (StrEnum values work as plain strings)
 NEED_DEFICIT_EMOTIONS: dict[str, str] = {
-    **MAXNEEF_DEFICIT_EMOTIONS,
-    **MURRAY_DEFICIT_EMOTIONS,
+    **{str(k): v for k, v in MAXNEEF_DEFICIT_EMOTIONS.items()},
+    **{str(k): v for k, v in MURRAY_DEFICIT_EMOTIONS.items()},
 }
 
 
@@ -93,6 +144,8 @@ def need_deficit_to_emotion(need_name: str) -> Optional["EmotionBase"]:
     ----------
     need_name:
         A Max-Neef or Murray need name (e.g. ``"subsistence"``, ``"sentience"``).
+        Accepts both :class:`MaxNeefNeed`/:class:`MurrayNeed` enum values
+        and plain strings.
 
     Returns
     -------
@@ -101,21 +154,18 @@ def need_deficit_to_emotion(need_name: str) -> Optional["EmotionBase"]:
 
     Examples
     --------
-    >>> need_deficit_to_emotion("protection").name
+    >>> need_deficit_to_emotion(MaxNeefNeed.PROTECTION).name
     'fear'
     >>> need_deficit_to_emotion("creation").name
     'boredom'
     """
     from emotion_algebra.emotions import get_emotion
-    emotion_name = NEED_DEFICIT_EMOTIONS.get(need_name)
+    emotion_name = NEED_DEFICIT_EMOTIONS.get(str(need_name))
     return get_emotion(emotion_name) if emotion_name else None
 
 
 def need_deficit_to_float_emotion(need_name: str) -> Optional["FloatEmotion"]:
     """Return a continuous :class:`FloatEmotion` for a deficient need.
-
-    Converts the named emotion to a ``FloatEmotion`` via
-    :meth:`~emotion_algebra.float_emotion.FloatEmotion.from_emotion`.
 
     Parameters
     ----------
@@ -129,7 +179,7 @@ def need_deficit_to_float_emotion(need_name: str) -> Optional["FloatEmotion"]:
 
     Examples
     --------
-    >>> fe = need_deficit_to_float_emotion("protection")
+    >>> fe = need_deficit_to_float_emotion(MaxNeefNeed.PROTECTION)
     >>> float(fe.as_array[0]) < 0  # fear → negative sensitivity
     True
     """

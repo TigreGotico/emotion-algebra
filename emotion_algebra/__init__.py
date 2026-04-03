@@ -18,6 +18,7 @@ from emotion_algebra.appraisal import (
     float_emotion_to_neuro_deltas,
 )
 from emotion_algebra.needs import (
+    CIADrive, MaxNeefNeed, MurrayNeed,
     need_deficit_to_emotion, need_deficit_to_float_emotion,
     NEED_DEFICIT_EMOTIONS, MAXNEEF_DEFICIT_EMOTIONS, MURRAY_DEFICIT_EMOTIONS,
 )
