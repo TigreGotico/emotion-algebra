@@ -270,8 +270,13 @@ def appraisal_to_float_emotion(appraisal: Appraisal) -> "FloatEmotion":
     sensitivity = cp * 2.0 * max(0.0, -gc) * max(0.0, gr + 0.5)
 
     # 2. Attention (positive = vigilance/interest, negative = surprise/amazement):
-    #    High novelty → negative pole (surprise); relevance → positive (vigilance).
-    attention = -nov * 0.6 + gr * 0.4
+    #    Novelty drives engagement; goal-relevance steers its sign. A novel
+    #    *and* relevant stimulus is curiosity/interest (positive pole, the
+    #    seeking/vigilance response that raises dopamine); novelty without
+    #    relevance is bare surprise (negative pole). gr is centred in
+    #    [-0.5, +0.5], so the novelty term flips from surprise to interest as
+    #    relevance climbs past neutral.
+    attention = gr * 0.4 + nov * (gr * 1.2 - 0.3)
 
     # 3. Pleasantness (positive = joy, negative = sadness):
     #    Goal congruence weighted by relevance + intrinsic hedonic tone.
