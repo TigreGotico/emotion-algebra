@@ -1,12 +1,21 @@
 """Tests for emotion_algebra.distance — emotion_distance, closest_emotion, emotion_clusters."""
+import random
 from copy import copy
 
 import numpy as np
 import pytest
 
-from emotion_algebra.distance import emotion_distance, closest_emotion, emotion_clusters
+from emotion_algebra.distance import (
+    NEUTRAL_RADIUS,
+    _nearest,
+    closest_emotion,
+    emotion_clusters,
+    emotion_distance,
+)
+from emotion_algebra.base import EmotionBase
 from emotion_algebra.emotions import EMOTIONS, get_emotion
-from emotion_algebra.plutchik import Neutrality
+from emotion_algebra.feelings import FEELINGS, Feeling
+from emotion_algebra.plutchik import Emotion, Neutrality
 
 
 @pytest.fixture
@@ -69,9 +78,13 @@ class TestClosestEmotion:
         assert result is not None
 
     def test_zero_vector_returns_emotion(self):
-        # [0,0,0,0] — equidistant from many primary emotions; returns one deterministically
+        # Contract: the origin is equidistant from every primary emotion, so no
+        # basis name is honest — it resolves to Neutrality instead of an
+        # arbitrary winner decided by iteration order.
         result = closest_emotion([0.0, 0.0, 0.0, 0.0])
         assert result is not None
+        assert isinstance(result, Neutrality)
+        assert result.name == "neutrality"
 
     def test_returns_named_emotion(self):
         result = closest_emotion([0, 0, 3, 0])
@@ -80,6 +93,92 @@ class TestClosestEmotion:
     def test_numpy_array_input(self):
         result = closest_emotion(np.array([0.0, 0.0, -2.0, 0.0]))
         assert result.name == "sadness"
+
+
+class TestClosestEmotionFeelings:
+    """Feelings in the candidate set: mixed-axis states get honest names."""
+
+    def test_all_positive_mixed_vector_names_positive_feeling(self):
+        # [0.6, 0.6, 0.6, 0.6] is equidistant from all four positive basic
+        # emotions; with feelings included it resolves to a strictly closer
+        # positive dyad — never "annoyance".
+        result = closest_emotion([0.6, 0.6, 0.6, 0.6])
+        assert result.name != "annoyance"
+        assert result.name == "acknowledgement"  # serenity + acceptance
+        assert isinstance(result, Feeling)
+        assert result.valence > 0
+
+    def test_feeling_pole_names_the_feeling(self):
+        # love = joy + trust → [0, 0, 2, 2]
+        result = closest_emotion([0, 0, 2, 2])
+        assert result.name == "love"
+
+    def test_include_feelings_false_restricts_to_basis(self):
+        result = closest_emotion([0.6, 0.6, 0.6, 0.6], include_feelings=False)
+        assert isinstance(result, Emotion)
+        assert result.name in EMOTIONS
+        # deterministic tie-break: equal distance and alignment across the four
+        # positive basics → lexicographically smallest name
+        assert result.name == "acceptance"
+
+    def test_basis_poles_still_name_basis_emotion(self):
+        # exact basis vectors win over any feeling, for all 24 named emotions
+        for name, emo in EMOTIONS.items():
+            assert closest_emotion(emo.as_array).name == name
+
+    def test_return_type_is_emotion_base_with_name(self):
+        # backward-compat: callers rely on `.name` (str) on the returned object
+        for vec in ([0, 0, 2, 0], [0.6, 0.6, 0.6, 0.6], [0, 0, 0, 0]):
+            result = closest_emotion(vec)
+            assert isinstance(result, EmotionBase)
+            assert isinstance(result.name, str) and result.name
+
+
+class TestClosestEmotionNeutral:
+    def test_zero_vector_is_neutral(self):
+        result = closest_emotion([0, 0, 0, 0])
+        assert isinstance(result, Neutrality)
+        assert result.name == "neutrality"
+        assert np.allclose(result.as_array, 0)
+
+    def test_inside_neutral_radius_is_neutral(self):
+        # norm = 0.2 < NEUTRAL_RADIUS
+        result = closest_emotion([0.1, 0.1, 0.1, 0.1])
+        assert result.name == "neutrality"
+
+    def test_outside_neutral_radius_is_named(self):
+        # norm = 0.4 >= NEUTRAL_RADIUS → a real named state
+        result = closest_emotion([0.2, 0.2, 0.2, 0.2])
+        assert result.name != "neutrality"
+
+    def test_neutral_radius_relative_to_intensity_one_shell(self):
+        # basic emotions sit on the intensity-1 shell; the neutral zone must
+        # stay well inside it so faint-but-real emotions are not swallowed
+        assert 0 < NEUTRAL_RADIUS < 1
+        assert closest_emotion([0.9, 0, 0, 0]).name == "annoyance"
+
+
+class TestClosestEmotionDeterminism:
+    def test_deterministic_across_permuted_candidate_order(self):
+        candidates = list(EMOTIONS.values()) + list(FEELINGS.values())
+        vec = np.array([0.6, 0.6, 0.6, 0.6])
+        baseline = _nearest(vec, candidates).name
+        rng = random.Random(1234)
+        for _ in range(10):
+            shuffled = candidates[:]
+            rng.shuffle(shuffled)
+            assert _nearest(vec, shuffled).name == baseline
+
+    def test_tie_break_prefers_alignment_over_name(self):
+        # [1.5, 0, 0, 0] is equidistant (0.5) from annoyance [1,0,0,0] and
+        # anger [2,0,0,0]; anger has higher dot product with the query and must
+        # win even though "annoyance" sorts first lexicographically.
+        assert closest_emotion([1.5, 0, 0, 0]).name == "anger"
+
+    def test_repeated_calls_agree(self):
+        vec = [0.6, 0.6, 0.6, 0.6]
+        names = {closest_emotion(vec).name for _ in range(5)}
+        assert len(names) == 1
 
 
 class TestEmotionClusters:

@@ -207,10 +207,15 @@ Ordered sequence of `EmotionalState` snapshots. — `state.py:EmotionTimeline`
 Euclidean distance between two `EmotionBase` objects in the 4-axis Hourglass space.
 `a.as_array` and `b.as_array` are cast to float before computation. — `distance.py:emotion_distance`
 
-### `closest_emotion(vector) → Emotion`
+### `closest_emotion(vector, include_feelings=True) → EmotionBase`
 
-Return the named `Emotion` in `EMOTIONS` nearest to `vector` (list or ndarray of 4 floats)
-by Euclidean distance. — `distance.py:closest_emotion`
+Return the named state nearest to `vector` (list or ndarray of 4 floats) by Euclidean
+distance. The candidate set is the 24 named `Emotion`s plus, when `include_feelings`
+is true (default), the named `Feeling` dyads — so mixed-axis states resolve to an
+honest composite name instead of an arbitrary single-axis emotion. Vectors within
+`NEUTRAL_RADIUS` (0.25) of the origin return `Neutrality`. Exact-distance ties break
+deterministically: higher dot-product alignment with the query, then lexicographic
+name. — `distance.py:closest_emotion`
 
 ### `emotion_clusters(threshold=1.5) → list[list[Emotion]]`
 
