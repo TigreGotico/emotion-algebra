@@ -27,7 +27,7 @@ fast = [
 emotion-algebra = "emotion_algebra.__main__:main"
 
 [project.urls]
-Homepage = "https://github.com/JarbasAl/emotion-algebra"
+Homepage = "https://github.com/TigreGotico/emotion-algebra"
 
 [tool.setuptools.packages.find]
 where = ["."]
