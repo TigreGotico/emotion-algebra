@@ -7,9 +7,34 @@ from emotion_algebra.needs import (
     NEED_DEFICIT_EMOTIONS,
     MAXNEEF_DEFICIT_EMOTIONS,
     MURRAY_DEFICIT_EMOTIONS,
+    MaxNeefNeed,
+    MurrayNeed,
+    CIADrive,
 )
 from emotion_algebra.float_emotion import FloatEmotion
 from emotion_algebra.base import EmotionBase
+
+
+class TestStrEnumBackportStr:
+    """On Python < 3.11, ``StrEnum`` is a hand-rolled backport
+    (``class StrEnum(str, Enum)``). Plain ``Enum`` formats ``str(member)``
+    as ``"ClassName.MEMBER"`` unless ``__str__`` is overridden — unlike the
+    real 3.11+ ``enum.StrEnum``, which returns the value. The module builds
+    ``NEED_DEFICIT_EMOTIONS`` via ``str(k)`` for every enum key, so this must
+    hold on every supported Python version or every lookup silently misses.
+    """
+
+    def test_maxneef_str_equals_value(self):
+        for member in MaxNeefNeed:
+            assert str(member) == member.value
+
+    def test_murray_str_equals_value(self):
+        for member in MurrayNeed:
+            assert str(member) == member.value
+
+    def test_cia_drive_str_equals_value(self):
+        for member in CIADrive:
+            assert str(member) == member.value
 
 
 class TestNeedDeficitToEmotion:
