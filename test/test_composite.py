@@ -545,13 +545,24 @@ class TestCompositeDimensionProperties:
         cd = self._get_cd("pleasantness", "aptitude")
         assert cd.mild_opposite is not None
 
-    def test_basic_emotion_is_none(self):
-        cd = self._get_cd()
-        assert cd.basic_emotion is None
+    def test_basic_emotion_composes_from_each_dimensions_basic_emotion(self):
+        # Unlike intense_emotion/mild_emotion, there is no named 16-entry
+        # composite for the basic (flow=1) tier, so basic_emotion is built
+        # on the fly from each axis's own basic_emotion primitive.
+        cd = self._get_cd("sensitivity", "attention")
+        result = cd.basic_emotion
+        assert result is not None
+        assert result.as_array.tolist() == (
+            DIMENSIONS["sensitivity"].basic_emotion + DIMENSIONS["attention"].basic_emotion
+        ).as_array.tolist()
 
-    def test_basic_opposite_is_none(self):
-        cd = self._get_cd()
-        assert cd.basic_opposite is None
+    def test_basic_opposite_composes_from_each_dimensions_basic_opposite(self):
+        cd = self._get_cd("sensitivity", "attention")
+        result = cd.basic_opposite
+        assert result is not None
+        assert result.as_array.tolist() == (
+            DIMENSIONS["sensitivity"].basic_opposite + DIMENSIONS["attention"].basic_opposite
+        ).as_array.tolist()
 
     def test_sub_removes_dimension(self):
         d1 = DIMENSIONS["sensitivity"]

@@ -533,13 +533,24 @@ class CompositeDimension(object):
 
     @property
     def basic_emotion(self):
-        # not yet mapped for this dimension combination
-        return None
+        # No named 16-entry composite exists at the basic (flow=1) tier
+        # (COMPOSITE_EMOTIONS_NAMES only covers tertiary x tertiary pairs),
+        # so compose it from each axis's own basic_emotion primitive.
+        if len(self.dimensions) != 2:
+            return None
+        d1, d2 = self.dimensions
+        if d1.basic_emotion is None or d2.basic_emotion is None:
+            return None
+        return d1.basic_emotion + d2.basic_emotion
 
     @property
     def basic_opposite(self):
-        # not yet mapped for this dimension combination
-        return None
+        if len(self.dimensions) != 2:
+            return None
+        d1, d2 = self.dimensions
+        if d1.basic_opposite is None or d2.basic_opposite is None:
+            return None
+        return d1.basic_opposite + d2.basic_opposite
 
     def __repr__(self):
         return "CompositeDimensionObject:" + self.name
