@@ -313,6 +313,21 @@ class TestMatrixConversions:
         result = CompositeEmotion.array_to_emotion(arr)
         assert result is not None
 
+    def test_array_to_emotion_round_trips_two_axes(self):
+        # Regression for TEA08.10: Neutrality(dim) + int used to collapse to
+        # a bare int, so array_to_emotion silently returned an int for ANY
+        # input instead of a CompositeEmotion/Emotion.
+        arr = np.array([2, 0, 2, 0])
+        result = CompositeEmotion.array_to_emotion(arr)
+        assert isinstance(result, (Emotion, CompositeEmotion))
+        assert result.as_array.tolist() == arr.tolist()
+
+    def test_array_to_emotion_round_trips_four_axes(self):
+        arr = np.array([2, 2, 2, 2])
+        result = CompositeEmotion.array_to_emotion(arr)
+        assert isinstance(result, CompositeEmotion)
+        assert result.as_array.tolist() == arr.tolist()
+
 
 # ---------------------------------------------------------------------------
 # CompositeEmotion — __truediv__ / __floordiv__ / __lshift__ / __rshift__
