@@ -35,7 +35,16 @@ else:
     from enum import Enum
 
     class StrEnum(str, Enum):
-        """Backport for Python < 3.11."""
+        """Backport for Python < 3.11.
+
+        Plain ``Enum`` formats ``str(member)`` as ``"ClassName.MEMBER"``;
+        the real 3.11+ ``enum.StrEnum`` overrides this to return the value.
+        Match that behavior so ``str(member)`` is version-portable — this
+        module relies on it to build ``NEED_DEFICIT_EMOTIONS``.
+        """
+
+        def __str__(self) -> str:
+            return str(self.value)
 from typing import Optional, TYPE_CHECKING
 
 if TYPE_CHECKING:
