@@ -271,6 +271,31 @@ class TestCompositeEmotionSub:
         result = c - love
         assert result is not None
 
+    def test_sub_computes_self_minus_other_not_other_minus_self(self):
+        # love = joy + trust; love - joy should leave trust (the component
+        # NOT shared with the subtrahend), not disgust (-trust).
+        joy = copy(EMOTIONS["joy"])
+        trust = copy(EMOTIONS["trust"])
+        love = joy + trust
+        result = love - joy
+        assert result.name == "trust", (
+            f"Expected 'trust' (love - joy leaves the trust component), "
+            f"got {result.name!r}"
+        )
+
+    def test_sub_emotion_is_anti_commutative_via_negation(self):
+        # (c - e) should be the negation of what (e - c) "conceptually" is
+        # for the shared-axis component: subtracting a stronger same-axis
+        # emotion than the composite holds should flip the resulting sign
+        # relative to subtracting a weaker one.
+        rage = copy(EMOTIONS["rage"])  # sensitivity flow 3
+        vigilance = copy(EMOTIONS["vigilance"])  # attention flow 2
+        c = rage * vigilance
+        annoyance = copy(EMOTIONS["annoyance"])  # sensitivity flow 1
+        result = c - annoyance
+        # self(rage=3) - other(annoyance=1) on sensitivity axis -> flow 2 (anger)
+        assert result.components[0].emotional_flow == 2
+
 
 # ---------------------------------------------------------------------------
 # matrix_to_array / array_to_emotion

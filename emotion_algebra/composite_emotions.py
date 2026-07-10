@@ -349,7 +349,7 @@ class CompositeEmotion(EmotionBase):
             # matrix product of emotion vectors
             other_vector = other.emotion_vector
 
-            result_vector = np.array(other_vector) - np.array(self.emotion_vector)
+            result_vector = np.array(self.emotion_vector) - np.array(other_vector)
             c = CompositeEmotion()
 
             for e in result_vector:
