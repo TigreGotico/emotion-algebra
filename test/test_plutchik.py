@@ -498,6 +498,22 @@ class TestEmotionArithmetic:
         result = anger >> annoyance
         assert isinstance(result, Emotion)
 
+    def test_shift_round_trip_int_operand(self, annoyance):
+        shifted = annoyance >> 1
+        back = shifted << 1
+        assert back.emotional_flow == annoyance.emotional_flow
+
+    def test_shift_round_trip_emotion_operand(self, annoyance):
+        # (a >> b) << b must return a, for any same-dimension b — << and >>
+        # must be exact inverses regardless of operand type.
+        shifted = annoyance >> annoyance
+        back = shifted << annoyance
+        assert back.emotional_flow == annoyance.emotional_flow
+
+    def test_lshift_emotion_operand_is_self_minus_other(self, anger, annoyance):
+        result = anger << annoyance
+        assert result.emotional_flow == anger.emotional_flow - annoyance.emotional_flow
+
 
 # ---------------------------------------------------------------------------
 # Emotion — unary operators
