@@ -313,6 +313,20 @@ class TestEmotionTypeKind:
     def test_pensiveness_is_calm_negative(self):
         assert copy(EMOTIONS["pensiveness"]).type == "calm negative"
 
+    def test_gloat_classified_as_social(self):
+        from emotion_algebra.plutchik import EMOTION_KIND_NAMES
+        # gloat (ecstasy+loathing): Schadenfreude is a fortunes-of-others
+        # emotion (Ortony/OCC) -- inherently social, not merely event-based.
+        assert "gloat" in EMOTION_KIND_NAMES["social"]
+        assert "gloat" not in EMOTION_KIND_NAMES["event related"]
+
+    def test_frivolity_classified_as_event_related(self):
+        from emotion_algebra.plutchik import EMOTION_KIND_NAMES
+        # frivolity (ecstasy+amazement): intense-pleasant reaction to a
+        # surprising event, alongside ecstasy/joy/elation -- not social.
+        assert "frivolity" in EMOTION_KIND_NAMES["event related"]
+        assert "frivolity" not in EMOTION_KIND_NAMES["social"]
+
     def test_anger_is_activated_neutral(self):
         assert copy(EMOTIONS["anger"]).type == "activated neutral"
 
@@ -577,6 +591,28 @@ class TestEmotionComparisons:
 
     def test_eq_by_name_string(self, anger):
         assert anger == "anger"
+
+
+class TestEmotionHashability:
+    """Emotions are immutable value objects and must be hashable — usable
+    as dict keys and in sets, consistent with __eq__ (same-dimension,
+    same-flow emotions hash equal)."""
+
+    def test_is_hashable(self, anger):
+        hash(anger)  # must not raise
+
+    def test_equal_emotions_hash_equal(self, anger):
+        other = copy(EMOTIONS["anger"])
+        assert anger == other
+        assert hash(anger) == hash(other)
+
+    def test_usable_as_dict_key(self, anger, joy):
+        d = {anger: "sensitivity", joy: "pleasantness"}
+        assert d[copy(EMOTIONS["anger"])] == "sensitivity"
+
+    def test_usable_in_set_dedup(self, anger):
+        s = {anger, copy(EMOTIONS["anger"]), copy(EMOTIONS["anger"])}
+        assert len(s) == 1
 
 
 # ---------------------------------------------------------------------------
