@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.1.1a1](https://github.com/TigreGotico/emotion-algebra/tree/1.1.1a1) (2026-07-10)
+
+[Full Changelog](https://github.com/TigreGotico/emotion-algebra/compare/1.1.0a1...1.1.1a1)
+
+**Merged pull requests:**
+
+- fix: StrEnum backport for Python 3.10 broke every need-deficit lookup [\#6](https://github.com/TigreGotico/emotion-algebra/pull/6) ([JarbasAl](https://github.com/JarbasAl))
+
 ## [1.1.0a1](https://github.com/TigreGotico/emotion-algebra/tree/1.1.0a1) (2026-06-10)
 
 [Full Changelog](https://github.com/TigreGotico/emotion-algebra/compare/1.0.0...1.1.0a1)
