@@ -729,11 +729,17 @@ class TestCompositeDimensionProperties:
         assert isinstance(result, bool)
 
     def test_mul_composite_with_emotion(self):
-        # CompositeEmotion.__mul__(Emotion) returns matrix product
+        # CompositeEmotion.__mul__(Emotion) must return an EmotionBase (a
+        # FloatEmotion projected from the matrix product), never a bare
+        # numpy array — every operator returns a typed algebra member.
+        from emotion_algebra.base import EmotionBase
+        from emotion_algebra.float_emotion import FloatEmotion
         c = rage_and_vigilance_composite()
         joy = copy(EMOTIONS["joy"])
         result = c.__mul__(joy)
         assert result is not None
+        assert isinstance(result, EmotionBase)
+        assert isinstance(result, FloatEmotion)
 
 
 # ---------------------------------------------------------------------------

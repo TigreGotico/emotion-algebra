@@ -368,9 +368,13 @@ class CompositeEmotion(EmotionBase):
             emo = deepcopy(self)
             return emo
         if isinstance(other, Emotion):
-            m = np.matmul(self.as_matrix, other.as_matrix)
+            from emotion_algebra.float_emotion import FloatEmotion
 
-            return m
+            m = np.matmul(self.as_matrix, other.as_matrix)
+            # as_matrix layout is [[sensitivity, attention],
+            #                      [pleasantness, aptitude]]; flatten
+            # row-major back into that same 4-axis order.
+            return FloatEmotion.from_embedding(m.flatten().astype(float))
         return NotImplemented
 
     def __truediv__(self, other):

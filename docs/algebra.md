@@ -97,3 +97,29 @@ rage + 1    # "mega rage"   (offset=1)
 rage + 2    # "extreme rage" (offset=2)
 rage + 3    # "hyper rage"  (offset=3)
 ```
+
+An in-range arithmetic result (e.g. `annoyance + 1 == anger`, `|flow| <= 3`)
+always carries `intensity_offset == 0` — only flow magnitudes beyond 3 are
+"hyper".
+
+## `<<` / `>>` are exact inverses
+
+Both operators accept an `int` or another same-dimension `Emotion`:
+
+```python
+(anger >> annoyance) << annoyance == anger  # True, for any operand type
+```
+
+`>>` raises intensity (`self.flow + other.flow`); `<<` lowers it
+(`self.flow - other.flow`) — the same convention for both `int` and
+`Emotion` operands.
+
+## Composite-emotion arithmetic returns typed results
+
+Every operator on `CompositeEmotion` returns another member of the algebra
+(`Emotion`, `CompositeEmotion`, `FloatEmotion`, or `Neutrality`) — never a
+bare `numpy.ndarray`. In particular `CompositeEmotion * Emotion` computes the
+2×2 matrix product of the two `as_matrix` representations and projects the
+flattened result back into a `FloatEmotion` via
+`FloatEmotion.from_embedding`, rather than returning the raw matrix.
+```
