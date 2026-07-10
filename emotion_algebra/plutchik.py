@@ -491,7 +491,7 @@ class Emotion(EmotionBase):
             return deepcopy(self)
         if isinstance(other, Emotion):
             if other._dimension == self._dimension:
-                flow = other.emotional_flow - self.emotional_flow
+                flow = self.emotional_flow - other.emotional_flow
                 return self.emotion_from_flow(flow)
             return NotImplemented
         try:
