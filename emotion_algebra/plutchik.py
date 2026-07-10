@@ -640,6 +640,12 @@ class Neutrality(Emotion):
                 other._kind = other.kind
                 other._dimension = self._dimension
                 other._name = self.name + " " + other.name
+            return other
+        if isinstance(other, (int, float)) and self.dimension:
+            # Neutrality is the additive identity: Neutrality(dim) + flow
+            # must construct an Emotion at that flow on that dimension, not
+            # fall through to the bare int.
+            return self.dimension.basic_emotion.emotion_from_flow(other)
 
         return other
 
@@ -648,6 +654,8 @@ class Neutrality(Emotion):
             other = self.string_to_emotion(other)
         if isinstance(other, Emotion):
             return - other
+        if isinstance(other, (int, float)) and self.dimension:
+            return self.dimension.basic_emotion.emotion_from_flow(-other)
         return other
 
     def __eq__(self, other):
