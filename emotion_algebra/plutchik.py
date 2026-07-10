@@ -326,7 +326,7 @@ class Emotion(EmotionBase):
         flow = int(flow)
         # how to handle invalid flows?
         flow = 9 if flow > 9 else flow if flow > -9 else -9
-        offset = abs(flow) - 3
+        offset = max(0, abs(flow) - 3)
         flow = 3 if flow > 3 else flow if flow > -3 else -3
         if flow == 1:
             emo = copy(self._dimension.basic_emotion)

@@ -48,6 +48,51 @@ class TestIntensityArithmetic:
 
 
 # ---------------------------------------------------------------------------
+# intensity label after arithmetic (in-range results must not read as hyper)
+# ---------------------------------------------------------------------------
+
+class TestIntensityLabelAfterArithmetic:
+    """A result of arithmetic that lands in-range (|flow| <= 3) must report
+    the same intensity label as the equivalent named lookup — arithmetic
+    must not fabricate a hyper-intensity ("mega"/"extreme"/"hyper") label.
+    """
+
+    @pytest.mark.parametrize(
+        "dimension",
+        ["sensitivity", "attention", "pleasantness", "aptitude"],
+    )
+    @pytest.mark.parametrize(
+        "flow,expected",
+        [(1, "basic"), (2, "mild"), (3, "intense")],
+    )
+    def test_in_range_flow_from_arithmetic_matches_named_lookup(
+        self, dimension, flow, expected
+    ) -> None:
+        dim = DIMENSIONS[dimension]
+        by_flow = dim.basic_emotion.emotion_from_flow(flow)
+        assert by_flow.emotional_flow == flow
+        assert by_flow.intensity_offset == 0
+        assert by_flow.intensity == expected
+
+    def test_annoyance_plus_1_is_mild_not_mega(self) -> None:
+        result = emo("annoyance") + 1
+        assert result.name == "anger"
+        assert result.intensity_offset == 0
+        assert result.intensity == "mild"
+
+    def test_annoyance_plus_2_is_intense_not_extreme(self) -> None:
+        result = emo("annoyance") + 2
+        assert result.name == "rage"
+        assert result.intensity_offset == 0
+        assert result.intensity == "intense"
+
+    def test_hyper_offset_still_reported_beyond_flow_3(self) -> None:
+        result = emo("annoyance") + 3  # flow 4 -> hyper
+        assert result.intensity_offset == 1
+        assert result.intensity == "mega"
+
+
+# ---------------------------------------------------------------------------
 # Negation / opposite
 # ---------------------------------------------------------------------------
 
