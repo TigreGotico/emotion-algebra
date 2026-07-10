@@ -740,6 +740,30 @@ class TestNeutrality:
         result = Neutrality() + "anger"
         assert isinstance(result, Emotion)
 
+    @pytest.mark.parametrize(
+        "dimension,flow",
+        [
+            (d, f)
+            for d in ("sensitivity", "attention", "pleasantness", "aptitude")
+            for f in (-3, -2, -1, 1, 2, 3)
+        ],
+    )
+    def test_neutrality_plus_int_is_additive_identity(self, dimension, flow):
+        # Neutrality is the additive identity: Neutrality(dim) + flow must
+        # construct an Emotion at that flow on that dimension, not fall
+        # through to a bare int.
+        n = Neutrality(dimension=dimension)
+        result = n + flow
+        assert isinstance(result, Emotion)
+        assert result.emotional_flow == flow
+        assert result.dimension.axis == dimension
+
+    def test_neutrality_minus_int_is_additive_identity(self):
+        n = Neutrality(dimension="sensitivity")
+        result = n - 2
+        assert isinstance(result, Emotion)
+        assert result.emotional_flow == -2
+
     def test_neutrality_sub_emotion_returns_opposite(self, anger):
         result = Neutrality() - anger
         assert isinstance(result, Emotion)
