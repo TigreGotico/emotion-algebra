@@ -30,10 +30,14 @@ print(f"  components   : {[e.name for e in c3.components]}")
 print(f"  as_array     : {c3.as_array}")
 print(f"  emotional_flow: {c3.emotional_flow}")  # sum of all flows
 
-# --- array_to_emotion round-trip -------------------------------------------
-print("\n=== array_to_emotion round-trip ===")
-arr = np.array([2, 2, 2, 2])  # anger + anticipation + joy + trust levels
-reconstructed = CompositeEmotion.array_to_emotion(arr)
-print(f"  input array  : {arr}")
-print(f"  result type  : {type(reconstructed).__name__}")
+# --- composite from named emotions -------------------------------------------
+# NOTE: CompositeEmotion.array_to_emotion currently collapses to a bare int
+# for any input (Neutrality() + <int> is not an identity operation — see
+# ROADMAP.md TEA08.10); build composites from named Emotions instead until
+# that lands.
+print("\n=== composite built from named emotions ===")
+rage = copy(EMOTIONS["rage"])
+grief = copy(EMOTIONS["grief"])
+reconstructed = rage + grief
+print(f"  components   : {[e.name for e in reconstructed.components]}")
 print(f"  as_array     : {reconstructed.as_array}")

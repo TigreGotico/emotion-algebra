@@ -22,13 +22,16 @@ for reaction_name, emotion in list(REACTION_TO_EMOTION_MAP.items())[:8]:
 # --- BehavioralReaction.from_data -------------------------------------------
 print("\n=== BehavioralReaction.from_data ===")
 from emotion_algebra.behaviour import BehavioralReaction
+# from_data is an in-place instance method, not a constructor.
 # With valid data
 if BEHAVIOURS:
     first_key = next(iter(BEHAVIOURS))
-    data = {"behaviour": first_key}
-    br = BehavioralReaction.from_data(data)
+    data = {"name": "demo", "behaviour": first_key}
+    br = BehavioralReaction("demo")
+    br.from_data(data)
     print(f"  from_data({{'behaviour': {first_key!r}}}) → {br}")
 
 # With empty data (graceful fallback)
-br_empty = BehavioralReaction.from_data({})
+br_empty = BehavioralReaction("empty")
+br_empty.from_data({})
 print(f"  from_data({{}}) → {br_empty}")
