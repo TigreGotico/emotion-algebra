@@ -108,14 +108,20 @@ EMOTION_KIND_NAMES['event related'].append("acceptance")
 EMOTION_KIND_NAMES['event related'].append("ecstasy")
 EMOTION_KIND_NAMES['event related'].append("apprehension")
 EMOTION_KIND_NAMES['event related'].append("loathing")
-EMOTION_KIND_NAMES['event related'].append("gloat")  # TODO where does this fit better?
+# "frivolity" (ecstasy+amazement): an intense-pleasant reaction to a
+# surprising event, alongside ecstasy/joy/elation already in this bucket —
+# not inherently social (Ortony/OCC classifies it as event-based, not a
+# fortunes-of-others emotion).
+EMOTION_KIND_NAMES['event related'].append("frivolity")
 
 EMOTION_KIND_NAMES['social'].append("coercion")
 EMOTION_KIND_NAMES['social'].append("trust")
 EMOTION_KIND_NAMES['social'].append("submission")
 EMOTION_KIND_NAMES['social'].append("rivalry")
 EMOTION_KIND_NAMES['social'].append("rejection")
-EMOTION_KIND_NAMES['social'].append("frivolity")  # TODO where does this fit better?
+# "gloat" (ecstasy+loathing): joy at another's misfortune — Ortony/OCC
+# classifies Schadenfreude as a fortunes-of-others emotion, i.e. social.
+EMOTION_KIND_NAMES['social'].append("gloat")
 
 EMOTION_KIND_NAMES['future appraisal'].append("pensiveness")
 EMOTION_KIND_NAMES['future appraisal'].append("optimism")
@@ -518,22 +524,6 @@ class Emotion(EmotionBase):
         except:
             return NotImplemented
 
-    # TODO
-    # (+=, -=, *=, @=, /=, //=, %=, **=, <<=, >>=, &=, ^=, |=).
-    #    object.__iadd__(self, other)
-    # object.__isub__(self, other)
-    # object.__imul__(self, other)
-    # object.__imatmul__(self, other)¶
-    # object.__itruediv__(self, other)
-    # object.__ifloordiv__(self, other)
-    # object.__imod__(self, other)
-    # object.__ipow__(self, other[, modulo])
-    # object.__ilshift__(self, other)
-    # object.__irshift__(self, other)
-    # object.__iand__(self, other)
-    # object.__ixor__(self, other)
-    # object.__ior__(self, other)
-
     def __neg__(self):
         # get opposite emotion
         return copy(self.opposite_emotion)
@@ -565,6 +555,13 @@ class Emotion(EmotionBase):
                 return self.emotional_flow != other.emotional_flow
             return True
         return self._name != other
+
+    def __hash__(self):
+        # Emotions are immutable value objects; hash consistently with
+        # __eq__ (same dimension + same flow == equal), so they are usable
+        # as dict keys and in sets.
+        dimension_name = self._dimension.axis if self._dimension else None
+        return hash((dimension_name, self.emotional_flow))
 
     def __contains__(self, item):
         if isinstance(item, Neutrality):

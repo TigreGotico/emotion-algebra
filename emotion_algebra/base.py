@@ -18,6 +18,11 @@ class EmotionBase(ABC):
 
     All three types are points in or composites of Cambria's Hourglass space.
     This ABC defines the minimal interface that all three must satisfy.
+
+    All operators return a *new* value rather than mutating ``self`` —
+    emotions are immutable value objects. There is no in-place operator
+    family (``+=``, ``-=``, ...); ``e += 1`` rebinds the name to a new
+    Emotion, it does not mutate the original in place.
     """
 
     @property
