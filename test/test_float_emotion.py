@@ -184,6 +184,21 @@ class TestFloatEmotionAlternativeConstructors:
         assert isinstance(fe, FloatEmotion)
         assert np.allclose(fe.as_array, joy.as_array.astype(float))
 
+    @pytest.mark.parametrize(
+        "name",
+        ["joy", "anger", "trust", "fear", "rage", "ecstasy", "sadness",
+         "vigilance", "surprise", "disgust", "annoyance", "serenity"],
+    )
+    def test_arousal_and_valence_coherent_with_emotion(self, name):
+        # Emotion.arousal/valence and FloatEmotion.arousal/valence use
+        # different formulas (|flow| vs max|axis|; single-axis lookup vs
+        # vector index) but must agree for every named emotion, since a
+        # FloatEmotion built from_emotion(e) describes the same point.
+        e = get_emotion(name)
+        fe = FloatEmotion.from_emotion(e)
+        assert fe.arousal == pytest.approx(e.arousal)
+        assert fe.valence == pytest.approx(e.valence)
+
     def test_from_embedding_no_projection(self):
         vec = np.array([0.8, 0.1, 0.5, -0.2])
         fe = FloatEmotion.from_embedding(vec)
