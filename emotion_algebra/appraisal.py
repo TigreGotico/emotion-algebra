@@ -307,7 +307,9 @@ def float_emotion_to_neuro_deltas(
 
     This is the inverse of the Lövheim-inspired mapping:
 
-    * Dopamine  ← (sensitivity + attention) / 4 — arousal / salience
+    * Dopamine  ← (|sensitivity| + |attention|) / 4 — arousal / salience
+      magnitude (both fear and anger are dopaminergic; the sign of
+      sensitivity encodes approach/avoidance, not arousal strength)
     * Serotonin ← positive valence — (pleasantness + aptitude) / 4
     * Adrenaline ← negative valence — when pleasantness + aptitude < 0
 
@@ -339,8 +341,10 @@ def float_emotion_to_neuro_deltas(
     """
     vec = fe.as_array  # [sensitivity, attention, pleasantness, aptitude]
 
-    # Arousal → dopamine: sensitivity (arousal) + attention (salience)
-    dopamine_delta = (float(vec[0]) + float(vec[1])) / 4.0 * scale
+    # Arousal → dopamine: sensitivity (arousal) + attention (salience).
+    # Both are magnitudes — a highly-aroused fear (sensitivity < 0) is just
+    # as dopaminergic as a highly-aroused anger (sensitivity > 0).
+    dopamine_delta = (abs(float(vec[0])) + abs(float(vec[1]))) / 4.0 * scale
 
     # Valence → serotonin (positive) or adrenaline (negative)
     net_valence = (float(vec[2]) + float(vec[3])) / 4.0 * scale
