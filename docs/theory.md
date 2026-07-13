@@ -129,7 +129,7 @@ needs-driven agent minimises:
 
 ```python
 >>> relax(prototype("terror"), dt=..., half_life=300)
-terror -> fear -> interest -> acceptance     # a recovery trajectory
+terror -> fear -> apprehension -> acceptance     # a recovery trajectory
 ```
 
 ## Names are a readout, not a basis

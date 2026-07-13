@@ -141,7 +141,7 @@ at_rest(ORIGIN)      # False -- the coordinate origin is NOT rest
 at_rest(SET_POINT)   # True
 
 # Recovery is a trajectory, not a switch:
-#   terror -> fear -> interest -> acceptance
+#   terror -> fear -> apprehension -> acceptance
 relax(prototype("terror"), dt=900, half_life=300)
 
 drive(prototype("terror"))   # what must change to get home again
