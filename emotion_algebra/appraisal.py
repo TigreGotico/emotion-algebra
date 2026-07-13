@@ -559,3 +559,72 @@ def float_emotion_to_neuro_deltas(
     adrenaline_delta = max(0.0, -net_valence)
 
     return (dopamine_delta, serotonin_delta, adrenaline_delta)
+
+
+# ---------------------------------------------------------------------------
+# Appraisal -> the affect core (v3)
+#
+# The generative layer, mapped onto the descriptive one. Two of the core's axes
+# ARE appraisal checks -- potency IS coping potential, unpredictability IS
+# novelty -- so most of this map is an identity, not a fit. That is the whole
+# argument for the GRID axes: the dimensions of felt emotion are the dimensions
+# of appraisal, because appraisal is what constructs the feeling.
+# ---------------------------------------------------------------------------
+
+def appraisal_to_affect(appraisal: "Appraisal") -> "AffectState":
+    """Map a cognitive :class:`Appraisal` onto the affect core.
+
+    ==========================  ============================================
+    core axis                   appraisal check
+    ==========================  ============================================
+    ``potency``                 **coping potential**, centred and signed.
+                                *This is an identity, not a fit.*
+    ``unpredictability``        **novelty**.  Also an identity.
+    ``positivity``/``negativity``  goal congruence, tempered by intrinsic
+                                pleasantness
+    ``arousal``                 goal relevance -- how much is at stake
+    ==========================  ============================================
+
+    The crux case falls straight out.  Take one obstructing event and vary
+    *nothing but coping potential*:
+
+    >>> from emotion_algebra.appraisal import Appraisal, appraisal_to_affect
+    >>> fight = Appraisal(goal_relevance=0.9, goal_congruence=0.0,
+    ...                   coping_potential=0.9, novelty=0.2)
+    >>> flight = Appraisal(goal_relevance=0.9, goal_congruence=0.0,
+    ...                    coping_potential=0.1, novelty=0.8)
+    >>> appraisal_to_affect(fight).potency > 0
+    True
+    >>> appraisal_to_affect(flight).potency < 0
+    True
+    >>> appraisal_to_affect(fight).valence < 0 and appraisal_to_affect(flight).valence < 0
+    True
+
+    Same event, same unpleasantness. Coping decides whether you fight or flee.
+    """
+    from emotion_algebra.affect import AffectState
+
+    f = appraisal.to_float()
+
+    # Coping potential in [0,1] -> potency in [-1,1]. An identity, re-centred.
+    potency = 2.0 * f.coping_potential - 1.0
+
+    # Novelty in [0,1] -> unpredictability in [0,1]. An identity.
+    unpredictability = f.novelty
+
+    # Goal congruence in [0,1] (0 = obstructive) -> signed hedonic tone, pulled
+    # toward the stimulus's own pleasantness.
+    hedonic = (2.0 * f.goal_congruence - 1.0) * 0.75 + (
+        2.0 * f.intrinsic_pleasantness - 1.0
+    ) * 0.25
+
+    # Relevance is what is at stake, and stakes are what activate you.
+    arousal = f.goal_relevance
+
+    return AffectState(
+        positivity=max(0.0, min(1.0, hedonic)),
+        negativity=max(0.0, min(1.0, -hedonic)),
+        potency=max(-1.0, min(1.0, potency)),
+        arousal=max(0.0, min(1.0, arousal)),
+        unpredictability=max(0.0, min(1.0, unpredictability)),
+    )

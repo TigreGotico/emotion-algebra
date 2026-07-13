@@ -472,3 +472,80 @@ class TestEvidence:
         for key, entry in all_evidence().items():
             if entry.grade not in CITABLE:
                 assert entry.note.strip(), f"{key} is {entry.grade} but says nothing"
+
+
+class TestLernerKeltner:
+    """Reproduce Lerner & Keltner (2001), *Fear, anger, and risk*, JPSP 81:146-59.
+
+    The only test here of a *causal* claim rather than a rating correlation.
+    Fearful people judge risk pessimistically; angry people optimistically — and
+    angry people pattern with HAPPY people, despite opposite valence. The effect
+    is mediated by control and certainty, not valence.
+
+    Anger and fear are identical in valence and arousal, so a valence/arousal
+    model predicts no difference between them at any parameter setting. If these
+    fail, the model is wrong — not the test.
+    """
+
+    @staticmethod
+    def _risk(state):
+        # The Appraisal-Tendency Framework's own mechanism. Note what is absent:
+        # valence.
+        return 0.5 * ((1.0 - state.potency) / 2.0) + 0.5 * state.unpredictability
+
+    @staticmethod
+    def _induce(coping, novelty, congruence=0.0, relevance=0.9):
+        from emotion_algebra.appraisal import Appraisal, appraisal_to_affect
+
+        return appraisal_to_affect(
+            Appraisal(goal_relevance=relevance, goal_congruence=congruence,
+                      coping_potential=coping, novelty=novelty)
+        )
+
+    @pytest.fixture
+    def states(self):
+        return {
+            "anger": self._induce(coping=0.9, novelty=0.2),
+            "fear": self._induce(coping=0.1, novelty=0.8),
+            "happiness": self._induce(coping=0.8, novelty=0.2,
+                                      congruence=1.0, relevance=0.8),
+        }
+
+    def test_coping_alone_flips_anger_and_fear(self, states):
+        # Same obstructing event; only coping and certainty differ.
+        assert states["anger"].potency > 0 > states["fear"].potency
+        assert states["anger"].valence < 0 and states["fear"].valence < 0
+
+    def test_anger_judges_risk_lower_than_fear(self, states):
+        assert self._risk(states["anger"]) < self._risk(states["fear"])
+
+    def test_anger_patterns_with_happiness_not_fear(self, states):
+        # The counter-intuitive result. Opposite valence, same risk stance.
+        r = {k: self._risk(v) for k, v in states.items()}
+        assert abs(r["anger"] - r["happiness"]) < abs(r["anger"] - r["fear"])
+
+    def test_valence_and_arousal_cannot_explain_it(self, states):
+        # They are IDENTICAL on both — yet judge risk completely differently.
+        anger, fear = states["anger"], states["fear"]
+        assert anger.valence == pytest.approx(fear.valence, abs=0.01)
+        assert anger.arousal == pytest.approx(fear.arousal, abs=0.01)
+        assert abs(self._risk(anger) - self._risk(fear)) > 0.5
+
+    def test_the_effect_is_mediated_by_potency(self, states):
+        # Hold potency constant: most of the effect must vanish.
+        full = abs(self._risk(states["anger"]) - self._risk(states["fear"]))
+        ablated = abs(
+            self._risk(states["anger"].with_(potency=0.0))
+            - self._risk(states["fear"].with_(potency=0.0))
+        )
+        assert 1.0 - ablated / full > 0.4
+
+    def test_ablating_both_mediators_removes_the_effect_entirely(self, states):
+        # Control AND certainty are Lerner & Keltner's two named mediators.
+        # Remove both and nothing should be left to explain.
+        kill = dict(potency=0.0, unpredictability=0.5)
+        residual = abs(
+            self._risk(states["anger"].with_(**kill))
+            - self._risk(states["fear"].with_(**kill))
+        )
+        assert residual == pytest.approx(0.0, abs=1e-9)
