@@ -127,11 +127,11 @@ needs -> appraisal -> affect core -> (tendency, drive) -> behaviour
 
 See [neurochemistry](neurochemistry.md) and [building an agent](agents.md).
 
-## The legacy mappings
+## The other mappings
 
 `appraisal_to_emotion` (discrete, categorical) and `appraisal_to_float_emotion`
-(continuous, Hourglass axes) both still exist and are unchanged. They target the
-[legacy views](legacy.md); `appraisal_to_affect` targets the core.
+(continuous, Hourglass axes) map the same appraisal onto the Plutchik and
+Hourglass [models](models.md). `appraisal_to_affect` maps it onto the core.
 
 `float_emotion_to_neuro_deltas()` is **deprecated** — it returns non-negative
 deltas, while its replacement returns *signed* ones, so it is not a drop-in

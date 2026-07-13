@@ -103,10 +103,11 @@ Note those two are **almost the same point**. The circumplex cannot tell anger
 from fear — which is the honest, structural limit of every valence/arousal model,
 and it is why the library reports it rather than papering over it.
 
-## The legacy models
+## The other models
 
-`plutchik`, `hourglass` and `lovheim` are all registered views. See
-[legacy views](legacy.md) for what they are for and what they cannot do.
+`plutchik`, `hourglass` and `lovheim` are registered views too — faithful
+implementations of their authors' models, each graded. See
+[the models](models.md).
 
 ```python
 fidelity("core", "lovheim")    # Fidelity.HEURISTIC

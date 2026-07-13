@@ -1,7 +1,6 @@
-> **This page documents a [legacy view](legacy.md).** It describes the
-> Plutchik/Hourglass layer, which is kept as a *vocabulary* and graded
-> `METAPHOR`. For the model the library actually computes with, see
-> [the core](theory.md) and [its laws](core-laws.md).
+> **Plutchik / Hourglass model.** Stateful accumulation over the Hourglass
+> axes. For the affect core's dynamics — set points, drives, temperament —
+> see [building an agent](agents.md).
 
 # State & Timeline
 

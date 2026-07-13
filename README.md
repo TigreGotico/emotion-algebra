@@ -252,30 +252,44 @@ Full laws, with the ones that *don't* hold: **[docs/core-laws.md](docs/core-laws
 
 ---
 
-## Plutchik, the Hourglass, and the wheel you came here for
+## Many models, honestly mapped
 
-If you arrived wanting `joy + trust == love` and `-anger == fear`, they're still
-here — as a **lexical view** over the core, graded `METAPHOR`:
+This library does not implement *an* emotion model. It implements **several** —
+each faithfully, to its own author's specification — grades them by evidence, and
+maps between them.
+
+| Model | Author | Grade |
+| --- | --- | --- |
+| **Affect core** | Fontaine, Scherer, Roesch & Ellsworth (2007) | `SUPPORTED` |
+| **Circumplex** | Russell (1980) | `ESTABLISHED` |
+| **PAD / VAD** | Mehrabian & Russell (1974) | `SUPPORTED` |
+| **Plutchik's wheel** | Plutchik (1980) | `METAPHOR` |
+| **Hourglass** | Cambria, Livingstone & Hussain (2012) | `METAPHOR` |
+| **Lövheim's cube** | Lövheim (2012) | `SPECULATIVE` |
+| **Neuromodulators** | Schultz; Doya; Yu & Dayan | `SUPPORTED` |
+
+So if you came for `joy + trust == love` and `-anger == fear`, they're here, and
+they work:
 
 ```python
-from emotion_algebra import resolve
+from emotion_algebra.emotions import get_emotion
 from emotion_algebra.feelings import get_feeling_from_emotions
 
+anger = get_emotion("anger")
+anger + 1                                   # rage
+-anger                                      # fear   (Plutchik's "opposite")
 get_feeling_from_emotions("joy", "trust")   # 'love'
-resolve("love")                             # Feeling(joy + trust)
 ```
 
-They're kept because they're a genuinely useful, widely-understood *vocabulary*.
-They are not kept as a claim about how emotion works — Plutchik's antipodal
-structure has been tested and found unsupported, and the Hourglass is an
-engineering derivative of it.
+That arithmetic is correct **for Plutchik's model**. Plutchik's model is not
+correct about people — anger and fear are neighbours, not opposites. Both things
+are true, and the library tells you both: the wheel is graded `METAPHOR`, and the
+core has no `__neg__`.
 
-Use the wheel to *talk*. Use the core to *compute*.
+**Use the wheel to talk. Use the core to compute.** And convert between them with
+a map that says what it costs.
 
-**[docs/legacy.md](docs/legacy.md)** explains exactly what these views can and
-cannot do.
-
----
+**[docs/models.md](docs/models.md)** — the full catalogue.
 
 ## Documentation
 
@@ -292,7 +306,7 @@ cannot do.
 | **[Neurochemistry](docs/neurochemistry.md)** | Neuromodulators as computational roles. |
 | **[Interop](docs/interop.md)** | PAD, circumplex, and the conversion graph. |
 | **[Text & emoji](docs/text_emoji.md)** | Getting emotion out of language. |
-| **[Legacy views](docs/legacy.md)** | Plutchik, the Hourglass, Lövheim. |
+| **[The models](docs/models.md)** | Every model, its grade, and how they map. |
 | **[CLI](docs/cli.md)** | `emotion-algebra` on the command line. |
 | **[API reference](docs/api_reference.md)** | Every public symbol. |
 

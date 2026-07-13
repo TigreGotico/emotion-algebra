@@ -1,7 +1,6 @@
-> **This page documents a [legacy view](legacy.md).** It describes the
-> Plutchik/Hourglass layer, which is kept as a *vocabulary* and graded
-> `METAPHOR`. For the model the library actually computes with, see
-> [the core](theory.md) and [its laws](core-laws.md).
+> **Plutchik / Hourglass model.** Valence, arousal and polarity as
+> Cambria defines them, including the published polarity formula.
+> One of the [models](models.md) this library implements.
 
 # Valence, Arousal, and Type
 

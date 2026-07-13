@@ -1,7 +1,7 @@
-> **This page documents a [legacy view](legacy.md).** It describes the
-> Plutchik/Hourglass layer, which is kept as a *vocabulary* and graded
-> `METAPHOR`. For the model the library actually computes with, see
-> [the core](theory.md) and [its laws](core-laws.md).
+> **Lövheim's model.** A faithful implementation of Lövheim (2012),
+> graded `SPECULATIVE` — see [evidence](evidence.md). For the
+> library's own neurochemical layer, see
+> [neurochemistry](neurochemistry.md).
 
 # The Lövheim cube
 

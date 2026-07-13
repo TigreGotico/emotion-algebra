@@ -187,4 +187,4 @@ See [evidence](evidence.md).
 - Building something that feels over time → **[agents](agents.md)**
 - Want to know *why* these axes → **[the model](theory.md)**
 - Want the formal algebra → **[the laws](core-laws.md)**
-- Came here for `joy + trust == love` → **[legacy views](legacy.md)**
+- Came here for `joy + trust == love` → **[the models](models.md)**

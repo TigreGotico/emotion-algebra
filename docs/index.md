@@ -26,7 +26,7 @@ There are two ways in. Pick whichever fits.
 | **[The laws](core-laws.md)** | The algebra, formally — including the laws it deliberately *refuses*. |
 | **[Appraisal](appraisal.md)** | Where emotions come from. The generative layer. |
 | **[Neurochemistry](neurochemistry.md)** | Neuromodulators as computational roles. |
-| **[Legacy views](legacy.md)** | Plutchik, the Hourglass, Lövheim — what they're for and what they can't do. |
+| **[The models](models.md)** | Every model this library implements, its grade, and how they map. |
 
 ---
 

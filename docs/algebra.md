@@ -1,7 +1,7 @@
-> **This page documents a [legacy view](legacy.md).** It describes the
-> Plutchik/Hourglass layer, which is kept as a *vocabulary* and graded
-> `METAPHOR`. For the model the library actually computes with, see
-> [the core](theory.md) and [its laws](core-laws.md).
+> **Plutchik / Hourglass model.** Operator algebra over Cambria's
+> four signed axes — one of the [models](models.md) this library
+> implements, faithful to the source. See [models](models.md) for how it
+> maps onto the others.
 
 # Emotion Algebra
 
