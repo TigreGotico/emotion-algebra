@@ -39,6 +39,7 @@ def emotion_distance(a: "EmotionBase", b: "EmotionBase") -> float:
 
     Examples
     --------
+    >>> from emotion_algebra.emotions import get_emotion
     >>> emotion_distance(get_emotion("rage"), get_emotion("anger"))
     1.0
     >>> emotion_distance(get_emotion("joy"), get_emotion("sadness"))
@@ -47,6 +48,78 @@ def emotion_distance(a: "EmotionBase", b: "EmotionBase") -> float:
     va = a.as_array.astype(float)
     vb = b.as_array.astype(float)
     return float(np.linalg.norm(va - vb))
+
+
+#: The largest distance any two named emotions can be apart: the two poles of
+#: one axis, each at tertiary intensity (``rage`` to ``terror`` = |3 − (−3)| = 6).
+#: :func:`emotion_similarity` normalises against this so 0.0 means "as different
+#: as the model can express", not "infinitely different".
+MAX_EMOTION_DISTANCE = 6.0
+
+
+def emotion_similarity(
+    a: "EmotionBase",
+    b: "EmotionBase",
+    metric: str = "distance",
+) -> float:
+    """Similarity between two emotions, in ``[0, 1]``.
+
+    Parameters
+    ----------
+    a, b:
+        Any :class:`~emotion_algebra.base.EmotionBase` instances.
+    metric:
+        ``"distance"`` (default)
+            ``1 − d / MAX_EMOTION_DISTANCE``, clamped to ``[0, 1]``.  Sensitive
+            to *intensity*: ``joy`` and ``ecstasy`` are similar but not
+            identical, and an emotion is only maximally similar to itself.
+            This is the right default — it is a metric, so it obeys the triangle
+            inequality and can be reasoned about.
+        ``"cosine"``
+            Cosine of the angle between the vectors, rescaled from ``[-1, 1]``
+            to ``[0, 1]``.  Ignores *magnitude*: ``joy`` and ``ecstasy`` are
+            identical under it (same direction), and opposites score 0.  Use it
+            when you care about which emotion, not how much of it.  A zero
+            vector has no direction, so anything paired with
+            :class:`~emotion_algebra.plutchik.Neutrality` scores ``0.5``
+            (maximal ambiguity) rather than raising.
+
+    Returns
+    -------
+    float
+        1.0 = identical, 0.0 = maximally dissimilar.
+
+    Raises
+    ------
+    ValueError
+        If *metric* is not one of the two supported names.
+
+    Examples
+    --------
+    >>> from emotion_algebra.emotions import get_emotion
+    >>> emotion_similarity(get_emotion("joy"), get_emotion("joy"))
+    1.0
+    >>> emotion_similarity(get_emotion("rage"), get_emotion("terror"))
+    0.0
+    >>> emotion_similarity(get_emotion("joy"), get_emotion("ecstasy"), metric="cosine")
+    1.0
+    """
+    if metric == "distance":
+        d = emotion_distance(a, b)
+        return float(max(0.0, min(1.0, 1.0 - d / MAX_EMOTION_DISTANCE)))
+
+    if metric == "cosine":
+        va = a.as_array.astype(float)
+        vb = b.as_array.astype(float)
+        na = float(np.linalg.norm(va))
+        nb = float(np.linalg.norm(vb))
+        if na == 0.0 or nb == 0.0:
+            # A zero vector points nowhere; no direction to agree or disagree with.
+            return 0.5
+        cos = float(np.dot(va, vb) / (na * nb))
+        return float(max(0.0, min(1.0, (cos + 1.0) / 2.0)))
+
+    raise ValueError(f"metric must be 'distance' or 'cosine', got {metric!r}")
 
 
 def _nearest(vec: np.ndarray, candidates: "Iterable[EmotionBase]") -> "EmotionBase":

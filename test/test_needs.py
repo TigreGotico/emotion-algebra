@@ -10,7 +10,10 @@ from emotion_algebra.needs import (
     MaxNeefNeed,
     MurrayNeed,
     CIADrive,
+    DRIVE_AXES,
+    NEED_DRIVES,
 )
+from emotion_algebra.emotions import get_emotion
 from emotion_algebra.float_emotion import FloatEmotion
 from emotion_algebra.base import EmotionBase
 
@@ -97,3 +100,47 @@ class TestNeedDeficitToFloatEmotion:
             fe = need_deficit_to_float_emotion(need)
             assert fe is not None
             assert np.any(fe.as_array != 0), f"Need {need!r} produced zero vector"
+
+
+class TestCIACoherence:
+    """The needs table must obey the CIA buckets its own docstring documents.
+
+    This is the test that keeps the docstring honest: every deficit emotion has
+    to land on an Hourglass axis its need's meta-drive is actually allowed to
+    move.  Without it the table and the prose drift apart silently.
+    """
+
+    def test_every_need_is_filed_under_a_drive(self):
+        for need in list(MAXNEEF_DEFICIT_EMOTIONS) + list(MURRAY_DEFICIT_EMOTIONS):
+            assert str(need) in NEED_DRIVES, f"{need} has no CIA drive"
+
+    def test_no_orphan_drive_entries(self):
+        known = {str(n) for n in MAXNEEF_DEFICIT_EMOTIONS} | {
+            str(n) for n in MURRAY_DEFICIT_EMOTIONS
+        }
+        assert set(NEED_DRIVES) <= known
+
+    def test_every_drive_has_axes(self):
+        for drive in CIADrive:
+            assert DRIVE_AXES[drive]
+
+    @pytest.mark.parametrize(
+        "need,emotion_name",
+        sorted(
+            ((str(k), v) for k, v in MAXNEEF_DEFICIT_EMOTIONS.items()),
+            key=lambda kv: kv[0],
+        )
+        + sorted(
+            ((str(k), v) for k, v in MURRAY_DEFICIT_EMOTIONS.items()),
+            key=lambda kv: kv[0],
+        ),
+    )
+    def test_deficit_emotion_lies_on_its_drives_axis(self, need, emotion_name):
+        emotion = get_emotion(emotion_name)
+        assert emotion is not None, f"{need} maps to unknown emotion {emotion_name!r}"
+        allowed = DRIVE_AXES[NEED_DRIVES[need]]
+        axis = emotion.dimension.name if emotion.dimension else None
+        assert axis in allowed, (
+            f"{need} is a {NEED_DRIVES[need]} need, so its deficit emotion must sit "
+            f"on one of {sorted(allowed)}; {emotion_name!r} sits on {axis!r}"
+        )

@@ -1,23 +1,98 @@
-"""emotion_data/base.py — Abstract base for all emotion types.
+"""Abstract base for all emotion types.
 
-All three concrete types (Emotion, CompositeEmotion, Feeling) are points in
-or composites of Cambria's Hourglass space.  This ABC defines the minimal
-interface they all must satisfy, and provides concrete shared implementations
-for the numeric operators and numpy helpers.
+Every concrete type (:class:`~emotion_algebra.plutchik.Emotion`,
+:class:`~emotion_algebra.composite_emotions.CompositeEmotion`,
+:class:`~emotion_algebra.feelings.Feeling`,
+:class:`~emotion_algebra.float_emotion.FloatEmotion`) is a point in — or a
+composite over — Cambria's Hourglass space.  This ABC defines the minimal
+interface they must satisfy and supplies the shared numeric operators, numpy
+helpers, and the two scalar summaries of an affective state:
+
+``valence``
+    The **hedonic axis only** (Pleasantness).  Anger has ``valence == 0``:
+    reactivity is orthogonal to hedonics (Russell 1980; Posner et al. 2005).
+``polarity``
+    Cambria's published Hourglass sentiment formula over *all four* axes.
+    Anger has ``polarity < 0``, because a highly sensitive state is aversive
+    regardless of which pole it sits on.
+
+The two are deliberately distinct and must not be conflated —
+see ``docs/valence_arousal.md``.
 """
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import List
+from typing import Protocol, runtime_checkable
 
 import numpy as np
 
+#: Hourglass axis order used by ``as_array`` / ``emotion_vector`` everywhere.
+AXES = ("sensitivity", "attention", "pleasantness", "aptitude")
+
+#: Absolute value of the most intense named emotion on any axis (``rage`` = 3).
+#: Used to normalise integer flows into the ``[-1, 1]`` range Cambria's
+#: polarity formula is defined over.
+AXIS_MAX = 3.0
+
+
+def hourglass_polarity(vector) -> float:
+    """Cambria's Hourglass polarity for a 4-axis vector.
+
+    Implements the published sentiment formula (Cambria et al. 2012; refined in
+    Susanto et al. 2020, *The Hourglass Model Revisited*)::
+
+        polarity = (Pleasantness + |Attention| - |Sensitivity| + Aptitude) / 3
+
+    evaluated over axes normalised to ``[-1, 1]``.  The absolute values on
+    Attention and Sensitivity are not a typo: both poles of Sensitivity (anger
+    *and* fear) are aversive, and both poles of Attention (vigilance *and*
+    surprise) are engaging.  Only Pleasantness and Aptitude carry a signed
+    hedonic contribution.
+
+    Parameters
+    ----------
+    vector:
+        Any 4-element array-like in Hourglass axis order
+        ``[sensitivity, attention, pleasantness, aptitude]``.
+
+    Returns
+    -------
+    float
+        Sentiment polarity in ``[-1, 1]``.  Positive = pleasant/approach,
+        negative = unpleasant/avoid, 0 = neutral or exactly balanced.
+
+    Examples
+    --------
+    >>> round(hourglass_polarity([0, 0, 3, 0]), 3)   # ecstasy — one axis only
+    0.333
+    >>> round(hourglass_polarity([2, 0, 0, 0]), 3)   # anger — aversive
+    -0.222
+    """
+    s, at, p, ap = (float(v) / AXIS_MAX for v in np.asarray(vector, dtype=float).ravel()[:4])
+    raw = (p + abs(at) - abs(s) + ap) / 3.0
+    # Named emotions never leave [-1, 1], but hyper-intense and free-float
+    # vectors can overshoot the lattice; the polarity contract is a bounded
+    # sentiment score, so saturate rather than leak an out-of-range number.
+    return float(max(-1.0, min(1.0, raw)))
+
+
+@runtime_checkable
+class SupportsEmotionVector(Protocol):
+    """Structural type for anything with a 4-axis Hourglass representation.
+
+    Consumers that only need the numbers (ML adapters, downstream engines)
+    should depend on this Protocol rather than on :class:`EmotionBase`, so
+    they stay decoupled from the class hierarchy.
+    """
+
+    @property
+    def as_array(self) -> np.ndarray:
+        """4-element vector ``[sensitivity, attention, pleasantness, aptitude]``."""
+        ...
+
 
 class EmotionBase(ABC):
-    """Shared interface for Emotion, CompositeEmotion, and Feeling.
-
-    All three types are points in or composites of Cambria's Hourglass space.
-    This ABC defines the minimal interface that all three must satisfy.
+    """Shared interface for every emotion type.
 
     All operators return a *new* value rather than mutating ``self`` —
     emotions are immutable value objects. There is no in-place operator
@@ -40,13 +115,13 @@ class EmotionBase(ABC):
     @property
     @abstractmethod
     def valence(self) -> int:
-        """Pleasantness axis component only."""
+        """Pleasantness axis component only — the hedonic axis."""
         ...
 
     @property
     @abstractmethod
     def arousal(self) -> int:
-        """|emotional_flow| or max component arousal."""
+        """Activation magnitude."""
         ...
 
     @property
@@ -64,6 +139,23 @@ class EmotionBase(ABC):
     # --- Concrete shared implementations ---
 
     @property
+    def polarity(self) -> float:
+        """Hourglass sentiment polarity in ``[-1, 1]`` — see :func:`hourglass_polarity`.
+
+        Unlike :attr:`valence` (Pleasantness only) this weighs all four axes,
+        so anger and fear are both negative and trust is positive.
+
+        Examples
+        --------
+        >>> from emotion_algebra.emotions import get_emotion
+        >>> round(get_emotion("ecstasy").polarity, 3)
+        0.333
+        >>> get_emotion("anger").polarity < 0
+        True
+        """
+        return hourglass_polarity(self.as_array)
+
+    @property
     def as_array(self) -> np.ndarray:
         """Flow values as a numpy array of shape (4,)."""
         return np.array([e.emotional_flow for e in self.emotion_vector])
@@ -74,6 +166,18 @@ class EmotionBase(ABC):
         s, a, p, ap = self.emotion_vector
         return np.array([[int(s), int(a)], [int(p), int(ap)]])
 
+    def to_dict(self) -> dict:
+        """Serialize to a JSON-compatible dict.  Overridden by every concrete type."""
+        raise NotImplementedError
+
+    def to_json(self, **kwargs) -> str:
+        """Serialize to a versioned JSON string.
+
+        See :func:`emotion_algebra.serialization.to_json`.
+        """
+        from emotion_algebra.serialization import to_json
+        return to_json(self, **kwargs)
+
     def __bool__(self) -> bool:
         return self.emotional_flow != 0
 
@@ -82,7 +186,7 @@ class EmotionBase(ABC):
 
         This is *not* a hedonic score. ``int(love)`` returns 4 because joy (flow=2)
         and trust (flow=2) each contribute 2. Negative flows reduce the total.
-        Use ``valence`` for positive/negative polarity.
+        Use :attr:`valence` for hedonic tone or :attr:`polarity` for sentiment.
         """
         return self.emotional_flow
 

@@ -238,8 +238,8 @@ class CompositeEmotion(EmotionBase):
 
     @property
     def type(self) -> str:
-        """Russell (1980) Circumplex classification using composite valence and arousal."""
-        return _circumplex_type(self.valence, self.arousal)
+        """Russell (1980) Circumplex classification using composite polarity and arousal."""
+        return _circumplex_type(self.polarity, self.arousal)
 
     @property
     def kind(self) -> str:
@@ -325,7 +325,12 @@ class CompositeEmotion(EmotionBase):
             c = CompositeEmotion()
 
             for e in result_vector:
-                if e.dimension:
+                # Keep the axes that actually carry something. This used to test
+                # `e.dimension`, using "has an axis" as a proxy for "is non-zero"
+                # — which only worked because a cancelled axis used to come back
+                # as a *dimensionless* Neutrality. Now that cancellation keeps
+                # its axis (as it must), test the thing we actually mean.
+                if e.emotional_flow != 0:
                     c.components.append(e)
             return c
 
@@ -353,7 +358,7 @@ class CompositeEmotion(EmotionBase):
             c = CompositeEmotion()
 
             for e in result_vector:
-                if e.dimension:
+                if e.emotional_flow != 0:
                     c.components.append(e)
             if len(c.components) == 1:
                 return c.components[0]

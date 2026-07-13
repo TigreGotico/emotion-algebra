@@ -327,14 +327,42 @@ class TestEmotionTypeKind:
         assert "frivolity" in EMOTION_KIND_NAMES["event related"]
         assert "frivolity" not in EMOTION_KIND_NAMES["social"]
 
-    def test_anger_is_activated_neutral(self):
-        assert copy(EMOTIONS["anger"]).type == "activated neutral"
+    # `type` classifies on polarity (Cambria's 4-axis sentiment score), not on
+    # valence (Pleasantness only). Under valence, every emotion off the
+    # Pleasantness axis -- three axes out of four -- collapsed to "activated
+    # neutral", which put anger and fear, the textbook high-arousal *negative*
+    # emotions, in the hedonically-neutral band. Polarity places them correctly.
+    def test_anger_is_excited_negative(self):
+        assert copy(EMOTIONS["anger"]).type == "excited negative"
 
-    def test_fear_is_activated_neutral(self):
-        assert copy(EMOTIONS["fear"]).type == "activated neutral"
+    def test_fear_is_excited_negative(self):
+        assert copy(EMOTIONS["fear"]).type == "excited negative"
 
-    def test_anticipation_is_activated_neutral(self):
-        assert copy(EMOTIONS["anticipation"]).type == "activated neutral"
+    def test_sensitivity_axis_is_aversive_at_both_poles(self):
+        """Anger and fear are both negative; they differ in coping, not hedonic sign."""
+        assert copy(EMOTIONS["rage"]).polarity < 0
+        assert copy(EMOTIONS["terror"]).polarity < 0
+
+    def test_anticipation_is_excited_positive(self):
+        assert copy(EMOTIONS["anticipation"]).type == "excited positive"
+
+    def test_both_attention_poles_score_positive(self):
+        """|Attention| in Cambria's formula makes surprise positive too.
+
+        Surprise is hedonically ambiguous in Russell's circumplex, so a case
+        could be made for classifying it neutral. We do not: the polarity
+        formula is Cambria's published one, and bending it so that one emotion
+        reads more intuitively would make every other number in this library
+        un-citable. The quirk is locked here so it stays a decision rather than
+        drifting into an accident.
+        """
+        assert copy(EMOTIONS["surprise"]).polarity > 0
+        assert copy(EMOTIONS["anticipation"]).polarity > 0
+
+    def test_valence_still_pleasantness_only(self):
+        """polarity changed; valence did NOT -- they are different questions."""
+        assert copy(EMOTIONS["anger"]).valence == 0
+        assert copy(EMOTIONS["joy"]).valence == 2
 
     def test_neutrality_type_is_neutral(self):
         assert Neutrality().type == "neutral"

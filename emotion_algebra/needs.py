@@ -12,12 +12,33 @@ needs are deficient.  Grounded in:
 * **Plutchik (1980)** — 8 primary emotions mapped to 4 Hourglass axes.
 
 The mapping follows appraisal logic: a deficient need implies a blocked goal
-(Scherer's "goal incongruence"), and the resulting emotion depends on which
-CIA drive (Control / Identity / Arousal) is threatened:
+(Scherer's "goal incongruence"), and *which* emotion results depends on which
+CIA meta-drive — Control, Identity, or Arousal — the deficit threatens.  Each
+drive can only produce emotions on certain Hourglass axes:
 
-    Control deficit   → fear / anger    (threat to safety / autonomy)
-    Identity deficit  → sadness / disgust (threat to self-concept / belonging)
-    Arousal deficit   → boredom / surprise (under/over-stimulation)
+===========  ==========================  ==================================================
+Drive        Hourglass axes it produces  Why
+===========  ==========================  ==================================================
+CONTROL      Sensitivity                 Safety, autonomy and mastery are threatened.  The
+                                         coping check decides the pole: obstruction you can
+                                         fight → annoyance/anger/rage; obstruction you
+                                         cannot → apprehension/fear/terror.
+IDENTITY     Pleasantness, Aptitude      Self-concept, worth and belonging are threatened →
+                                         hedonic collapse (pensiveness/sadness/grief) or
+                                         self-rejection (disgust/loathing).
+AROUSAL      Attention, Aptitude         Stimulation is out of balance → disorientation
+                                         (distraction/surprise) or disengagement (boredom).
+===========  ==========================  ==================================================
+
+Aptitude appears under two drives on purpose: it carries both *worth* (an
+identity concern) and *engagement* (an arousal concern), and the deficit tables
+use it for both.
+
+:data:`NEED_DRIVES` records each need's drive, and
+``test/test_needs.py::TestCIACoherence`` asserts every row of
+:data:`MAXNEEF_DEFICIT_EMOTIONS` and :data:`MURRAY_DEFICIT_EMOTIONS` produces an
+emotion on an axis its drive is allowed to produce.  The table and this
+docstring therefore cannot drift apart.
 
 References
 ----------
@@ -28,24 +49,9 @@ Plutchik, R. (1980). *Emotion: A Psychoevolutionary Synthesis*.
 
 from __future__ import annotations
 
-import sys
-if sys.version_info >= (3, 11):
-    from enum import StrEnum
-else:
-    from enum import Enum
-
-    class StrEnum(str, Enum):
-        """Backport for Python < 3.11.
-
-        Plain ``Enum`` formats ``str(member)`` as ``"ClassName.MEMBER"``;
-        the real 3.11+ ``enum.StrEnum`` overrides this to return the value.
-        Match that behavior so ``str(member)`` is version-portable — this
-        module relies on it to build ``NEED_DEFICIT_EMOTIONS``.
-        """
-
-        def __str__(self) -> str:
-            return str(self.value)
 from typing import Optional, TYPE_CHECKING
+
+from emotion_algebra._compat import StrEnum
 
 if TYPE_CHECKING:
     from emotion_algebra.base import EmotionBase
@@ -109,41 +115,81 @@ class MurrayNeed(StrEnum):
 # Need → deficit emotion mappings
 # ---------------------------------------------------------------------------
 
+#: Hourglass axes each CIA drive is allowed to produce a deficit emotion on.
+#: This is the machine-readable form of the table in the module docstring.
+DRIVE_AXES: dict[CIADrive, frozenset] = {
+    CIADrive.CONTROL:  frozenset({"sensitivity"}),
+    CIADrive.IDENTITY: frozenset({"pleasantness", "aptitude"}),
+    CIADrive.AROUSAL:  frozenset({"attention", "aptitude"}),
+}
+
+#: Which meta-drive each need belongs to.  A need is filed by *what the deficit
+#: threatens*, not by which emotion it happens to produce — the emotion follows.
+NEED_DRIVES: dict[str, CIADrive] = {
+    # --- Max-Neef ---
+    "subsistence":   CIADrive.IDENTITY,   # deprivation is felt as loss, not as acute threat
+    "protection":    CIADrive.CONTROL,    # the acute-threat need proper
+    "freedom":       CIADrive.CONTROL,    # constraint on the ability to act
+    "identity":      CIADrive.IDENTITY,
+    "participation": CIADrive.CONTROL,    # exclusion removes the ability to act through the group
+    "creation":      CIADrive.AROUSAL,
+    "understanding": CIADrive.AROUSAL,
+    "idleness":      CIADrive.CONTROL,    # rest denied = an imposition to be resisted
+    "affection":     CIADrive.IDENTITY,
+    # --- Murray ---
+    "achievement":    CIADrive.CONTROL,
+    "affiliation":    CIADrive.IDENTITY,
+    "aggression":     CIADrive.CONTROL,
+    "autonomy":       CIADrive.CONTROL,
+    "counteraction":  CIADrive.CONTROL,
+    "defendance":     CIADrive.CONTROL,
+    "deference":      CIADrive.CONTROL,
+    "dominance":      CIADrive.CONTROL,
+    "exhibition":     CIADrive.IDENTITY,
+    "harm_avoidance": CIADrive.CONTROL,
+    "infavoidance":   CIADrive.CONTROL,
+    "nurturance":     CIADrive.IDENTITY,
+    "order":          CIADrive.CONTROL,   # disorder threatens predictability
+    "play":           CIADrive.AROUSAL,
+    "rejection":      CIADrive.IDENTITY,
+    "sentience":      CIADrive.AROUSAL,
+    "understanding":  CIADrive.AROUSAL,
+}
+
 MAXNEEF_DEFICIT_EMOTIONS: dict[MaxNeefNeed, str] = {
-    # Control needs — deficiency threatens safety/autonomy
-    MaxNeefNeed.SUBSISTENCE:   "sadness",       # deprivation → grief/loss
-    MaxNeefNeed.PROTECTION:    "fear",           # vulnerability → threat
-    MaxNeefNeed.FREEDOM:       "anger",          # constraint → obstacle
-
-    # Identity needs — deficiency threatens self-concept/belonging
-    MaxNeefNeed.IDENTITY:      "pensiveness",    # weakened self → melancholy
-    MaxNeefNeed.PARTICIPATION: "apprehension",   # exclusion → uncertainty
-    MaxNeefNeed.CREATION:      "boredom",        # blocked creativity → disengagement
-    MaxNeefNeed.UNDERSTANDING: "distraction",    # confusion → disorientation
-
-    # Arousal needs — deficiency threatens stimulation balance
-    MaxNeefNeed.IDLENESS:      "annoyance",      # over-stimulation → irritability
-    MaxNeefNeed.AFFECTION:     "sadness",         # loneliness → loss/grief
+    MaxNeefNeed.SUBSISTENCE:   "sadness",        # identity — deprivation → grief/loss
+    MaxNeefNeed.PROTECTION:    "fear",           # control  — vulnerability → threat
+    MaxNeefNeed.FREEDOM:       "anger",          # control  — constraint → obstacle
+    MaxNeefNeed.IDENTITY:      "pensiveness",    # identity — weakened self → melancholy
+    MaxNeefNeed.PARTICIPATION: "apprehension",   # control  — exclusion → social threat
+    MaxNeefNeed.CREATION:      "boredom",        # arousal  — blocked creativity → disengagement
+    MaxNeefNeed.UNDERSTANDING: "distraction",    # arousal  — confusion → disorientation
+    MaxNeefNeed.IDLENESS:      "annoyance",      # control  — no rest → irritability at the imposition
+    MaxNeefNeed.AFFECTION:     "sadness",        # identity — loneliness → loss/grief
 }
 
 MURRAY_DEFICIT_EMOTIONS: dict[MurrayNeed, str] = {
-    MurrayNeed.ACHIEVEMENT:    "annoyance",      # blocked accomplishment → frustration
-    MurrayNeed.AFFILIATION:    "sadness",         # isolation → loneliness
-    MurrayNeed.AGGRESSION:     "anger",           # impotence → rage
-    MurrayNeed.AUTONOMY:       "anger",           # constraint → obstacle
-    MurrayNeed.COUNTERACTION:  "annoyance",       # weakness → frustrated determination
-    MurrayNeed.DEFENDANCE:     "fear",            # criticism → threat
-    MurrayNeed.DEFERENCE:      "apprehension",    # no guidance → uncertainty
-    MurrayNeed.DOMINANCE:      "annoyance",       # loss of control → frustration
-    MurrayNeed.EXHIBITION:     "pensiveness",     # invisibility → melancholy
-    MurrayNeed.HARM_AVOIDANCE: "fear",            # danger → threat
-    MurrayNeed.INFAVOIDANCE:   "apprehension",    # humiliation risk → anxiety
-    MurrayNeed.NURTURANCE:     "sadness",         # can't help → grief
-    MurrayNeed.ORDER:          "boredom",          # chaos → disengagement
-    MurrayNeed.PLAY:           "boredom",          # no fun → dullness
-    MurrayNeed.REJECTION:      "disgust",          # contamination → revulsion
-    MurrayNeed.SENTIENCE:      "boredom",          # sensory deprivation → dullness
-    MurrayNeed.UNDERSTANDING:  "distraction",      # confusion → disorientation
+    MurrayNeed.ACHIEVEMENT:    "annoyance",      # control  — blocked accomplishment → frustration
+    MurrayNeed.AFFILIATION:    "sadness",        # identity — isolation → loneliness
+    MurrayNeed.AGGRESSION:     "anger",          # control  — impotence → rage
+    MurrayNeed.AUTONOMY:       "anger",          # control  — constraint → obstacle
+    MurrayNeed.COUNTERACTION:  "annoyance",      # control  — weakness → frustrated determination
+    MurrayNeed.DEFENDANCE:     "fear",           # control  — criticism → threat
+    MurrayNeed.DEFERENCE:      "apprehension",   # control  — no guidance → uncertainty
+    MurrayNeed.DOMINANCE:      "annoyance",      # control  — loss of control → frustration
+    MurrayNeed.EXHIBITION:     "pensiveness",    # identity — invisibility → melancholy
+    MurrayNeed.HARM_AVOIDANCE: "fear",           # control  — danger → threat
+    MurrayNeed.INFAVOIDANCE:   "apprehension",   # control  — humiliation risk → anxiety
+    MurrayNeed.NURTURANCE:     "sadness",        # identity — can't help → grief
+    # Chaos is a threat to predictability and control, so it belongs on the
+    # Sensitivity axis. It previously mapped to "boredom" (disengagement),
+    # which contradicted both its own CIA drive and the plain psychology —
+    # a person deprived of order is anxious, not bored.
+    MurrayNeed.ORDER:          "apprehension",   # control  — disorder → anxiety
+    MurrayNeed.PLAY:           "boredom",        # arousal  — no fun → dullness
+    MurrayNeed.REJECTION:      "disgust",        # identity — contamination → revulsion
+    MurrayNeed.SENTIENCE:      "boredom",        # arousal  — sensory deprivation → dullness
+    MurrayNeed.UNDERSTANDING:  "distraction",    # arousal  — confusion → disorientation
 }
 
 # Combined mapping (StrEnum values work as plain strings)

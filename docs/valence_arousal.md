@@ -61,3 +61,35 @@ The same classification applies to `CompositeEmotion.type` and `Feeling.type`.
 | `aptitude` | **+1** | competence is socially desirable |
 | `sensitivity` | **0** | approach vs avoidance — orthogonal to hedonics |
 | `attention` | **0** | engagement — orthogonal to hedonics |
+
+## Polarity — the four-axis score
+
+`valence` is **not** the library's sentiment score. It is the Pleasantness axis
+alone. The sentiment score is `polarity`, and it is Cambria's published formula
+over all four axes:
+
+```
+polarity = (Pleasantness + |Attention| − |Sensitivity| + Aptitude) / 3
+```
+
+evaluated on axes normalized to `[−1, 1]` and clamped to `[−1, 1]`.
+
+```python
+get_emotion("trust").valence     # 0    — trust is not on the Pleasantness axis
+get_emotion("trust").polarity    # +0.33 — but it is clearly positive sentiment
+```
+
+Keeping the two separate is the point: `valence` answers "how pleasant", while
+`polarity` answers "how positive overall", and for anything off the Pleasantness
+axis those differ. `_circumplex_type` classifies on **polarity**.
+
+### The |Attention| quirk is intentional
+
+Attention enters the formula as a *magnitude*, so **both of its poles score
+positive** — anticipation and surprise alike. Negating a purely attention-axis
+emotion therefore leaves its polarity unchanged.
+
+That is a property of the published formula, and it is locked by
+`test_both_attention_poles_score_positive`. The reading is defensible: engagement,
+in either direction, is not hedonically negative the way threat (|Sensitivity|,
+which *subtracts*) is.

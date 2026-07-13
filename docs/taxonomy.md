@@ -49,3 +49,50 @@ anger = copy(EMOTIONS["anger"])
 # NEGATIVE_EMOTIONS: only Pleasantness < 0 (pensiveness, sadness, grief)
 print([e.name for e in POSITIVE_EMOTIONS])
 ```
+
+## Two lineages, one name
+
+Ten names are claimed by **both** dyad lineages, and they mean different things:
+
+* a **Feeling** is a Plutchik dyad — two *primaries* combined;
+* a **CompositeEmotion** is an Hourglass compound — the same pairing at maximum
+  intensity.
+
+So `love` is `joy + trust` as a Feeling but `ecstasy + admiration` as a
+CompositeEmotion: the same dyad, a very different intensity.
+
+| Name | Feeling (Plutchik dyad) | CompositeEmotion (Hourglass compound) |
+|---|---|---|
+| aggressiveness | anger + anticipation | rage + vigilance |
+| anxiety | anticipation + fear | terror + vigilance |
+| awe | fear + surprise | terror + amazement |
+| contempt | disgust + anger | rage + loathing |
+| disapproval | surprise + sadness | grief + amazement |
+| envy | sadness + anger | grief + admiration |
+| love | joy + trust | ecstasy + admiration |
+| optimism | anticipation + joy | ecstasy + vigilance |
+| remorse | sadness + disgust | grief + loathing |
+| submission | trust + fear | terror + admiration |
+
+### Resolving a name
+
+`emotion_algebra.taxonomy` is the single sanctioned lookup. It **prefers the
+Feeling** by default — the lower-intensity reading is the one a plain English
+name usually means — and the preference is explicit rather than a side-effect of
+import order:
+
+```python
+from emotion_algebra import resolve, is_ambiguous, describe_collision
+
+resolve("love")                      # Feeling(joy + trust)          [default]
+resolve("love", prefer="composite")  # CompositeEmotion(ecstasy + admiration)
+
+is_ambiguous("love")                 # True   (case-insensitive)
+is_ambiguous("joy")                  # False
+
+describe_collision("love")
+# {'name': 'love', 'feeling': ['joy', 'trust'], 'composite': ['ecstasy', 'admiration']}
+```
+
+An unknown name returns `None`; an unknown `prefer` raises `ValueError`. Every
+collision's resolution is locked by a test, so the answer cannot drift.

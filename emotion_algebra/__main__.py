@@ -14,6 +14,19 @@ Usage
     python -m emotion_algebra rage - 1
     python -m emotion_algebra anger + fear
 
+    # Analyze text — lexicon spans, negation, intensifiers
+    python -m emotion_algebra analyze "I am not very happy"
+
+    # Compare two emotions
+    python -m emotion_algebra distance joy grief
+
+    # Render Plutchik's wheel to a PNG (needs the [viz] extra)
+    python -m emotion_algebra wheel joy
+
+    # Machine-readable output for scripting
+    python -m emotion_algebra analyze "so happy" --json
+    python -m emotion_algebra distance joy grief --json
+
     # Interactive REPL with emotion_algebra pre-imported
     python -m emotion_algebra
 """
@@ -180,8 +193,112 @@ def _repl() -> None:
 # Entry point
 # ---------------------------------------------------------------------------
 
+def _cmd_analyze(text: str, as_json: bool) -> None:
+    """``analyze`` — lexicon spans + aggregate, with negation and intensifiers."""
+    from emotion_algebra.text import analyze
+
+    result = analyze(text)
+
+    if as_json:
+        _emit_json({
+            "text": result.text,
+            "spans": [
+                {
+                    "word": s.word,
+                    "label": s.label,
+                    "start": s.start,
+                    "end": s.end,
+                    "weight": s.weight,
+                    "negated": s.negated,
+                }
+                for s in result.spans
+            ],
+            "aggregate": list(result.aggregate.as_array),
+            "polarity": result.polarity,
+            "dominant": result.dominant.name if result.dominant else None,
+        })
+        return
+
+    if not result:
+        print(f"No lexicon matches in {text!r}")
+        return
+
+    width = max(len(s.word) for s in result.spans)
+    print()
+    for span in result.spans:
+        shifters = []
+        if span.negated:
+            shifters.append("negated")
+        if span.weight != 1.0:
+            shifters.append(f"×{span.weight:g}")
+        note = f"  ({', '.join(shifters)})" if shifters else ""
+        print(f"  {span.word:<{width}}  →  {span.label}{note}")
+    print()
+    print(f"  dominant  : {result.dominant.name}")
+    print(f"  polarity  : {result.polarity:+.3f}")
+    print(f"  aggregate : {result.aggregate}")
+    print()
+
+
+def _cmd_distance(a: str, b: str, as_json: bool) -> None:
+    """``distance`` — metric distance and normalized similarity between two emotions."""
+    from emotion_algebra.distance import emotion_distance, emotion_similarity
+
+    left, right = _resolve_named(a), _resolve_named(b)
+    dist = emotion_distance(left, right)
+    sim = emotion_similarity(left, right)
+    cos = emotion_similarity(left, right, metric="cosine")
+
+    if as_json:
+        _emit_json({
+            "a": left.name,
+            "b": right.name,
+            "distance": dist,
+            "similarity": sim,
+            "cosine": cos,
+        })
+        return
+
+    print()
+    print(f"  {left.name}  ↔  {right.name}")
+    print(f"  distance   : {dist:.3f}")
+    print(f"  similarity : {sim:.3f}")
+    print(f"  cosine     : {cos:.3f}")
+    print()
+
+
+def _cmd_wheel(name: str) -> None:
+    """``wheel`` — render Plutchik's wheel to a PNG (needs the [viz] extra)."""
+    from emotion_algebra.viz import plot_wheel
+
+    out = f"{name}_wheel.png"
+    plot_wheel(name).savefig(out, dpi=150)
+    print(f"wrote {out}")
+
+
+def _resolve_named(token: str):
+    """Resolve *token* to a named emotion/feeling, or exit with a message."""
+    from emotion_algebra.taxonomy import resolve
+
+    found = resolve(token)
+    if found is None:
+        print(f"Unknown emotion: {token!r}", file=sys.stderr)
+        sys.exit(1)
+    return found
+
+
+def _emit_json(payload: dict) -> None:
+    import json
+
+    print(json.dumps(payload, indent=2, ensure_ascii=False))
+
+
 def main() -> None:
     args = sys.argv[1:]
+
+    as_json = "--json" in args
+    if as_json:
+        args = [a for a in args if a != "--json"]
 
     if not args:
         _repl()
@@ -189,6 +306,18 @@ def main() -> None:
 
     if args[0] == "info" and len(args) >= 2:
         _show_info(" ".join(args[1:]))
+        return
+
+    if args[0] == "analyze" and len(args) >= 2:
+        _cmd_analyze(" ".join(args[1:]), as_json)
+        return
+
+    if args[0] == "distance" and len(args) == 3:
+        _cmd_distance(args[1], args[2], as_json)
+        return
+
+    if args[0] == "wheel" and len(args) == 2:
+        _cmd_wheel(args[1])
         return
 
     # Emoji shortcut: single token where every non-whitespace char is a mapped emoji

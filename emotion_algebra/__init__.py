@@ -5,7 +5,19 @@ from emotion_algebra.feelings import get_feeling, random_feeling
 from emotion_algebra.lexicons import (
     get_word_emotion, get_sentiment, get_color, get_orientation, get_subjectivity,
 )
-from emotion_algebra.distance import emotion_distance, closest_emotion, emotion_clusters
+from emotion_algebra.distance import (
+    emotion_distance, closest_emotion, emotion_clusters, emotion_similarity,
+    MAX_EMOTION_DISTANCE,
+)
+from emotion_algebra.lovheim import (
+    LovheimPoint, CORNERS, CORNER_ANCHORS, CORNER_POINTS, BASELINE, closest_affect,
+)
+from emotion_algebra.pad import PAD, to_pad, from_pad, pad_distance
+from emotion_algebra.taxonomy import (
+    resolve, is_ambiguous, describe_collision, collision_table, AMBIGUOUS_NAMES,
+)
+from emotion_algebra import serialization
+from emotion_algebra.serialization import SCHEMA_VERSION, UnsupportedSchemaError
 from emotion_algebra.state import EmotionalState, EmotionTimeline
 from emotion_algebra.text import from_text, score_text
 from emotion_algebra.emoji import (
@@ -14,7 +26,8 @@ from emotion_algebra.emoji import (
 )
 from emotion_algebra.text import score_mixed, from_mixed
 from emotion_algebra.appraisal import (
-    Appraisal, appraisal_to_emotion, appraisal_to_float_emotion,
+    Appraisal, Agency, appraisal_to_emotion, appraisal_to_float_emotion,
+    appraisal_to_lovheim, float_emotion_to_lovheim_deltas,
     float_emotion_to_neuro_deltas,
 )
 from emotion_algebra.needs import (
@@ -25,6 +38,51 @@ from emotion_algebra.needs import (
 from emotion_algebra.float_emotion import FloatEmotion
 from emotion_algebra.lexicons import get_afinn_score, get_hourglass, get_float_emotion
 from emotion_algebra.deepmoji import DeepMojiONNXAdapter
+from emotion_algebra.base import SupportsEmotionVector, hourglass_polarity, AXES, AXIS_MAX
+from emotion_algebra.plutchik import Emotion, EmotionalDimension, Neutrality
+from emotion_algebra.feelings import Feeling
+from emotion_algebra.composite_emotions import CompositeEmotion, CompositeDimension
+
+__all__ = [
+    # facade
+    "EmotionAnalyzer",
+    # core types
+    "EmotionBase", "SupportsEmotionVector", "Emotion", "EmotionalDimension",
+    "Neutrality", "Feeling", "CompositeEmotion", "CompositeDimension",
+    "FloatEmotion", "EmotionalState", "EmotionTimeline",
+    "AXES", "AXIS_MAX", "hourglass_polarity",
+    # registries / lookup
+    "get_emotion", "get_dimension", "get_feeling", "emotion_to_dimension",
+    "random_emotion", "random_feeling",
+    # taxonomy
+    "resolve", "is_ambiguous", "describe_collision", "collision_table",
+    "AMBIGUOUS_NAMES",
+    # metric
+    "emotion_distance", "emotion_similarity", "closest_emotion",
+    "emotion_clusters", "MAX_EMOTION_DISTANCE",
+    # neurochemistry
+    "LovheimPoint", "CORNERS", "CORNER_ANCHORS", "CORNER_POINTS", "BASELINE",
+    "closest_affect",
+    # dimensional interop
+    "PAD", "to_pad", "from_pad", "pad_distance",
+    # appraisal / needs
+    "Appraisal", "Agency", "appraisal_to_emotion", "appraisal_to_float_emotion",
+    "appraisal_to_lovheim", "float_emotion_to_lovheim_deltas",
+    "float_emotion_to_neuro_deltas",
+    "CIADrive", "MaxNeefNeed", "MurrayNeed", "need_deficit_to_emotion",
+    "need_deficit_to_float_emotion", "NEED_DEFICIT_EMOTIONS",
+    "MAXNEEF_DEFICIT_EMOTIONS", "MURRAY_DEFICIT_EMOTIONS",
+    # text / emoji
+    "from_text", "score_text", "from_mixed", "score_mixed",
+    "EMOJI_EMOTION_MAP", "from_emoji", "from_emojis", "score_emojis",
+    "register_emoji", "unregister_emoji",
+    "DeepMojiAdapter", "DeepMojiONNXAdapter",
+    # lexicons
+    "get_word_emotion", "get_sentiment", "get_color", "get_orientation",
+    "get_subjectivity", "get_afinn_score", "get_hourglass", "get_float_emotion",
+    # serialization
+    "serialization", "SCHEMA_VERSION", "UnsupportedSchemaError",
+]
 
 
 class EmotionAnalyzer(object):
