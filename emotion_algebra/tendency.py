@@ -86,26 +86,35 @@ def action_readiness(state: AffectState) -> Dict[str, float]:
         Mode.APPROACH: pos * ar + empowered * neg * ar * 0.5,
         # Approach + unpleasantness + power = move against it.
         Mode.ANTAGONISM: empowered * neg * ar,
-        # Powerless + unpleasant + ACTIVATED = get away. Fear.
-        # Arousal is what separates fleeing from giving up, so avoidance must be
-        # gated on it: no floor term, or sadness would read as flight.
-        Mode.AVOIDANCE: helpless * neg * ar * 1.3,
-        # Powerless + unpleasant + DEACTIVATED = give up. Sadness.
-        Mode.WITHDRAWAL: helpless * neg * (1.0 - ar),
-        # The world is not as expected: find out more. Gated on not being
-        # overwhelmed — an unpredictable threat you cannot handle makes you run,
-        # not investigate. Surprise orients; terror does not.
-        Mode.ATTENDING: unp * (0.35 + 0.65 * ar) * (1.0 - helpless * neg),
-        # Powerless, but not fleeing: appease.
-        Mode.SUBMISSION: helpless * neg * (1.0 - unp) * 0.5,
+        # Powerless + unpleasant + activated + UNCERTAIN = get away. Fear.
+        #
+        # Uncertainty is what separates flight from resignation, and this fell
+        # out of the data rather than being designed in: fear is an *uncertain*
+        # threat you cannot handle, so you run. Grief is a *certain* loss you
+        # cannot handle, so you stop. Arousal alone does not separate them —
+        # human norms put grief's arousal at 0.49, squarely in fear's range.
+        # It is Lerner & Keltner's certainty dimension doing the work.
+        Mode.AVOIDANCE: helpless * neg * ar * unp * 2.0,
+        # Powerless + unpleasant + settled + CERTAIN = give up. Sadness, grief.
+        Mode.WITHDRAWAL: helpless * neg * (1.0 - ar) * (1.0 - unp),
+        # The world is not as expected: find out more. Gated on the situation not
+        # being threatening — you investigate a surprise, you flee a threat.
+        Mode.ATTENDING: unp * (0.35 + 0.65 * ar) * (1.0 - neg),
+        # Powerless, but not fleeing: appease. Weighted below withdrawal — a
+        # true submission display is a *social* act, and the core has no social
+        # axis to condition it on, so it must not outrank the modes that do.
+        Mode.SUBMISSION: helpless * neg * (1.0 - unp) * 0.35,
         # Safe and pleased: draw close.
         Mode.AFFILIATION: pos * (1.0 - ar) + pos * empowered * 0.5,
         # Unpleasant, but I have the power to expel it rather than flee it.
-        Mode.REJECTION: empowered * neg * (1.0 - ar),
+        # Distinguished from antagonism by arousal: you attack what enrages you,
+        # you turn away from what merely revolts you.
+        Mode.REJECTION: empowered * neg * (1.0 - ar) * 1.5,
         # Nothing much is demanded. Falls away sharply as soon as anything is
-        # going on — a linear term here would let rest outrank a live emotion
-        # simply because the other modes are products of sub-unit numbers.
-        Mode.REST: max(0.0, 1.0 - max(pos, neg, abs(pot), ar, unp)) ** 3,
+        # going on — a shallower term lets rest outrank a live but *mild* state
+        # (disgust), simply because the other modes are products of sub-unit
+        # numbers.
+        Mode.REST: max(0.0, 1.0 - max(pos, neg, abs(pot), ar, unp)) ** 4,
     }
 
     total = sum(scores.values())

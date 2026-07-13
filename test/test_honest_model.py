@@ -55,12 +55,16 @@ class TestAngerFearCrux:
         assert prototype("anger").potency > 0 > prototype("fear").potency
         assert prototype("rage").potency > 0 > prototype("terror").potency
 
-    def test_they_are_indistinguishable_on_valence_and_arousal(self):
-        # The reason valence/arousal models cannot tell them apart, and the
-        # reason PAD needs a third axis at all.
+    def test_valence_and_arousal_barely_separate_them(self):
+        # Coordinates here are human norms (Warriner et al. 2013), so this is
+        # what people actually report: anger and fear are near-identical in
+        # arousal and close in valence. Potency is an order of magnitude apart.
+        # THAT is why a valence/arousal model cannot tell them apart, and why
+        # PAD needs a third axis at all.
         anger, fear = prototype("anger"), prototype("fear")
-        assert anger.valence == pytest.approx(fear.valence, abs=0.05)
-        assert anger.arousal == pytest.approx(fear.arousal, abs=0.05)
+        assert abs(anger.arousal - fear.arousal) < 0.05
+        assert abs(anger.valence - fear.valence) < 0.15
+        assert abs(anger.potency - fear.potency) > 1.0
 
     def test_they_are_not_antipodal(self):
         # Plutchik's wheel says terror == -rage: every coordinate flipped. If
@@ -413,12 +417,18 @@ class TestTotalConversion:
             assert back.arousal == pytest.approx(arousal)
             assert back.potency == pytest.approx(dominance)
 
-    def test_circumplex_cannot_tell_anger_from_fear(self):
-        # The honest failure. Drop potency and the two collapse together — which
-        # is exactly why the circumplex needs a third axis.
-        anger = convert(prototype("anger"), CORE, "circumplex")
-        fear = convert(prototype("fear"), CORE, "circumplex")
-        assert anger == pytest.approx(fear)
+    def test_circumplex_nearly_collapses_anger_and_fear(self):
+        # The honest failure. Drop potency and the two all but merge — which is
+        # exactly why the circumplex needs a third axis.
+        a_core, f_core = prototype("anger"), prototype("fear")
+        a_circ = np.array(convert(a_core, CORE, "circumplex"))
+        f_circ = np.array(convert(f_core, CORE, "circumplex"))
+
+        circumplex_gap = float(np.linalg.norm(a_circ - f_circ))
+        core_gap = a_core.distance(f_core)
+
+        assert circumplex_gap < 0.15, "the circumplex barely separates them"
+        assert core_gap > 3 * circumplex_gap, "the core separates them clearly"
 
     def test_fidelity_is_the_weakest_leg(self):
         assert fidelity("pad", CORE) is Fidelity.LOSSY
