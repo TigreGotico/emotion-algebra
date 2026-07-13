@@ -10,16 +10,19 @@ Cowen & Keltner (2017) found the same shape from the other direction: many
 distinguishable categories, but bridged by *continuous gradients* rather than
 separated by sharp boundaries.  Prototypes-plus-gradients is exactly that.
 
-Coordinates are calibrated to the appraisal profiles the literature reports for
-each family, not fitted to a dataset:
+Coordinate provenance is **mixed, and the mix matters** — see :data:`PROTOTYPES`.
+Valence and arousal are taken from human norms; potency and unpredictability are
+reasoned from the appraisal literature, which measures a different construct.
 
-* **anger family** — negative, high arousal, **high potency**, low
+The families, as the appraisal literature describes them:
+
+* **anger family** — negative, high arousal, **high coping**, low
   unpredictability.  You know what happened and you can act on it.
-* **fear family** — negative, high arousal, **low potency**, **high
+* **fear family** — negative, high arousal, **low coping**, **high
   unpredictability**.  You don't and you can't.  (Smith & Ellsworth 1985;
   Lerner & Keltner 2001.)
-* **sadness family** — negative, **low arousal**, low potency.  Loss already
-  suffered; nothing to be done.
+* **sadness family** — negative, low coping, and *certain*.  The loss is already
+  suffered; nothing is to be done.
 * **surprise family** — **unpredictability dominant**, valence near zero.
 """
 from __future__ import annotations
@@ -35,11 +38,14 @@ from emotion_algebra.affect import AffectState
 #:
 #: **Provenance differs by axis, and that matters.**
 #:
-#: * ``positivity``/``negativity`` and ``arousal`` are **taken from human
+#: * ``positivity``/``negativity`` and ``arousal`` are **taken directly from human
 #:   norms** — Warriner, Kuperman & Brysbaert (2013), *Norms of valence, arousal
 #:   and dominance for 13,915 English lemmas*, Behav. Res. Methods 45:1191-1207,
-#:   rescaled from their 1-9 scale.  Benchmarked at r = +0.89 (valence) and
-#:   r = +0.69 (arousal) before this calibration; they are now taken directly.
+#:   rescaled from their 1-9 scale.
+#:
+#:   Because they are *taken from* Warriner, correlating them *against* Warriner
+#:   is circular and proves nothing.  Any honest evaluation of these coordinates
+#:   must use held-out data.
 #: * ``potency`` and ``unpredictability`` are **reasoned from the appraisal
 #:   literature**, because Warriner does not measure them.  ``unpredictability``
 #:   has no counterpart there at all, and ``potency`` — see below — is a
@@ -47,10 +53,17 @@ from emotion_algebra.affect import AffectState
 #:
 #: Potency is appraised coping, not felt dominance
 #: -----------------------------------------------
-#: Benchmarking potency against Warriner's dominance gives only **r = +0.45**,
-#: and the residuals are systematic: humans rate ``rage`` as *less* dominant than
+#: Benchmarking potency against Warriner's dominance gives only **r = +0.46**,
+#: and the residuals look systematic: humans rate ``rage`` as *less* dominant than
 #: ``anger`` (losing your temper is losing control), while the appraisal
 #: literature has rage as the *higher*-coping state.
+#:
+#: .. warning::
+#:    **PROVISIONAL.**  That r rests on the 25 prototype names that appear in
+#:    Warriner — a small sample, and one where three entries needed hand-picked
+#:    substitutes for word-sense confounds (Warriner's ``ecstasy`` is the *drug*).
+#:    The direction of the finding is stable; the magnitude is not established.
+#:    Do not cite it.
 #:
 #: These are two different things, and conflating them is a mistake the field
 #: makes:
