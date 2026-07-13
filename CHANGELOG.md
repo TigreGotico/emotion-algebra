@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.2.0a1](https://github.com/TigreGotico/emotion-algebra/tree/1.2.0a1) (2026-07-13)
+
+[Full Changelog](https://github.com/TigreGotico/emotion-algebra/compare/1.1.1a1...1.2.0a1)
+
+**Merged pull requests:**
+
+- feat: Lövheim cube, PAD interop, taxonomy, serialization, viz and the law suite [\#8](https://github.com/TigreGotico/emotion-algebra/pull/8) ([JarbasAl](https://github.com/JarbasAl))
+
 ## [1.1.1a1](https://github.com/TigreGotico/emotion-algebra/tree/1.1.1a1) (2026-07-10)
 
 [Full Changelog](https://github.com/TigreGotico/emotion-algebra/compare/1.1.0a1...1.1.1a1)
