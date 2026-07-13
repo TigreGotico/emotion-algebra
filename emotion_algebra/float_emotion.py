@@ -67,9 +67,32 @@ class FloatEmotion(EmotionBase):
         return float(np.sum(self._vector))
 
     @property
-    def valence(self) -> float:  # type: ignore[override]
-        """Pleasantness-axis component (index 2)."""
+    def sensitivity(self) -> float:
+        """Sensitivity-axis component (index 0) — anger (+) ↔ fear (−)."""
+        return float(self._vector[0])
+
+    @property
+    def attention(self) -> float:
+        """Attention-axis component (index 1) — anticipation (+) ↔ surprise (−)."""
+        return float(self._vector[1])
+
+    @property
+    def pleasantness(self) -> float:
+        """Pleasantness-axis component (index 2) — joy (+) ↔ sadness (−)."""
         return float(self._vector[2])
+
+    @property
+    def aptitude(self) -> float:
+        """Aptitude-axis component (index 3) — trust (+) ↔ disgust (−)."""
+        return float(self._vector[3])
+
+    @property
+    def valence(self) -> float:  # type: ignore[override]
+        """Pleasantness-axis component — an alias for :attr:`pleasantness`.
+
+        Kept distinct from :attr:`polarity`, which scores all four axes.
+        """
+        return self.pleasantness
 
     @property
     def arousal(self) -> float:  # type: ignore[override]
@@ -78,9 +101,9 @@ class FloatEmotion(EmotionBase):
 
     @property
     def type(self) -> str:
-        """Russell Circumplex category."""
+        """Russell Circumplex category, from :attr:`polarity` and :attr:`arousal`."""
         from emotion_algebra.plutchik import _circumplex_type
-        return _circumplex_type(self.valence, self.arousal)
+        return _circumplex_type(self.polarity, self.arousal)
 
     @property
     def emotion_vector(self) -> list:

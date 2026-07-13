@@ -19,7 +19,7 @@ pip install -e .[test]           # CI install_extras for build-tests
 pytest test/
 ```
 
-Coverage (matches CI config in `.coveragerc`, which omits `deepmoji.py` and `tag.py`):
+Coverage (matches CI config in `.coveragerc`, which omits `deepmoji.py`):
 
 ```bash
 pytest test/ --cov=emotion_algebra
@@ -69,5 +69,5 @@ Entry points: one `console_scripts` entry (`emotion-algebra`). This is a plain P
 
 - `TODO.md` and `ROADMAP.md` are local planning files — gitignored, never committed.
 - `valence` is the Pleasantness axis only; `anger.valence == 0` by design (valence ⊥ arousal). Don't treat all negative emotions as negative valence.
-- `deepmoji.py` and `tag.py` are excluded from coverage; the referenced `tag.py` is not present in `emotion_algebra/` (only `examples/tag.py`).
+- `deepmoji.py` is excluded from coverage (needs a HuggingFace model download).
 - Cross-axis `Emotion + Emotion` returns a `CompositeEmotion`, not an `Emotion`.

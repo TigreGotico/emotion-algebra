@@ -205,3 +205,101 @@ class TestEmotionTimeline:
         tl = EmotionTimeline("conv")
         assert "EmotionTimeline" in repr(tl)
         assert "conv" in repr(tl)
+
+
+class TestMood:
+    """Mood is a slow EMA over applied emotions; emotion is the instant reading.
+
+    The distinction is Mehrabian's (temperament vs emotion): a single event must
+    not swing an agent's temperament, but a sustained run of them must.
+    """
+
+    def test_starts_neutral(self):
+        assert list(EmotionalState().mood) == [0.0, 0.0, 0.0, 0.0]
+
+    def test_one_event_barely_moves_mood(self):
+        state = EmotionalState()
+        state.apply(get_emotion("ecstasy"))
+        # The instant emotion is fully felt...
+        assert np.max(np.abs(state.snapshot())) > 1.0
+        # ...but mood has only crept toward it.
+        assert np.max(np.abs(state.mood)) < np.max(np.abs(state.snapshot()))
+
+    def test_sustained_events_move_mood(self):
+        brief, sustained = EmotionalState(), EmotionalState()
+        brief.apply(get_emotion("ecstasy"))
+        for _ in range(50):
+            sustained.apply(get_emotion("ecstasy"))
+        assert np.max(np.abs(sustained.mood)) > np.max(np.abs(brief.mood))
+
+    def test_mood_tracks_the_sign_of_sustained_input(self):
+        state = EmotionalState()
+        for _ in range(50):
+            state.apply(get_emotion("grief"))
+        assert state.mood[2] < 0  # pleasantness axis
+
+    def test_dominant_mood_names_the_sustained_emotion(self):
+        state = EmotionalState()
+        for _ in range(50):
+            state.apply(get_emotion("ecstasy"))
+        assert state.dominant_mood() is not None
+        assert state.dominant_mood().polarity > 0
+
+
+class TestHalfLifeDecay:
+    def test_one_half_life_halves_the_state(self):
+        state = EmotionalState()
+        state.apply(get_emotion("ecstasy"))
+        before = state.snapshot().copy()
+        state.decay_halflife(dt=10.0, half_life=10.0)
+        assert list(state.snapshot()) == pytest.approx(list(before * 0.5))
+
+    def test_two_half_lives_quarter_it(self):
+        state = EmotionalState()
+        state.apply(get_emotion("ecstasy"))
+        before = state.snapshot().copy()
+        state.decay_halflife(dt=20.0, half_life=10.0)
+        assert list(state.snapshot()) == pytest.approx(list(before * 0.25))
+
+    def test_zero_elapsed_time_is_a_no_op(self):
+        state = EmotionalState()
+        state.apply(get_emotion("ecstasy"))
+        before = state.snapshot().copy()
+        state.decay_halflife(dt=0.0, half_life=10.0)
+        assert list(state.snapshot()) == pytest.approx(list(before))
+
+    @pytest.mark.parametrize("half_life", [0.0, -1.0])
+    def test_non_positive_half_life_rejected(self, half_life):
+        with pytest.raises(ValueError):
+            EmotionalState().decay_halflife(dt=1.0, half_life=half_life)
+
+    def test_negative_dt_rejected(self):
+        with pytest.raises(ValueError):
+            EmotionalState().decay_halflife(dt=-1.0, half_life=10.0)
+
+    @pytest.mark.parametrize("factor", [0.0, -0.1, 1.5])
+    def test_factor_decay_validates_its_range(self, factor):
+        with pytest.raises(ValueError):
+            EmotionalState().decay(factor)
+
+
+class TestLovheimReadout:
+    def test_state_projects_into_the_cube(self):
+        state = EmotionalState()
+        state.apply(get_emotion("ecstasy"))
+        point = state.to_lovheim()
+        assert point.serotonin > 0.5
+        assert point.dopamine > 0.5
+
+    def test_neutral_state_sits_at_baseline(self):
+        assert EmotionalState().to_lovheim().is_baseline
+
+    def test_timeline_yields_a_neurochemical_sequence(self):
+        timeline = EmotionTimeline()
+        for name in ("ecstasy", "grief"):
+            state = EmotionalState()
+            state.apply(get_emotion(name))
+            timeline.append(state)
+        sequence = timeline.lovheim_sequence()
+        assert len(sequence) == 2
+        assert sequence[0].serotonin > sequence[1].serotonin

@@ -238,8 +238,8 @@ class CompositeEmotion(EmotionBase):
 
     @property
     def type(self) -> str:
-        """Russell (1980) Circumplex classification using composite valence and arousal."""
-        return _circumplex_type(self.valence, self.arousal)
+        """Russell (1980) Circumplex classification using composite polarity and arousal."""
+        return _circumplex_type(self.polarity, self.arousal)
 
     @property
     def kind(self) -> str:
@@ -325,7 +325,12 @@ class CompositeEmotion(EmotionBase):
             c = CompositeEmotion()
 
             for e in result_vector:
-                if e.dimension:
+                # Keep the axes that actually carry something. This used to test
+                # `e.dimension`, using "has an axis" as a proxy for "is non-zero"
+                # — which only worked because a cancelled axis used to come back
+                # as a *dimensionless* Neutrality. Now that cancellation keeps
+                # its axis (as it must), test the thing we actually mean.
+                if e.emotional_flow != 0:
                     c.components.append(e)
             return c
 
@@ -349,11 +354,11 @@ class CompositeEmotion(EmotionBase):
             # matrix product of emotion vectors
             other_vector = other.emotion_vector
 
-            result_vector = np.array(other_vector) - np.array(self.emotion_vector)
+            result_vector = np.array(self.emotion_vector) - np.array(other_vector)
             c = CompositeEmotion()
 
             for e in result_vector:
-                if e.dimension:
+                if e.emotional_flow != 0:
                     c.components.append(e)
             if len(c.components) == 1:
                 return c.components[0]
@@ -368,9 +373,13 @@ class CompositeEmotion(EmotionBase):
             emo = deepcopy(self)
             return emo
         if isinstance(other, Emotion):
-            m = np.matmul(self.as_matrix, other.as_matrix)
+            from emotion_algebra.float_emotion import FloatEmotion
 
-            return m
+            m = np.matmul(self.as_matrix, other.as_matrix)
+            # as_matrix layout is [[sensitivity, attention],
+            #                      [pleasantness, aptitude]]; flatten
+            # row-major back into that same 4-axis order.
+            return FloatEmotion.from_embedding(m.flatten().astype(float))
         return NotImplemented
 
     def __truediv__(self, other):
@@ -529,13 +538,24 @@ class CompositeDimension(object):
 
     @property
     def basic_emotion(self):
-        # not yet mapped for this dimension combination
-        return None
+        # No named 16-entry composite exists at the basic (flow=1) tier
+        # (COMPOSITE_EMOTIONS_NAMES only covers tertiary x tertiary pairs),
+        # so compose it from each axis's own basic_emotion primitive.
+        if len(self.dimensions) != 2:
+            return None
+        d1, d2 = self.dimensions
+        if d1.basic_emotion is None or d2.basic_emotion is None:
+            return None
+        return d1.basic_emotion + d2.basic_emotion
 
     @property
     def basic_opposite(self):
-        # not yet mapped for this dimension combination
-        return None
+        if len(self.dimensions) != 2:
+            return None
+        d1, d2 = self.dimensions
+        if d1.basic_opposite is None or d2.basic_opposite is None:
+            return None
+        return d1.basic_opposite + d2.basic_opposite
 
     def __repr__(self):
         return "CompositeDimensionObject:" + self.name

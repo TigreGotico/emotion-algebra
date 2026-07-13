@@ -305,6 +305,20 @@ class TestFloatEmotionToNeuroDeltas:
         assert a > 0
         assert s == 0.0
 
+    def test_negative_sensitivity_still_raises_dopamine(self):
+        # Fear (sensitivity < 0) is high-arousal/high-salience just like
+        # anger (sensitivity > 0) — the dopamine term represents arousal
+        # magnitude, not the hedonic sign of sensitivity, so it must not
+        # go negative or lower than the zero-arousal baseline.
+        fear_like = FloatEmotion(sensitivity=-2.0, attention=0.0, pleasantness=0.0, aptitude=0.0)
+        anger_like = FloatEmotion(sensitivity=2.0, attention=0.0, pleasantness=0.0, aptitude=0.0)
+        neutral = FloatEmotion(sensitivity=0.0, attention=0.0, pleasantness=0.0, aptitude=0.0)
+        d_fear, _, _ = float_emotion_to_neuro_deltas(fear_like)
+        d_anger, _, _ = float_emotion_to_neuro_deltas(anger_like)
+        d_neutral, _, _ = float_emotion_to_neuro_deltas(neutral)
+        assert d_fear > d_neutral
+        assert d_fear == pytest.approx(d_anger)
+
     def test_scale_parameter(self):
         fe = FloatEmotion(sensitivity=1.0, attention=1.0, pleasantness=0.0, aptitude=0.0)
         d1, _, _ = float_emotion_to_neuro_deltas(fe, scale=0.15)

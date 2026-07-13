@@ -22,6 +22,22 @@ lexicon = [
 fast = [
     "ahocorasick-ner",
 ]
+viz = [
+    "matplotlib",
+]
+all = [
+    "emotion-algebra[lexicon,fast,viz]",
+]
+test = [
+    "emotion-algebra[lexicon,fast,viz]",
+    "pytest",
+    "pytest-cov",
+    "hypothesis",
+]
+# The shared coverage workflow prefers a `dev` extra and falls back to `test`.
+dev = [
+    "emotion-algebra[test]",
+]
 
 [project.scripts]
 emotion-algebra = "emotion_algebra.__main__:main"
@@ -37,4 +53,7 @@ include = ["emotion_algebra*"]
 version = {attr = "emotion_algebra.version.__version__"}
 
 [tool.setuptools.package-data]
-emotion_algebra = ["*.csv"]
+emotion_algebra = ["*.csv", "py.typed"]
+
+[tool.pytest.ini_options]
+testpaths = ["test"]

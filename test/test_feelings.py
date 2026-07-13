@@ -365,12 +365,34 @@ class TestFeelingCoverageGaps:
         f = Feeling()
         assert f.arousal == 0
 
-    def test_type_activated_neutral(self):
-        """line 191-192: type property with valence=0, arousal>0."""
+    def test_type_uses_polarity_not_valence(self):
+        """A Feeling off the Pleasantness axis is still hedonically placed.
+
+        Anger has valence == 0 (it is not on the Pleasantness axis) but a
+        clearly negative polarity, so the circumplex must call it negative --
+        not park it in the neutral band as classifying on valence would.
+        """
         from copy import copy
         from emotion_algebra.emotions import EMOTIONS
         f = Feeling()
-        f.emotions = [copy(EMOTIONS["anger"])]   # valence=0, arousal=2
+        f.emotions = [copy(EMOTIONS["anger"])]
+        assert f.valence == 0
+        assert f.polarity < 0
+        assert f.type == "excited negative"
+
+    def test_type_activated_neutral_when_polarity_exactly_zero(self):
+        """The 'activated neutral' branch is still reachable: aroused, zero polarity.
+
+        anger (Sensitivity +2) and anticipation (Attention +2) contribute
+        -|S| and +|At| in equal measure, so they cancel to exactly zero polarity
+        while remaining aroused.
+        """
+        from copy import copy
+        from emotion_algebra.emotions import EMOTIONS
+        f = Feeling()
+        f.emotions = [copy(EMOTIONS["anger"]), copy(EMOTIONS["anticipation"])]
+        assert f.polarity == 0
+        assert f.arousal > 0
         assert f.type == "activated neutral"
 
     def test_add_feeling_reduces_to_single_emotion(self, joy):

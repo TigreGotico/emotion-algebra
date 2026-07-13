@@ -27,4 +27,4 @@ print("\n=== Dimension addition ===")
 from emotion_algebra.composite_emotions import CompositeDimension
 combined = DIMENSIONS["sensitivity"] + DIMENSIONS["pleasantness"]
 print(f"  sensitivity + pleasantness → {type(combined).__name__}")
-print(f"  axes: {combined.axes}")
+print(f"  axes: {[d.axis for d in combined.dimensions]}")
