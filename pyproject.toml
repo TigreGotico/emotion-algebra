@@ -53,7 +53,7 @@ include = ["emotion_algebra*"]
 version = {attr = "emotion_algebra.version.__version__"}
 
 [tool.setuptools.package-data]
-emotion_algebra = ["*.csv", "py.typed"]
+emotion_algebra = ["*.csv", "*.json", "py.typed"]
 
 [tool.pytest.ini_options]
 testpaths = ["test"]

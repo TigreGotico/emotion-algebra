@@ -51,6 +51,7 @@ from emotion_algebra.homeostasis import (
     SET_POINT, Temperament, at_rest, drive, drive_magnitude, perturb, relax,
 )
 from emotion_algebra.neuro import NeuroState, MODULATORS, LOADINGS
+from emotion_algebra.neural import affect_from_text, affect_from_texts
 from emotion_algebra.projection import (
     Fidelity, convert, fidelity, explain_loss, views as conversion_views,
 )
@@ -69,6 +70,7 @@ __all__ = [
     "SET_POINT", "Temperament", "at_rest", "drive", "drive_magnitude",
     "perturb", "relax",
     "NeuroState", "MODULATORS", "LOADINGS",
+    "affect_from_text", "affect_from_texts",
     "Fidelity", "convert", "fidelity", "explain_loss", "conversion_views",
     "evidence", "Grade", "grade_of",
     # core types
