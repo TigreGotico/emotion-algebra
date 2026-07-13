@@ -48,9 +48,13 @@ from emotion_algebra.prototypes import PROTOTYPES, prototype
 from emotion_algebra.readout import label, dominant, entropy
 from emotion_algebra.tendency import Mode, action_readiness, dominant_tendency
 from emotion_algebra.homeostasis import (
-    SET_POINT, Temperament, at_rest, drive, drive_magnitude, perturb, relax,
+    SET_POINT, BASELINE_TEMPERAMENT, Temperament, at_rest, drive,
+    drive_magnitude, perturb, relax,
 )
 from emotion_algebra.neuro import NeuroState, MODULATORS, LOADINGS
+from emotion_algebra.neural import (
+    affect_from_text, affect_from_texts, affect_from_features,
+)
 from emotion_algebra.projection import (
     Fidelity, convert, fidelity, explain_loss, views as conversion_views,
 )
@@ -66,9 +70,11 @@ __all__ = [
     "PROTOTYPES", "prototype",
     "label", "dominant", "entropy",
     "Mode", "action_readiness", "dominant_tendency",
-    "SET_POINT", "Temperament", "at_rest", "drive", "drive_magnitude",
+    "SET_POINT", "BASELINE_TEMPERAMENT", "Temperament", "at_rest", "drive",
+    "drive_magnitude",
     "perturb", "relax",
     "NeuroState", "MODULATORS", "LOADINGS",
+    "affect_from_text", "affect_from_texts", "affect_from_features",
     "Fidelity", "convert", "fidelity", "explain_loss", "conversion_views",
     "evidence", "Grade", "grade_of",
     # core types

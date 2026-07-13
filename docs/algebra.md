@@ -1,3 +1,8 @@
+> **Plutchik / Hourglass model.** Operator algebra over Cambria's
+> four signed axes — one of the [models](models.md) this library
+> implements, faithful to the source. See [models](models.md) for how it
+> maps onto the others.
+
 # Emotion Algebra
 
 All arithmetic operates on the signed integer axis of the Hourglass model.

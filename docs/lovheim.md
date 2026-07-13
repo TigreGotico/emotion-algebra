@@ -1,3 +1,8 @@
+> **Lövheim's model.** A faithful implementation of Lövheim (2012),
+> graded `SPECULATIVE` — see [evidence](evidence.md). For the
+> library's own neurochemical layer, see
+> [neurochemistry](neurochemistry.md).
+
 # The Lövheim cube
 
 `emotion_algebra.lovheim` implements the neurochemical model of

@@ -1,3 +1,7 @@
+> **Plutchik / Hourglass model.** Valence, arousal and polarity as
+> Cambria defines them, including the published polarity formula.
+> One of the [models](models.md) this library implements.
+
 # Valence, Arousal, and Type
 
 ## Valence

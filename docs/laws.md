@@ -1,3 +1,7 @@
+> **Plutchik / Hourglass model.** This page documents the laws of the
+> *Hourglass* algebra — one of the [models](models.md) this library
+> implements. For the affect core's laws, see [core-laws](core-laws.md).
+
 # The laws
 
 emotion-algebra calls itself an algebra, so the laws it obeys are written down

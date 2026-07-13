@@ -1,3 +1,6 @@
+> **Plutchik model.** The named dyads, as Plutchik defines them. One of
+> the [models](models.md) this library implements.
+
 # Feelings
 
 A `Feeling` is a **named cultural label** for a multi-axis emotional state —

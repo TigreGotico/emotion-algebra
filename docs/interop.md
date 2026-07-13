@@ -1,78 +1,134 @@
-# Interop: PAD / VAD
+# Interop
 
-Most of the affective-computing field speaks **PAD** (Pleasure-Arousal-Dominance;
-Mehrabian & Russell 1974, Mehrabian 1996), also called **VAD** when Pleasure is
-named Valence. `emotion_algebra.pad` maps between PAD and the library's 4-axis
-Hourglass space so external resources — the NRC-VAD lexicon, PAD-annotated
-corpora — plug straight in.
+Every model converts to every other, and **every conversion tells you what it
+destroys**.
 
 ```python
-from emotion_algebra import to_pad, from_pad, get_emotion
+from emotion_algebra import convert, fidelity, explain_loss, conversion_views
 
-to_pad(get_emotion("rage"))     # PAD(pleasure=-0.33, arousal=1.0, dominance=0.6)
-to_pad(get_emotion("terror"))   # PAD(pleasure=-0.33, arousal=1.0, dominance=-0.6)
+conversion_views()
+# ['core', 'circumplex', 'hourglass', 'lovheim', 'neuro', 'pad', 'plutchik']
 
-from_pad(pleasure=0.6, arousal=0.7, dominance=0.4)   # -> FloatEmotion
+convert(prototype("anger"), "core", "pad")    # (-0.62, 0.62, 0.60)
+convert((-0.6, 0.8, 0.6), "pad", "core")      # -> AffectState
 ```
 
-`PAD` is a `NamedTuple`; `.valence` is an alias for `.pleasure`.
+## Hub and spokes
 
-## Forward: Hourglass → PAD
+Conversions route through the core. N models need 2N maps, not N².
 
-| PAD component | Derived from |
-|---|---|
-| **Pleasure** | `polarity` — Cambria's four-axis score, already in `[−1, 1]` |
-| **Arousal** | peak axis magnitude, normalized to `[0, 1]` |
-| **Dominance** | `0.60·Sensitivity + 0.30·Aptitude + 0.10·Attention` |
+```
+   Hourglass ─┐                    ┌─ PAD
+   Plutchik ──┼──►  AFFECT CORE  ◄─┼─ circumplex
+   Lövheim ───┘                    └─ NeuroState
+```
 
-The dominance weights are the only calibrated numbers here, and they are chosen
-around the single most-replicated fact in the PAD literature: **anger is dominant,
-fear is submissive**. Those two emotions are near-identical in pleasure and
-arousal and differ almost entirely on dominance — it is *why* PAD needs a third
-axis at all. In the Hourglass, anger and fear are exactly the two poles of
-Sensitivity, so Sensitivity carries dominance and is the only signed term.
-Aptitude adds felt competence (trust reads as potent, disgust as impotent);
-Attention contributes weakly, since engagement is mildly empowering while its
-negative pole (surprise) is a loss of control.
+Every pair is reachable, **always**. A test asserts the graph is total.
 
-## Inverse: PAD → Hourglass
+## Fidelity
 
-Three numbers cannot pin down four axes, so the lift is under-determined and is
-closed by one stated choice: **the hedonic load splits evenly between Pleasantness
-and Aptitude.** That is not arbitrary — Cambria's polarity formula weights the two
-identically, so it gives no reason to prefer either.
+Each view declares how much survives the trip.
 
-With that choice the system is square and solves in closed form, and the result is
-an **exact right inverse on pleasure and dominance**:
+| Fidelity | Meaning |
+| --- | --- |
+| `EXACT` | Bijective on its subspace. Round-trips to machine precision. |
+| `LOSSY` | Information is provably discarded — and `explain_loss` says what. |
+| `HEURISTIC` | Calibrated rather than derived. The numbers are a judgement call, and the target model may not be well-evidenced at all. |
 
 ```python
-p, a, d = 0.6, 0.7, 0.4
-back = to_pad(from_pad(p, a, d))
-back.pleasure == p     # to machine precision
-back.dominance == d    # to machine precision
+fidelity("pad", "core")          # Fidelity.LOSSY
+fidelity("hourglass", "pad")     # Fidelity.HEURISTIC  -- the weakest leg wins
+
+print(explain_loss("circumplex", "core"))
+# potency and unpredictability. This is why the circumplex cannot tell
+# anger from fear: they differ on potency, and it has no potency axis.
 ```
 
-Two honest caveats, both tested:
+A conversion that loses information is fine. One that loses it **silently** is not.
 
-* **Arousal is a floor, not an equality.** `to_pad` reads arousal as a *max* over
-  the axes, and a max destroys the information needed to undo it. Where a
-  stronger hedonic or dominance demand pushes an axis above the requested
-  arousal, the returned arousal is higher than asked.
-* **Not every PAD triple is reachable.** The Hourglass axes are bounded, so
-  "maximally pleasant, zero arousal" has no pre-image. Those targets saturate at
-  the cube face and round-trip only approximately — roughly 40% of the raw PAD
-  cube. That is a property of the two spaces, not a defect of the map.
+## PAD / VAD
 
-## Distance in PAD space
+Most of the field speaks **PAD** — Pleasure, Arousal, Dominance (Mehrabian &
+Russell 1974), also called **VAD** when Pleasure is named Valence. It is what the
+NRC-VAD lexicon and most dimensional emotion regressors emit.
 
-`pad_distance(a, b)` compares two emotions **in PAD**, which is what you want when
-benchmarking against PAD-native resources:
+The mapping is a **coordinate drop**:
+
+| PAD | core |
+| --- | --- |
+| Pleasure | `valence` |
+| Arousal | `arousal` |
+| Dominance | `potency` |
+
+That's it. No fitted weights, no regression, no unreachable region — because the
+core *has* a potency axis, and PAD's dominance is what it looks like from
+outside.
 
 ```python
-from emotion_algebra import pad_distance, get_emotion
+for name in ("anger", "fear"):
+    p, a, d = convert(prototype(name), "core", "pad")
+    print(f"{name}: P={p:+.2f} A={a:.2f} D={d:+.2f}")
 
-pad_distance(get_emotion("rage"), get_emotion("terror"))   # large — dominance separates them
+# anger: P=-0.62 A=0.62 D=+0.60
+# fear:  P=-0.52 A=0.64 D=-0.60
 ```
 
-In Hourglass space anger and fear sit on one axis and are close; in PAD they are
-far apart. Neither is wrong — they are different questions.
+Look at what PAD's third axis is *for*: anger and fear are nearly identical in
+Pleasure and Arousal and differ almost entirely on Dominance. That is the single
+most-replicated fact about dominance in the literature, and it is why PAD needs a
+third axis at all.
+
+**What PAD loses:** `unpredictability` (it has no such axis), and **ambivalence** —
+a single signed Pleasure cannot represent positivity and negativity co-active, so
+bittersweet reads as mild.
+
+> **A caveat worth knowing.** The core's `potency` means *appraised coping* —
+> "can I act on this?" — while PAD's dominance, as humans rate it, means how
+> in-control you *feel* while in the grip of the state. They correlate at r≈0.46,
+> and they are not the same construct: people rate `rage` as *less* dominant than
+> `anger`, because being enraged is not being in control. The ordering that
+> matters (anger above fear) holds in both. The magnitudes do not transfer. See
+> [evidence](evidence.md).
+
+## Russell's circumplex
+
+An even simpler drop: `(valence, arousal)`.
+
+```python
+convert(prototype("anger"), "core", "circumplex")   # (-0.62, 0.62)
+convert(prototype("fear"),  "core", "circumplex")   # (-0.52, 0.64)
+```
+
+Note those two are **almost the same point**. The circumplex cannot tell anger
+from fear — which is the honest, structural limit of every valence/arousal model,
+and it is why the library reports it rather than papering over it.
+
+## The other models
+
+`plutchik`, `hourglass` and `lovheim` are registered views too — faithful
+implementations of their authors' models, each graded. See
+[the models](models.md).
+
+```python
+fidelity("core", "lovheim")    # Fidelity.HEURISTIC
+print(explain_loss("hourglass", "core"))
+# Sensitivity conflates negative valence with potency: it is unpleasant at
+# BOTH poles (anger and fear alike)... That conflation cannot be undone.
+```
+
+## Registering your own
+
+```python
+from emotion_algebra.projection import register_view, Fidelity
+
+register_view(
+    "my_model",
+    to_core=lambda x: ...,      # -> AffectState
+    from_core=lambda s: ...,    # -> your type
+    fidelity=Fidelity.LOSSY,
+    loses="what your model cannot represent",   # required, if not EXACT
+)
+```
+
+A lossy view that does not declare its loss raises `ValueError`. That is
+deliberate.

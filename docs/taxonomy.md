@@ -1,3 +1,7 @@
+> **Plutchik / Hourglass model.** The 24 named emotions and their axes,
+> as Plutchik and Cambria define them. One of the [models](models.md)
+> this library implements.
+
 # Emotion Taxonomy
 
 The Hourglass of Emotions (Cambria et al. 2012) defines four axes, each with

@@ -1,3 +1,7 @@
+> **Plutchik / Hourglass model.** Stateful accumulation over the Hourglass
+> axes. For the affect core's dynamics — set points, drives, temperament —
+> see [building an agent](agents.md).
+
 # State & Timeline
 
 ## EmotionalState
