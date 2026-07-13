@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.0.0a2](https://github.com/TigreGotico/emotion-algebra/tree/2.0.0a2) (2026-07-13)
+
+[Full Changelog](https://github.com/TigreGotico/emotion-algebra/compare/2.0.0a1...2.0.0a2)
+
+**Merged pull requests:**
+
+- docs: rebuild the documentation, and recover potency from text [\#12](https://github.com/TigreGotico/emotion-algebra/pull/12) ([JarbasAl](https://github.com/JarbasAl))
+
 ## [2.0.0a1](https://github.com/TigreGotico/emotion-algebra/tree/2.0.0a1) (2026-07-13)
 
 [Full Changelog](https://github.com/TigreGotico/emotion-algebra/compare/1.2.0a1...2.0.0a1)
