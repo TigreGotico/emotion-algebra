@@ -13,5 +13,8 @@ jobs:
       python_version: '3.11'
       coverage_source: 'emotion_algebra'
       test_path: 'test/'
-      install_extras: 'test'
+      # install_extras is a list of extra *pip packages*, not package extras.
+      # The test dependencies come from the `dev` extra, which this workflow
+      # installs by default.
+      install_extras: ''
       min_coverage: 0
