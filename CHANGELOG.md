@@ -1,5 +1,13 @@
 # Changelog
 
+## [3.0.0a1](https://github.com/TigreGotico/emotion-algebra/tree/3.0.0a1) (2026-07-13)
+
+[Full Changelog](https://github.com/TigreGotico/emotion-algebra/compare/2.0.0a2...3.0.0a1)
+
+**Breaking changes:**
+
+- feat!: drop the word lexicon [\#14](https://github.com/TigreGotico/emotion-algebra/pull/14) ([JarbasAl](https://github.com/JarbasAl))
+
 ## [2.0.0a2](https://github.com/TigreGotico/emotion-algebra/tree/2.0.0a2) (2026-07-13)
 
 [Full Changelog](https://github.com/TigreGotico/emotion-algebra/compare/2.0.0a1...2.0.0a2)
