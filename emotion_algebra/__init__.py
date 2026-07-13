@@ -39,6 +39,21 @@ from emotion_algebra.float_emotion import FloatEmotion
 from emotion_algebra.lexicons import get_afinn_score, get_hourglass, get_float_emotion
 from emotion_algebra.deepmoji import DeepMojiONNXAdapter
 from emotion_algebra.base import SupportsEmotionVector, hourglass_polarity, AXES, AXIS_MAX
+
+# --- the affect core: the empirically-grounded model everything converts through
+from emotion_algebra import evidence, views as _views  # noqa: F401 (wires the graph)
+from emotion_algebra.evidence import Grade, grade_of
+from emotion_algebra.affect import AffectState, CORE_AXES, ORIGIN, mixture
+from emotion_algebra.prototypes import PROTOTYPES, prototype
+from emotion_algebra.readout import label, dominant, entropy
+from emotion_algebra.tendency import Mode, action_readiness, dominant_tendency
+from emotion_algebra.homeostasis import (
+    SET_POINT, Temperament, at_rest, drive, drive_magnitude, perturb, relax,
+)
+from emotion_algebra.neuro import NeuroState, MODULATORS, LOADINGS
+from emotion_algebra.projection import (
+    Fidelity, convert, fidelity, explain_loss, views as conversion_views,
+)
 from emotion_algebra.plutchik import Emotion, EmotionalDimension, Neutrality
 from emotion_algebra.feelings import Feeling
 from emotion_algebra.composite_emotions import CompositeEmotion, CompositeDimension
@@ -46,6 +61,16 @@ from emotion_algebra.composite_emotions import CompositeEmotion, CompositeDimens
 __all__ = [
     # facade
     "EmotionAnalyzer",
+    # --- the affect core (empirically grounded; everything converts through it)
+    "AffectState", "CORE_AXES", "ORIGIN", "mixture",
+    "PROTOTYPES", "prototype",
+    "label", "dominant", "entropy",
+    "Mode", "action_readiness", "dominant_tendency",
+    "SET_POINT", "Temperament", "at_rest", "drive", "drive_magnitude",
+    "perturb", "relax",
+    "NeuroState", "MODULATORS", "LOADINGS",
+    "Fidelity", "convert", "fidelity", "explain_loss", "conversion_views",
+    "evidence", "Grade", "grade_of",
     # core types
     "EmotionBase", "SupportsEmotionVector", "Emotion", "EmotionalDimension",
     "Neutrality", "Feeling", "CompositeEmotion", "CompositeDimension",
