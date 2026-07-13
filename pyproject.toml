@@ -34,6 +34,10 @@ test = [
     "pytest-cov",
     "hypothesis",
 ]
+# The shared coverage workflow prefers a `dev` extra and falls back to `test`.
+dev = [
+    "emotion-algebra[test]",
+]
 
 [project.scripts]
 emotion-algebra = "emotion_algebra.__main__:main"
