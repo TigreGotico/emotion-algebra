@@ -81,25 +81,58 @@ with a threat should be more afraid, not less. The threat floor makes obstructio
 register regardless of coping, and coping then decides whether it reads as fear
 (flee) or anger (fight).
 
+## Appraisal is the core, one layer up
+
+Two of the core's axes **are** appraisal checks. This is not a fit; it is an
+identity — and it is the strongest argument for these axes over any others.
+
+| core axis | appraisal check |
+| --- | --- |
+| `potency` | **coping potential**, centred and signed |
+| `unpredictability` | **novelty** |
+| `positivity`/`negativity` | goal congruence, tempered by intrinsic pleasantness |
+| `arousal` | goal relevance — how much is at stake |
+
+```python
+from emotion_algebra import Appraisal, dominant
+from emotion_algebra.appraisal import appraisal_to_affect
+
+# One obstructing event. Vary NOTHING but whether you can cope with it.
+fight  = Appraisal(goal_relevance=0.9, goal_congruence=0.0, coping_potential=0.9)
+flight = Appraisal(goal_relevance=0.9, goal_congruence=0.0, coping_potential=0.1)
+
+dominant(appraisal_to_affect(fight))    # 'rage'
+dominant(appraisal_to_affect(flight))   # 'fear'
+```
+
+The dimensions of felt emotion turn out to be the dimensions of appraisal —
+because appraisal is what constructs the feeling.
+
 ## Straight through to neurochemistry
 
 ```python
-from emotion_algebra import appraisal_to_lovheim
+from emotion_algebra import NeuroState
 
-appraisal_to_lovheim(fight).closest_affect()    # 'interest/excitement'
-appraisal_to_lovheim(flight).closest_affect()   # 'fear/terror'
+NeuroState.from_affect(appraisal_to_affect(flight))
+# high cortisol, low dopamine -- the chemistry of not being able to cope
 ```
 
-This is the agent loop end to end:
+The agent loop, end to end:
 
 ```
-needs → appraisal → Hourglass → Lövheim cube → reaction
+needs -> appraisal -> affect core -> (tendency, drive) -> behaviour
+                          |
+                          +-> neuromodulators (learning rates, exploration)
 ```
 
-`float_emotion_to_lovheim_deltas()` gives the signed monoamine displacement from
-baseline.
+See [neurochemistry](neurochemistry.md) and [building an agent](agents.md).
 
-> **Deprecated:** `float_emotion_to_neuro_deltas()` returns **non-negative**
-> deltas. The cube-derived replacement returns *signed* deltas — serotonin and
-> adrenaline are not mutually exclusive in it — so it is **not** a drop-in
-> substitution. Migrate deliberately, not mechanically.
+## The legacy mappings
+
+`appraisal_to_emotion` (discrete, categorical) and `appraisal_to_float_emotion`
+(continuous, Hourglass axes) both still exist and are unchanged. They target the
+[legacy views](legacy.md); `appraisal_to_affect` targets the core.
+
+`float_emotion_to_neuro_deltas()` is **deprecated** — it returns non-negative
+deltas, while its replacement returns *signed* ones, so it is not a drop-in
+substitution. Migrate deliberately.

@@ -1,3 +1,8 @@
+> **This page documents a [legacy view](legacy.md).** It describes the
+> Plutchik/Hourglass layer, which is kept as a *vocabulary* and graded
+> `METAPHOR`. For the model the library actually computes with, see
+> [the core](theory.md) and [its laws](core-laws.md).
+
 # Emotion Taxonomy
 
 The Hourglass of Emotions (Cambria et al. 2012) defines four axes, each with

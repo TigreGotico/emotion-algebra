@@ -1,3 +1,8 @@
+> **This page documents a [legacy view](legacy.md).** It describes the
+> Plutchik/Hourglass layer, which is kept as a *vocabulary* and graded
+> `METAPHOR`. For the model the library actually computes with, see
+> [the core](theory.md) and [its laws](core-laws.md).
+
 # The laws
 
 emotion-algebra calls itself an algebra, so the laws it obeys are written down
