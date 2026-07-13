@@ -14,8 +14,8 @@ Usage
     python -m emotion_algebra rage - 1
     python -m emotion_algebra anger + fear
 
-    # Analyze text — lexicon spans, negation, intensifiers
-    python -m emotion_algebra analyze "I am not very happy"
+    # Analyze text — the affect core, including potency
+    python -m emotion_algebra analyze "nobody has replied to me"
 
     # Compare two emotions
     python -m emotion_algebra distance joy grief
@@ -24,7 +24,7 @@ Usage
     python -m emotion_algebra wheel joy
 
     # Machine-readable output for scripting
-    python -m emotion_algebra analyze "so happy" --json
+    python -m emotion_algebra analyze "nobody has replied" --json
     python -m emotion_algebra distance joy grief --json
 
     # Interactive REPL with emotion_algebra pre-imported
@@ -194,49 +194,39 @@ def _repl() -> None:
 # ---------------------------------------------------------------------------
 
 def _cmd_analyze(text: str, as_json: bool) -> None:
-    """``analyze`` — lexicon spans + aggregate, with negation and intensifiers."""
-    from emotion_algebra.text import analyze
+    """``analyze`` — read the affect core out of a line of text."""
+    from emotion_algebra import affect_from_text, dominant, dominant_tendency, label
 
-    result = analyze(text)
+    state = affect_from_text(text)
+    top = label(state, top_k=3)
 
     if as_json:
         _emit_json({
-            "text": result.text,
-            "spans": [
-                {
-                    "word": s.word,
-                    "label": s.label,
-                    "start": s.start,
-                    "end": s.end,
-                    "weight": s.weight,
-                    "negated": s.negated,
-                }
-                for s in result.spans
-            ],
-            "aggregate": list(result.aggregate.as_array),
-            "polarity": result.polarity,
-            "dominant": result.dominant.name if result.dominant else None,
+            "text": text,
+            "positivity": state.positivity,
+            "negativity": state.negativity,
+            "potency": state.potency,
+            "arousal": state.arousal,
+            "unpredictability": state.unpredictability,
+            "valence": state.valence,
+            "ambivalence": state.ambivalence,
+            "dominant": dominant(state),
+            "tendency": dominant_tendency(state),
+            "label": top,
         })
         return
 
-    if not result:
-        print(f"No lexicon matches in {text!r}")
-        return
-
-    width = max(len(s.word) for s in result.spans)
     print()
-    for span in result.spans:
-        shifters = []
-        if span.negated:
-            shifters.append("negated")
-        if span.weight != 1.0:
-            shifters.append(f"×{span.weight:g}")
-        note = f"  ({', '.join(shifters)})" if shifters else ""
-        print(f"  {span.word:<{width}}  →  {span.label}{note}")
+    print(f"  valence          : {state.valence:+.3f}")
+    print(f"  potency          : {state.potency:+.3f}   <- can they act on it?")
+    print(f"  arousal          : {state.arousal:.3f}")
+    print(f"  unpredictability : {state.unpredictability:.3f}")
+    if state.ambivalence > 0.05:
+        print(f"  ambivalence      : {state.ambivalence:.3f}   <- good AND bad at once")
     print()
-    print(f"  dominant  : {result.dominant.name}")
-    print(f"  polarity  : {result.polarity:+.3f}")
-    print(f"  aggregate : {result.aggregate}")
+    print(f"  dominant  : {dominant(state)}")
+    print(f"  tendency  : {dominant_tendency(state)}")
+    print(f"  label     : " + ", ".join(f"{k} {v:.2f}" for k, v in top.items()))
     print()
 
 

@@ -16,20 +16,14 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-lexicon = [
-    "pandas",
-]
-fast = [
-    "ahocorasick-ner",
-]
 viz = [
     "matplotlib",
 ]
 all = [
-    "emotion-algebra[lexicon,fast,viz]",
+    "emotion-algebra[viz]",
 ]
 test = [
-    "emotion-algebra[lexicon,fast,viz]",
+    "emotion-algebra[viz]",
     "pytest",
     "pytest-cov",
     "hypothesis",
@@ -53,7 +47,7 @@ include = ["emotion_algebra*"]
 version = {attr = "emotion_algebra.version.__version__"}
 
 [tool.setuptools.package-data]
-emotion_algebra = ["*.csv", "*.json", "py.typed"]
+emotion_algebra = ["*.json", "py.typed"]
 
 [tool.pytest.ini_options]
 testpaths = ["test"]

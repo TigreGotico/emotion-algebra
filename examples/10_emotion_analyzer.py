@@ -1,29 +1,32 @@
-"""10_emotion_analyzer.py — EmotionAnalyzer: text → emotion (requires [lexicon] extra)."""
-try:
-    import pandas  # noqa: F401
-except ImportError:
-    print("This example requires: pip install 'emotion_data[lexicon]'")
-    raise SystemExit(0)
+"""EmotionAnalyzer — the high-level facade.
 
+The case the affect core exists for: two messages that look identical to a
+sentiment model, and need opposite responses.
+"""
 from emotion_algebra import EmotionAnalyzer
 
-analyzer = EmotionAnalyzer()
+a = EmotionAnalyzer()
 
-# --- Classify words from the lexicon ----------------------------------------
-words = ["happy", "angry", "terrified", "curious", "disgusted", "serene"]
+MESSAGES = [
+    "This is the third time your app has lost my work. Fix it.",
+    "I don't know if I'm doing this right and I'm scared I've broken something.",
+]
 
-print("=== Word → Emotion (lexicon lookup) ===")
-for word in words:
-    emotion = analyzer.emotion(word)
-    if emotion:
-        print(f"  {word:12s} → {emotion.name:12s}  "
-              f"valence={emotion.valence:+d}  arousal={emotion.arousal}  "
-              f"type={emotion.type}")
-    else:
-        print(f"  {word:12s} → not found in lexicon")
+print("Two support messages. Both negative. Both activated.\n")
 
-# --- get() returns raw label ------------------------------------------------
-print("\n=== analyzer.get() returns raw label ===")
-for word in words[:4]:
-    label = analyzer.get(word)
-    print(f"  {word:12s} → {label!r}")
+for text, state in zip(MESSAGES, a.analyze_all(MESSAGES)):
+    print(f"  {text}")
+    print(f"    valence : {state.valence:+.2f}   (how bad does it feel)")
+    print(f"    potency : {state.potency:+.2f}   (can they do something about it?)")
+    print(f"    reads as: {a.dominant(state)}")
+    print()
+
+print("Near-identical valence. Opposite potency.")
+print("One will escalate. The other will quietly leave.\n")
+
+# The other models are still here.
+print("Plutchik's wheel, faithfully implemented:")
+anger = a.emotion("anger")
+print(f"  anger + 1  -> {(anger + 1).name}")
+print(f"  -anger     -> {(-anger).name}   (Plutchik's 'opposite' — graded METAPHOR)")
+print(f"  resolve('love') -> {a.resolve('love').name}")

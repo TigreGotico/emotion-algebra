@@ -222,43 +222,39 @@ class TestCLIFunctions:
 
 
 class TestCLIAnalyze:
-    def test_analyze_reports_spans_and_dominant(self):
-        rc, out, _ = run("analyze", "I am joyful")
+    """`analyze` reads the affect core out of text — including potency."""
+
+    def test_reports_the_core_axes(self):
+        rc, out, _ = run("analyze", "I am furious about this")
         assert rc == 0
-        assert "joyful" in out
+        assert "valence" in out
+        assert "potency" in out
         assert "dominant" in out
-        assert "polarity" in out
+        assert "tendency" in out
 
-    def test_analyze_marks_negation(self):
-        rc, out, _ = run("analyze", "I am not joyful")
-        assert rc == 0
-        assert "negated" in out
+    def test_separates_an_angry_user_from_a_frightened_one(self):
+        # The whole point: both are negative, and they need opposite responses.
+        _, angry, _ = run("analyze", "I am furious about this", "--json")
+        _, afraid, _ = run("analyze", "I'm terrified something has gone wrong", "--json")
 
-    def test_analyze_marks_intensifiers(self):
-        rc, out, _ = run("analyze", "I am very joyful")
-        assert rc == 0
-        assert "1.5" in out
+        angry, afraid = json.loads(angry), json.loads(afraid)
+        assert angry["valence"] < 0 and afraid["valence"] < 0
+        assert angry["potency"] > 0 > afraid["potency"]
 
-    def test_analyze_handles_no_matches(self):
-        rc, out, _ = run("analyze", "xyzzy plugh")
-        assert rc == 0
-        assert "No lexicon matches" in out
-
-    def test_analyze_json(self):
-        rc, out, _ = run("analyze", "I am not joyful", "--json")
+    def test_json(self):
+        rc, out, _ = run("analyze", "I am furious about this", "--json")
         assert rc == 0
         payload = json.loads(out)
-        assert payload["dominant"] == "sadness"
-        assert payload["polarity"] < 0
-        assert payload["spans"][0]["negated"] is True
-        assert len(payload["aggregate"]) == 4
+        for key in ("valence", "potency", "arousal", "unpredictability",
+                    "ambivalence", "dominant", "tendency", "label"):
+            assert key in payload
+        assert -1.0 <= payload["potency"] <= 1.0
 
-    def test_analyze_json_with_no_matches_is_still_valid(self):
-        rc, out, _ = run("analyze", "xyzzy plugh", "--json")
+    def test_label_is_a_distribution(self):
+        rc, out, _ = run("analyze", "I am furious", "--json")
         assert rc == 0
-        payload = json.loads(out)
-        assert payload["spans"] == []
-        assert payload["dominant"] is None
+        label = json.loads(out)["label"]
+        assert sum(label.values()) == pytest.approx(1.0)
 
 
 class TestCLIDistance:

@@ -28,10 +28,7 @@ pip install emotion-algebra
 
 | Extra | Adds |
 | --- | --- |
-| `emotion-algebra[lexicon]` | word→emotion lookup (pandas) |
-| `emotion-algebra[fast]` | phrase-aware matching (aho-corasick) |
 | `emotion-algebra[viz]` | plots (matplotlib) |
-| `emotion-algebra[all]` | everything |
 
 Requires Python 3.10+.
 
@@ -323,7 +320,7 @@ that went against us.
 | …and the axis it uses to do it | **potency, r=+0.306** — 3× valence, arousal or unpredictability |
 | **Lerner & Keltner (2001)** risk-judgement reproduction | anger patterns with *happiness*, not fear; fully mediated by control + certainty |
 | Valence & arousal vs **human norms** (Warriner, 13,915 words) | taken directly from the data |
-| Arousal *from text* | **unsolved** — best is r=0.13. Neither path is good enough to ship. |
+| Arousal *from text* | **unsolved** — r=0.03. Reported, not hidden. |
 
 Scripts in `scripts/validate/`. The honest limits of each are written into the
 script that produces it.

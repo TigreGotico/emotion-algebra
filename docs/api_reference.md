@@ -320,21 +320,23 @@ Converts `{emoji: probability}` distributions (as produced by DeepMoji / torchMo
 
 ## `emotion_algebra.text`
 
-### `from_text(text) → Emotion | None`
+### `affect_from_text(text) → AffectState`
 
-Tokenise `text`, look up each word in the bundled NRC/EmoLex-style CSV, return the most frequent matched emotion. — `text.py:from_text`
+Read the affect core out of a line of text, via the DeepMoji probe. The only text
+path that recovers `potency`. — `neural.py:affect_from_text`
 
-### `score_text(text) → EmotionalState`
+### `affect_from_texts(texts) → list[AffectState]`
 
-All matching tokens apply to an `EmotionalState` with equal weight. Richer than `from_text`. — `text.py:score_text`
+Batched. Prefer this for more than one string. — `neural.py:affect_from_texts`
 
-### `score_mixed(text) → EmotionalState`
+### `affect_from_features(features) → list[AffectState]`
 
-Single-pass scoring combining word lexicon and emoji map. Recommended entry point for general text. — `text.py:score_mixed`
+Map an `(n, 64)` array of DeepMoji emoji features onto the core. No model, no
+network. — `neural.py:affect_from_features`
 
-### `from_mixed(text) → Emotion | None`
 
-`score_mixed(text).dominant()`. — `text.py:from_mixed`
+
+
 
 ### `DeepMojiONNXAdapter`
 
@@ -363,7 +365,7 @@ from emotion_algebra import (
     get_emotion, get_feeling, get_dimension,
     EmotionalState, EmotionTimeline,
     emotion_distance, closest_emotion, emotion_clusters,
-    from_text, score_text, score_mixed, from_mixed,
+    affect_from_text, affect_from_texts, affect_from_features,
     from_emoji, score_emojis, from_emojis,
     register_emoji, unregister_emoji, DeepMojiAdapter,
     Appraisal, appraisal_to_emotion,
