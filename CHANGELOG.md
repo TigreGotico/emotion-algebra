@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.0.0a1](https://github.com/TigreGotico/emotion-algebra/tree/2.0.0a1) (2026-07-13)
+
+[Full Changelog](https://github.com/TigreGotico/emotion-algebra/compare/1.2.0a1...2.0.0a1)
+
+**Breaking changes:**
+
+- feat!: an evidence-graded affect core, with a defensible neurochemistry [\#10](https://github.com/TigreGotico/emotion-algebra/pull/10) ([JarbasAl](https://github.com/JarbasAl))
+
 ## [1.2.0a1](https://github.com/TigreGotico/emotion-algebra/tree/1.2.0a1) (2026-07-13)
 
 [Full Changelog](https://github.com/TigreGotico/emotion-algebra/compare/1.1.1a1...1.2.0a1)
