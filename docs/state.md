@@ -75,7 +75,7 @@ timeline.dominant_sequence()   # list[Emotion | None] — per-snapshot dominant
 
 ```python
 from emotion_algebra.state import EmotionalState, EmotionTimeline
-from emotion_algebra.text import score_mixed
+from emotion_algebra import affect_from_text
 
 timeline = EmotionTimeline()
 turns = [
@@ -85,7 +85,7 @@ turns = [
 ]
 state = EmotionalState()
 for turn in turns:
-    state.apply(score_mixed(turn))
+    state.apply(affect_from_text(turn))
     state.decay(0.85)
     timeline.append(state)
 

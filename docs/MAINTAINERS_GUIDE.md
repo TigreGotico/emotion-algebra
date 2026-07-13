@@ -11,10 +11,9 @@ emotion-algebra/
 │   ├── base.py              # EmotionBase ABC
 │   ├── emotions.py          # EMOTIONS registry, get_emotion, constants
 │   ├── behaviour.py         # Behaviour / BehavioralReaction
-│   ├── lexicons.py          # Word→emotion CSV loader
 │   ├── state.py             # EmotionalState, EmotionTimeline
 │   ├── distance.py          # emotion_distance, closest_emotion, emotion_clusters
-│   ├── text.py              # from_text, score_text, score_mixed, from_mixed
+│   ├── neural.py            # DeepMoji probe -> affect core
 │   ├── deepmoji.py          # DeepMojiONNXAdapter (canonical neural engine)
 │   ├── emoji.py             # EMOJI_EMOTION_MAP, DeepMojiAdapter, register_emoji
 │   ├── appraisal.py         # Appraisal dataclass, appraisal_to_emotion
@@ -125,8 +124,6 @@ For per-process overrides without modifying the source, use `register_emoji()`.
 
 | Extra | Trigger | Test strategy |
 |-------|---------|--------------|
-| `[lexicon]` | `pandas` import in `lexicons.py` | CSV loaded at import; no mock needed |
-| `[fast]` | `ahocorasick_ner` import in `lexicons.py` | `monkeypatch._ac_available` in `test_lexicons_ac.py` |
 | core: `deepmoji-onnx` | `deepmoji_onnx` import in `deepmoji.py` | Mocked in `test_deepmoji_adapter.py` |
 
 Optional extras use lazy imports inside the function body. Core deps (`numpy`, `deepmoji-onnx`) are always available.

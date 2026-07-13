@@ -266,7 +266,3 @@ class TestEmotionAnalyzerEmojiMethods:
         state = EmotionAnalyzer.score_emojis("😄🎉")
         assert isinstance(state, EmotionalState)
 
-    def test_analyze_emojis(self):
-        from emotion_algebra import EmotionAnalyzer
-        result = EmotionAnalyzer.analyze_emojis("😊😄")
-        assert isinstance(result, Emotion)
