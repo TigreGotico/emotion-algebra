@@ -81,11 +81,52 @@ def _model():
     return DeepMojiONNX.from_pretrained()
 
 
+def affect_from_features(features) -> List[AffectState]:
+    """Map DeepMoji emoji features onto the core.
+
+    This is the part of the pipeline this library owns: the probe, and the
+    projection into the core. It takes an ``(n, 64)`` array of emoji
+    probabilities and needs no model, no network, and no download — which is why
+    it, rather than :func:`affect_from_text`, is what the tests exercise.
+
+    Parameters
+    ----------
+    features:
+        An ``(n, 64)`` array of DeepMoji emoji probabilities.
+
+    Raises
+    ------
+    ValueError
+        If the array is not ``(n, 64)``.
+    """
+    features = np.asarray(features, dtype=float)
+    if features.ndim != 2 or features.shape[1] != 64:
+        raise ValueError(
+            f"expected an (n, 64) array of DeepMoji features, got {features.shape}"
+        )
+
+    design = np.hstack([features, np.ones((len(features), 1))])
+    scores = design @ _probe()
+
+    return [
+        AffectState(
+            positivity=float(np.clip(row[0], 0.0, 1.0)),
+            negativity=float(np.clip(row[1], 0.0, 1.0)),
+            potency=float(np.clip(row[2], -1.0, 1.0)),
+            arousal=float(np.clip(row[3], 0.0, 1.0)),
+            unpredictability=float(np.clip(row[4], 0.0, 1.0)),
+        )
+        for row in scores
+    ]
+
+
 def affect_from_texts(texts: Sequence[str]) -> List[AffectState]:
     """Map each string to an :class:`~emotion_algebra.affect.AffectState`.
 
     Batched — prefer this over calling :func:`affect_from_text` in a loop, since
     the DeepMoji forward pass dominates the cost.
+
+    Downloads the DeepMoji weights (~90 MB) on first use and caches them.
 
     Raises
     ------
@@ -98,34 +139,17 @@ def affect_from_texts(texts: Sequence[str]) -> List[AffectState]:
     if not all(isinstance(t, str) for t in texts):
         raise ValueError("every text must be a str")
 
+    from emotion_algebra.homeostasis import SET_POINT
+
     # DeepMoji's tokenizer rejects empty input, so hold a place for blanks and
     # return the resting state for them rather than failing the whole batch.
     filled = [t if t.strip() else "." for t in texts]
+    states = affect_from_features(np.asarray(_model().encode(filled), dtype=float))
 
-    features = np.asarray(_model().encode(filled), dtype=float)
-    design = np.hstack([features, np.ones((len(features), 1))])
-    scores = design @ _probe()
-
-    states = []
-    for text, row in zip(texts, scores):
-        if not text.strip():
-            from emotion_algebra.homeostasis import SET_POINT
-
-            states.append(SET_POINT)
-            continue
-        values = dict(zip(PROBE_AXES, row))
-        states.append(
-            AffectState(
-                positivity=float(np.clip(values["positivity"], 0.0, 1.0)),
-                negativity=float(np.clip(values["negativity"], 0.0, 1.0)),
-                potency=float(np.clip(values["potency"], -1.0, 1.0)),
-                arousal=float(np.clip(values["arousal"], 0.0, 1.0)),
-                unpredictability=float(
-                    np.clip(values["unpredictability"], 0.0, 1.0)
-                ),
-            )
-        )
-    return states
+    return [
+        SET_POINT if not text.strip() else state
+        for text, state in zip(texts, states)
+    ]
 
 
 def affect_from_text(text: str) -> AffectState:
