@@ -51,6 +51,10 @@ from emotion_algebra.neuro import NeuroState, MODULATORS, LOADINGS
 from emotion_algebra.neural import (
     affect_from_text, affect_from_texts, affect_from_features,
 )
+from emotion_algebra.lang import (
+    CHANNELS, LanguageProfile, PROFILES, UnsupportedLanguageError,
+    detect_language, typographic_features,
+)
 from emotion_algebra.projection import (
     Fidelity, convert, fidelity, explain_loss, views as conversion_views,
 )
@@ -71,6 +75,9 @@ __all__ = [
     "perturb", "relax",
     "NeuroState", "MODULATORS", "LOADINGS",
     "affect_from_text", "affect_from_texts", "affect_from_features",
+    # --- the language boundary: text -> AffectState, and nowhere else
+    "CHANNELS", "LanguageProfile", "PROFILES", "UnsupportedLanguageError",
+    "detect_language", "typographic_features",
     "Fidelity", "convert", "fidelity", "explain_loss", "conversion_views",
     "evidence", "Grade", "grade_of",
     "provenance", "Provenance",
@@ -121,19 +128,23 @@ class EmotionAnalyzer(object):
     # ------------------------------------------------------------------
 
     @staticmethod
-    def analyze(text: str):
+    def analyze(text: str, lang: str = "en"):
         """Return the :class:`~emotion_algebra.affect.AffectState` of *text*.
 
         Uses the DeepMoji probe, which is the only text path that recovers
         ``potency`` — the axis separating a user who will escalate from one who
         will quietly leave.
+
+        English only; anything else raises
+        :class:`~emotion_algebra.lang.UnsupportedLanguageError` rather than
+        returning a number it cannot stand behind.
         """
-        return affect_from_text(text)
+        return affect_from_text(text, lang=lang)
 
     @staticmethod
-    def analyze_all(texts):
+    def analyze_all(texts, lang: str = "en"):
         """Batched :meth:`analyze`. Prefer this for more than one string."""
-        return affect_from_texts(texts)
+        return affect_from_texts(texts, lang=lang)
 
     @staticmethod
     def label(state):

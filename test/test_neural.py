@@ -15,7 +15,10 @@ import numpy as np
 import pytest
 
 from emotion_algebra.affect import AffectState
-from emotion_algebra.neural import PROBE_AXES, _probe, affect_from_features
+from emotion_algebra.lang import UnsupportedLanguageError
+from emotion_algebra.neural import (
+    PROBE_AXES, _probe, affect_from_features, affect_from_text, affect_from_texts,
+)
 
 FIXTURES = json.loads((Path(__file__).parent / "deepmoji_fixtures.json").read_text())
 SENTENCES = FIXTURES["sentences"]
@@ -156,3 +159,39 @@ class TestItRecoversPotencyFromRealText:
 
     def test_positive_text_reads_positive(self):
         assert state_for("this is wonderful, thank you so much").valence > 0
+
+
+class TestLanguageRefusal:
+    """The encoder reads English. Everything else is refused, not guessed.
+
+    DeepMoji is English-trained and every feature around it is English
+    orthography. Handed Arabic it does not fail — it returns a confident,
+    plausible, wrong AffectState. Since an affect reading is consumed as evidence
+    by everything downstream of it, that is worse than no reading at all: it does
+    not degrade the decision, it corrupts it, with no signal that anything is
+    wrong.
+    """
+
+    def test_arabic_is_refused(self):
+        with pytest.raises(UnsupportedLanguageError):
+            affect_from_text("لا أعرف إن كنت أفعل هذا بشكل صحيح", lang="ar")
+
+    def test_portuguese_is_refused(self):
+        with pytest.raises(UnsupportedLanguageError):
+            affect_from_text("Não sei se estou a fazer isto bem", lang="pt")
+
+    def test_the_refusal_names_what_it_can_read(self):
+        with pytest.raises(UnsupportedLanguageError) as e:
+            affect_from_texts(["ola"], lang="pt")
+        assert e.value.supported == ("en",)
+
+    def test_it_refuses_before_downloading_ninety_megabytes(self):
+        # The gate is in front of the encoder, not behind it. This test would
+        # otherwise reach the network, and it does not.
+        with pytest.raises(UnsupportedLanguageError):
+            affect_from_texts(["irrelevant"], lang="ja")
+
+    def test_english_is_still_the_default(self):
+        # The gate must not change the shape of the existing API.
+        import inspect
+        assert inspect.signature(affect_from_text).parameters["lang"].default == "en"

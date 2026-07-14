@@ -62,6 +62,23 @@ it where a bag of words cannot:
 Near-identical valence; opposite potency. That distinction is the whole point of
 the core, and it survives contact with real text.
 
+English only
+------------
+DeepMoji was trained on English tweets, and every feature wrapped around it is
+English orthography — ``?`` is the question mark, capitals are shouting, and
+*very / really / totally* are the intensifiers. **None of that survives contact
+with another language**, and, worse, none of it *fails* on contact either: it
+returns a confident, plausible, wrong number.
+
+So this module reads English and refuses everything else. See
+:func:`_require_english` for the argument, and :mod:`emotion_algebra.lang` for
+what each language's typography actually does.
+
+The refusal is narrow: it is only the ``text -> AffectState`` arrow that is
+language-bound. The core — appraisal, tendency, homeostasis, the neuromodulator
+readout — never sees a word, and works on any :class:`AffectState` from any
+source, in any language.
+
 Requires ``deepmoji-onnx``, which is a core dependency — the model weights (~90 MB)
 are downloaded on first use and cached.
 """
@@ -76,6 +93,7 @@ from typing import List, Sequence
 import numpy as np
 
 from emotion_algebra.affect import AffectState
+from emotion_algebra.lang import UnsupportedLanguageError
 
 #: Where the fitted probe lives.
 PROBE_PATH = Path(__file__).parent / "deepmoji_probe.json"
@@ -122,6 +140,39 @@ def typographic_features(text: str) -> List[float]:
         len(_ELLIPSIS.findall(text)) / n,                     # "..." — *low* arousal
         sum(text.lower().count(w) for w in _INTENSIFIERS) / n,
     ]
+
+
+def _require_english(lang: str) -> None:
+    """Refuse anything but English, loudly.
+
+    DeepMoji was trained on English tweets, and every feature around it is
+    English orthography: ``?`` is the question mark, capitals are shouting,
+    ``([a-z])\\1{2,}`` is a stretched word, and *very / really / totally* are the
+    intensifiers.
+
+    Hand it Arabic and **not one of those assumptions holds**. Arabic asks
+    questions with ``؟`` (U+061F), so the question feature reads zero on every
+    Arabic question ever written. Arabic is caseless, so the shouting ratio is
+    not low — it is undefined, and reports ``0.0`` forever. The emphasis-stripping
+    guard above, which is the only thing stopping ``!`` from being read as
+    excitement and neutralising the valence of *"this is unacceptable!!!"*, is an
+    ASCII regex: on Arabic it silently matches nothing and the bug it was written
+    to fix comes straight back.
+
+    None of that raises. It returns a confident, plausible, entirely wrong
+    ``AffectState``, and the caller has no way to tell. Since an affect reading
+    is consumed as evidence by everything downstream of it, a wrong one is worse
+    than none at all: it does not degrade the decision, it corrupts it, silently,
+    with no signal that anything is amiss.
+
+    So: refuse. :mod:`emotion_algebra.lang` describes what each language's
+    typography actually does, and the multilingual encoder that will read those
+    languages is the next piece of work. Until it is fitted **and evaluated**,
+    the honest answer to "what does this Arabic sentence feel like" is that this
+    function does not know.
+    """
+    if lang != "en":
+        raise UnsupportedLanguageError(lang, supported=("en",))
 
 
 @lru_cache(maxsize=1)
@@ -195,7 +246,9 @@ def affect_from_features(features, texts: Sequence[str] = None) -> List[AffectSt
     ]
 
 
-def affect_from_texts(texts: Sequence[str]) -> List[AffectState]:
+def affect_from_texts(
+    texts: Sequence[str], lang: str = "en"
+) -> List[AffectState]:
     """Map each string to an :class:`~emotion_algebra.affect.AffectState`.
 
     Batched — prefer this over calling :func:`affect_from_text` in a loop, since
@@ -203,11 +256,23 @@ def affect_from_texts(texts: Sequence[str]) -> List[AffectState]:
 
     Downloads the DeepMoji weights (~90 MB) on first use and caches them.
 
+    Parameters
+    ----------
+    texts:
+        The strings to read.
+    lang:
+        The language they are written in. **English only, for now** — see
+        :func:`affect_from_text`.
+
     Raises
     ------
     ValueError
         If *texts* is empty, or any entry is not a string.
+    UnsupportedLanguageError
+        If *lang* is anything but ``"en"``.
     """
+    _require_english(lang)
+
     texts = list(texts)
     if not texts:
         raise ValueError("no texts given")
@@ -243,19 +308,28 @@ def affect_from_texts(texts: Sequence[str]) -> List[AffectState]:
     ]
 
 
-def affect_from_text(text: str) -> AffectState:
+def affect_from_text(text: str, lang: str = "en") -> AffectState:
     """Map one string to an :class:`~emotion_algebra.affect.AffectState`.
 
-    See the module docstring for what this is good at (valence, potency) and what
-    it is not (arousal — near-zero correlation; do not trust it).
+    See the module docstring for what this is good at (valence, potency) and how
+    far the arousal estimate can be trusted.
 
     Parameters
     ----------
     text:
         Any string. Empty or whitespace-only input returns the resting set point.
+    lang:
+        The language *text* is written in. **This encoder reads English, and only
+        English.** Anything else is refused rather than guessed — see
+        :func:`_require_english`.
 
     Returns
     -------
     AffectState
+
+    Raises
+    ------
+    UnsupportedLanguageError
+        If *lang* is not ``"en"``.
     """
-    return affect_from_texts([text])[0]
+    return affect_from_texts([text], lang=lang)[0]

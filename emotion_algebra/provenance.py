@@ -465,3 +465,17 @@ register_constant(
          "absorbed into the learned weights. The robustness report confirms "
          "nothing depends on them.",
 )
+
+register_constant(
+    "lang.SATURATION_CAPS",
+    {"punctuation": 5, "length": 50, "kashida": 10},
+    Provenance.CALIBRATED,
+    cite="A squashing constant, not a measurement: it bounds the kashida count "
+         "so one heavily-stretched word cannot saturate the channel, mirroring "
+         "the punctuation caps in neural.SATURATION_CAPS.",
+    note="Arabic has no capital letters, so the SHOUTING channel is realised by "
+         "kashida (tatweel, U+0640) stretching instead. That the two are the "
+         "same channel is a CLAIM about how emphasis is written, and the "
+         "multilingual evaluation is what tests it. The bound itself is "
+         "arbitrary and any probe fitted downstream absorbs it.",
+)
