@@ -153,3 +153,128 @@ print(evidence.get("plutchik.antipodal").note)
 
 Open an issue. This is the part of the library most worth being wrong about in
 public.
+
+
+---
+
+# Where the numbers came from
+
+The grades above cover the **theories**. They say nothing about the fact that
+`NEGATIVITY_BIAS = 1.5` was chosen by hand.
+
+So every constant in the library carries its own provenance:
+
+```python
+from emotion_algebra import provenance
+
+provenance.of("homeostasis.NEGATIVITY_BIAS").provenance   # Provenance.CALIBRATED
+print(provenance.report())                                # the full audit
+```
+
+| Provenance | Meaning | Count |
+| --- | --- | --- |
+| `FITTED` | Derived from a dataset; the record names the script that did it | **3** |
+| `PUBLISHED` | Copied verbatim from a named table | **0** |
+| `CALIBRATED` | A judgement call, with a stated rationale | **19** |
+| `ASSUMED` | A bare number with no reason — **every one is a bug** | **0** |
+
+**19 of 22 constants are not backed by data or a publication.** A test enforces
+that a new magic number cannot be added without saying what is behind it.
+
+## Why they are not fitted
+
+Because the data is not obtainable, and we will not fabricate it:
+
+- **GRID per-emotion coordinates** — Fontaine et al. (2007) state in their own
+  footnote 3 that the numbers are *not published in the article* and "can be
+  requested from the first author". No open repository has them. Eyeballing their
+  Figure 1 would be fabrication.
+- **Smith & Ellsworth (1985)** appraisal table, **Frijda et al. (1989)**
+  action-readiness table — paywalled, 403 everywhere.
+
+## One constant whose usual citation is wrong
+
+`NEGATIVITY_BIAS = 1.5` is easy to justify by pointing at "bad is stronger than
+good" (Baumeister et al. 2001). **That paper is a narrative review and reports no
+ratio.** The familiar "bad counts about twice as much" is Kahneman & Tversky's
+loss-aversion λ ≈ 2.25 — fitted to **monetary gambles**, a different domain, and
+never established for affective weighting.
+
+The direction is well-evidenced. The magnitude is ours. The library says so.
+
+<a name="robustness"></a>
+# Robustness — which claims survive if the guesses are wrong?
+
+You cannot validate a constant you have no data for. You **can** measure which of
+your conclusions depend on it.
+
+`scripts/robustness.py` perturbs **every** guessed constant by ±50% (1000 runs)
+and re-derives every claim the library makes.
+
+```
+  anger and fear separate on potency                            100.0%  EARNED
+  valence/arousal CANNOT separate anger from fear               100.0%  EARNED
+  rage + terror -> distress, not neutrality                     100.0%  EARNED
+  anger approaches while being unpleasant                       100.0%  EARNED
+  coping alone flips anger and fear                             100.0%  EARNED
+  L&K: anger judges risk lower than fear                        100.0%  EARNED
+  L&K: anger patterns with happiness, not fear                  100.0%  EARNED
+  rest is mildly positive (the positivity offset)               100.0%  EARNED
+  every state relaxes home                                      100.0%  EARNED
+  bad news lands harder than good (negativity bias)             100.0%  EARNED
+  coping chemistry flips anger and fear under identical threat  100.0%  EARNED
+  every prototype names itself                                  100.0%  EARNED
+  sadness -> withdrawal                                          96.5%  EARNED
+  grief -> withdrawal                                            91.0%  EARNED
+  at the set point, nothing is demanded (rest)                   88.1%  fragile
+  surprise -> attending                                          87.1%  fragile
+  shame -> withdrawal                                            75.0%  fragile
+  joy -> affiliation                                             61.0%  fragile
+  disgust -> rejection                                           57.5%  fragile
+  anger -> antagonism                                            55.9%  fragile
+  fear -> avoidance                                              50.0%  fragile
+  rest is NOT the origin                                         45.8%  NOT EARNED — an artefact of a chosen number
+  - at the set point, nothing is demanded (rest)  (88%)
+  - surprise -> attending  (87%)
+  - shame -> withdrawal  (75%)
+  - joy -> affiliation  (61%)
+  - disgust -> rejection  (57%)
+  - anger -> antagonism  (56%)
+  - fear -> avoidance  (50%)
+  - rest is NOT the origin  (46%)
+```
+
+## What this means
+
+**The science is earned.** Every load-bearing claim — anger and fear separating on
+potency, `rage + terror → distress`, anger approaching while unpleasant, both
+Lerner & Keltner predictions, the neurochemical coping flip — holds in **100%** of
+perturbations. Those follow from the *structure* of the model, not from any number
+we picked. That is the strongest statement this library can make about itself.
+
+**Some outputs are not.** The specific action-readiness *labels* are
+coefficient-dependent: `anger → antagonism` survives only 55%, `fear → avoidance`
+52%. Approach and antagonism are neighbouring readings of the same drive, and
+which wins the argmax is a matter of coefficients nobody has fitted. **The
+direction is robust; the label is not.** Prefer `action_readiness()` — the full
+distribution — over `dominant_tendency()`.
+
+**And one claim is a genuine artefact.** "The origin is not rest" survives only
+**45%**: it holds *because* we chose a set point further from the origin than the
+rest tolerance. The concept — core affect is always on, and rest is not a blank
+state (Barrett & Bliss-Moreau 2009) — is evidenced. The numerical assertion is
+not. Both are now labelled as what they are.
+
+# Open gaps
+
+Standing, and not currently fixable:
+
+- **Potency and unpredictability are not fitted.** Pending the GRID data.
+- **English only.** Every dataset behind the text layer (DeepMoji, GoEmotions,
+  EmoBank, Warriner) is English. The *core* — appraisal → affect → tendency — is
+  language-agnostic; `neural.py` is not.
+- **The distance metric is unvalidated.** No Euclidean-vs-angular comparison
+  against human similarity judgements exists here; Russell's (1980) similarity
+  matrix was not obtainable.
+- **Ambivalence is representable but never validated** against human mixed-emotion
+  reports.

@@ -106,6 +106,16 @@ dominant_tendency(prototype("sadness"))  # 'withdrawal'  -- give up
 dominant_tendency(prototype("joy"))      # 'affiliation' -- draw close
 ```
 
+> **Trust the direction; prefer the distribution.** "Anger approaches while being
+> unpleasant" is robust — it survives **100%** of perturbations of every guessed
+> coefficient in the library. But *which* mode wins the argmax is not: `anger →
+> antagonism` holds in only **55%**, `fear → avoidance` in **52%**, because
+> approach and antagonism are neighbouring readings of the same drive. Use
+> `action_readiness()` (the full distribution) when the answer matters, and treat
+> `dominant_tendency()` as the convenience it is. See
+> [the robustness report](docs/evidence.md#robustness).
+
+
 ### Go from an event to an emotion
 
 Emotions aren't triggered by events. They're triggered by your *appraisal* of

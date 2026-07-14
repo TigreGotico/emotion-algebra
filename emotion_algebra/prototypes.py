@@ -84,12 +84,14 @@ PROTOTYPES: Dict[str, AffectState] = {
     # --- joy family ---
     "serenity":     AffectState(positivity=0.69, potency=0.25, arousal=0.24, unpredictability=0.05),
     "joy":          AffectState(positivity=0.80, potency=0.35, arousal=0.57, unpredictability=0.10),
-    # "ecstasy" in Warriner is dominated by the drug sense; "ecstatic" is the
-    # emotion word, and is what is used here.
-    "ecstasy":      AffectState(positivity=0.90, potency=0.45, arousal=0.74, unpredictability=0.15),
+    # Warriner's "ecstasy" is dominated by the DRUG sense; the substitute
+    # "ecstatic" is used. Note the human norms put it BELOW joy on valence
+    # (0.36 vs 0.80) — Plutchik's intensity ladder (serenity < joy < ecstasy)
+    # does not hold in ratings data. The data wins.
+    "ecstasy":      AffectState(positivity=0.36, potency=0.45, arousal=0.74, unpredictability=0.15),
 
     # --- sadness family: negative, LOW arousal, low potency ---
-    # "pensiveness" is not in Warriner; reasoned from its neighbours.
+    # Warriner has no "pensiveness"; the substitute "pensive" is used.
     "pensiveness":  AffectState(negativity=0.30, potency=-0.20, arousal=0.18, unpredictability=0.10),
     "sadness":      AffectState(negativity=0.65, potency=-0.35, arousal=0.23, unpredictability=0.15),
     "grief":        AffectState(negativity=0.67, potency=-0.55, arousal=0.49, unpredictability=0.20),
@@ -126,10 +128,10 @@ PROTOTYPES: Dict[str, AffectState] = {
     "amazement":    AffectState(positivity=0.64, potency=-0.20, arousal=0.62, unpredictability=1.00),
 
     # --- states the Plutchik lexicon has no word for, but the space needs ---
-    #: The midpoint of rage and terror. High-arousal negative with coping
-    #: cancelled out — which is what the Hourglass axes wrongly called
-    #: "neutrality".
-    "distress":     AffectState(negativity=0.75, potency=-0.05, arousal=0.70, unpredictability=0.50),
+    #: The midpoint of rage and terror: negative, with coping cancelled out —
+    #: which is what the Hourglass axes wrongly called "neutrality".
+    #: valence/arousal from Warriner.
+    "distress":     AffectState(negativity=0.44, potency=-0.05, arousal=0.38, unpredictability=0.50),
     #: Negative, low coping, self-directed — the state Tomkins has and Plutchik
     #: does not.
     "shame":        AffectState(negativity=0.59, potency=-0.65, arousal=0.55, unpredictability=0.15),

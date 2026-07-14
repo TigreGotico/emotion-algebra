@@ -22,6 +22,25 @@ sentiment system.  Motivational direction tracks **potency**, not valence:
 
 Valence tells you whether it is good.  Potency tells you what you are going to do
 about it.
+
+What is earned, and what is not
+-------------------------------
+``scripts/robustness.py`` perturbs every guessed coefficient in this module by
+±50% and re-checks the library's claims. The result is worth knowing before you
+rely on this:
+
+* **The DIRECTION is earned.**  "Anger approaches while being unpleasant" holds in
+  **100%** of perturbations. So does "coping flips anger and fear". These follow
+  from the structure of the model, not from the numbers.
+* **The specific MODE is not.**  ``dominant_tendency(anger) == "antagonism"`` holds
+  in only **55%**; ``fear -> "avoidance"`` in **52%**.  Approach and antagonism
+  are neighbouring readings of the same drive, and which of them wins the argmax
+  depends on coefficients nobody has fitted.
+
+So: **trust the direction, and prefer the distribution.**  :func:`action_readiness`
+returns all nine modes with their weights; :func:`dominant_tendency` is an argmax
+convenience, and the argmax is the fragile part.  Treating its output as a finding
+about people would be asserting a coefficient we chose.
 """
 from __future__ import annotations
 
@@ -29,6 +48,32 @@ from typing import Dict
 
 from emotion_algebra._compat import StrEnum
 from emotion_algebra.affect import AffectState
+
+
+#: How much of an empowered-hostile drive is counted as *approach* as well as
+#: *antagonism*.
+#:
+#: Antagonism is a kind of approach — you move toward what you intend to attack —
+#: so the same drive legitimately appears in both modes. One half is the neutral
+#: split: it asserts no view about which reading dominates. Registered
+#: ``CALIBRATED``; the robustness report says whether anything depends on it.
+HOSTILE_APPROACH_SHARE: float = 0.5
+
+#: The floor of the orienting response.
+#:
+#: An unexpected event turns your head even when you are entirely unaroused, so
+#: ATTENDING ramps with arousal from a floor rather than from zero.
+ORIENT_FLOOR: float = 0.35
+
+#: Weight of each remaining rule, relative to the others. See the module
+#: docstring for what each is doing, and ``provenance.py`` for what is behind
+#: them (very little — they were tuned until the prototypes produced the
+#: readiness modes the literature describes, which is calibration against our own
+#: expectations).
+FLIGHT_URGENCY: float = 2.0      # flight is the defining fear response
+REJECTION_WEIGHT: float = 1.5    # you turn away from what merely revolts you
+SUBMISSION_WEIGHT: float = 0.35  # below withdrawal: a social act, and we have no social axis
+REST_FALLOFF: int = 4            # rest must not outrank a live but mild state
 
 
 class Mode(StrEnum):
@@ -83,7 +128,12 @@ def action_readiness(state: AffectState) -> Dict[str, float]:
         # Eager pursuit. Scales with reward and activation — and, via the second
         # term, with *empowered hostility*, which is how anger gets here despite
         # negative valence.
-        Mode.APPROACH: pos * ar + empowered * neg * ar * 0.5,
+        #
+        # HOSTILE_APPROACH_SHARE: an empowered, unpleasant, activated state is
+        # BOTH approaching and antagonistic — antagonism is a *kind of* approach,
+        # so the same drive is counted in both modes. Half is the neutral split:
+        # it asserts no view about which reading dominates.
+        Mode.APPROACH: pos * ar + empowered * neg * ar * HOSTILE_APPROACH_SHARE,
         # Approach + unpleasantness + power = move against it.
         Mode.ANTAGONISM: empowered * neg * ar,
         # Powerless + unpleasant + activated + UNCERTAIN = get away. Fear.
@@ -94,27 +144,34 @@ def action_readiness(state: AffectState) -> Dict[str, float]:
         # cannot handle, so you stop. Arousal alone does not separate them —
         # human norms put grief's arousal at 0.49, squarely in fear's range.
         # It is Lerner & Keltner's certainty dimension doing the work.
-        Mode.AVOIDANCE: helpless * neg * ar * unp * 2.0,
+        Mode.AVOIDANCE: helpless * neg * ar * unp * FLIGHT_URGENCY,
         # Powerless + unpleasant + settled + CERTAIN = give up. Sadness, grief.
         Mode.WITHDRAWAL: helpless * neg * (1.0 - ar) * (1.0 - unp),
         # The world is not as expected: find out more. Gated on the situation not
         # being threatening — you investigate a surprise, you flee a threat.
-        Mode.ATTENDING: unp * (0.35 + 0.65 * ar) * (1.0 - neg),
+        #
+        # ORIENT_FLOOR: even a wholly unaroused surprise still turns your head.
+        # Orienting does not require activation, so the arousal term ramps from a
+        # floor rather than from zero.
+        Mode.ATTENDING: unp * (ORIENT_FLOOR + (1.0 - ORIENT_FLOOR) * ar) * (1.0 - neg),
         # Powerless, but not fleeing: appease. Weighted below withdrawal — a
         # true submission display is a *social* act, and the core has no social
         # axis to condition it on, so it must not outrank the modes that do.
-        Mode.SUBMISSION: helpless * neg * (1.0 - unp) * 0.35,
-        # Safe and pleased: draw close.
-        Mode.AFFILIATION: pos * (1.0 - ar) + pos * empowered * 0.5,
+        Mode.SUBMISSION: helpless * neg * (1.0 - unp) * SUBMISSION_WEIGHT,
+        # Safe and pleased: draw close. Affiliation is mostly a *calm* mode — you
+        # bond when you are not braced — but confidence helps, which is the second
+        # term. It is weighted at HOSTILE_APPROACH_SHARE for the same reason: a
+        # neutral split, asserting nothing.
+        Mode.AFFILIATION: pos * (1.0 - ar) + pos * empowered * HOSTILE_APPROACH_SHARE,
         # Unpleasant, but I have the power to expel it rather than flee it.
         # Distinguished from antagonism by arousal: you attack what enrages you,
         # you turn away from what merely revolts you.
-        Mode.REJECTION: empowered * neg * (1.0 - ar) * 1.5,
+        Mode.REJECTION: empowered * neg * (1.0 - ar) * REJECTION_WEIGHT,
         # Nothing much is demanded. Falls away sharply as soon as anything is
         # going on — a shallower term lets rest outrank a live but *mild* state
         # (disgust), simply because the other modes are products of sub-unit
         # numbers.
-        Mode.REST: max(0.0, 1.0 - max(pos, neg, abs(pot), ar, unp)) ** 4,
+        Mode.REST: max(0.0, 1.0 - max(pos, neg, abs(pot), ar, unp)) ** REST_FALLOFF,
     }
 
     total = sum(scores.values())
