@@ -1,5 +1,13 @@
 # Changelog
 
+## [3.5.0a1](https://github.com/TigreGotico/emotion-algebra/tree/3.5.0a1) (2026-07-14)
+
+[Full Changelog](https://github.com/TigreGotico/emotion-algebra/compare/3.4.0a1...3.5.0a1)
+
+**Merged pull requests:**
+
+- feat: emotion names in Portuguese and Arabic [\#24](https://github.com/TigreGotico/emotion-algebra/pull/24) ([JarbasAl](https://github.com/JarbasAl))
+
 ## [3.4.0a1](https://github.com/TigreGotico/emotion-algebra/tree/3.4.0a1) (2026-07-14)
 
 [Full Changelog](https://github.com/TigreGotico/emotion-algebra/compare/3.3.0a1...3.4.0a1)
