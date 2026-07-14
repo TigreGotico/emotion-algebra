@@ -61,6 +61,16 @@ _FIELD_CATEGORICAL: dict[str, dict[str, float]] = {
     "novelty":                {"unexpected": 1.0, "expected": 0.0},
     "goal_relevance":         {"relevant": 1.0, "irrelevant": 0.0},
     "goal_congruence":        {"congruent": 1.0, "incongruent": 0.0},
+    # NOTE: this collapses two distinct things onto one scalar, and it is worth
+    # knowing before you rely on it. Smith & Ellsworth (1985) recovered agency as
+    # TWO separate dimensions: *human agency* (was it me or another person?) and
+    # *situational control* (was anyone responsible at all?). Folding
+    # self/other/circumstance onto a single axis asserts that "other" is halfway
+    # between "self" and "circumstance", which is not a claim their data makes.
+    #
+    # It survives because the AFFECT CORE never reads this field — only the
+    # legacy Hourglass view does (appraisal_to_float_emotion), where it feeds a
+    # single 0.2-weighted term. Registered CALIBRATED in provenance.py.
     "agency":                 {"self": 1.0, "other": 0.5, "circumstance": 0.0},
     "coping_potential":       {"high": 1.0, "low": 0.0},
     "intrinsic_pleasantness": {"pleasant": 1.0, "unpleasant": 0.0},
@@ -230,6 +240,13 @@ def appraisal_to_emotion(appraisal: Appraisal) -> "EmotionBase":
 # Scherer SEC checks → Cambria Hourglass axes
 # ---------------------------------------------------------------------------
 
+#: How far a FloatEmotion displaces the legacy neurotransmitter readout.
+#:
+#: A free knob on a legacy path, exposed as a parameter because there is nothing
+#: behind it: no dataset relates Hourglass magnitudes to monoamine displacement.
+#: The affect core does not use it — see :mod:`emotion_algebra.neuro`.
+_LEGACY_DELTA_SCALE: float = 0.15
+
 #: Coefficients of the SEC → Hourglass mapping, as **data** rather than magic
 #: numbers buried in the expression.  Each entry names what it weighs and says
 #: where it comes from: a Scherer prediction, or an explicit calibration
@@ -341,7 +358,7 @@ def appraisal_to_float_emotion(appraisal: Appraisal) -> "FloatEmotion":
     gc  = a.goal_congruence - 0.5        # >0 = congruent, <0 = incongruent
     nov = a.novelty - 0.5                # >0 = unexpected
     ip  = a.intrinsic_pleasantness - 0.5 # >0 = pleasant
-    ag  = a.agency - 0.5                 # >0 = self, 0 = other, <0 = circumstance
+    ag  = a.agency - 0.5                 # self-responsibility; see _FIELD_CATEGORICAL
 
     # Obstruction: how blocked the goal is, scaled by how much it matters.
     # Centred inputs mean gr ∈ [-0.5, 0.5], so (gr + 0.5) ∈ [0, 1] reads as
@@ -447,7 +464,7 @@ def appraisal_to_lovheim(appraisal: Appraisal) -> "LovheimPoint":
 
 def float_emotion_to_lovheim_deltas(
     fe: "FloatEmotion",
-    scale: float = 0.15,
+    scale: float = _LEGACY_DELTA_SCALE,
 ) -> tuple[float, float, float]:
     """Neurotransmitter deltas for *fe*, derived from Lövheim's cube.
 
@@ -496,7 +513,7 @@ def float_emotion_to_lovheim_deltas(
 
 def float_emotion_to_neuro_deltas(
     fe: "FloatEmotion",
-    scale: float = 0.15,
+    scale: float = _LEGACY_DELTA_SCALE,
 ) -> tuple[float, float, float]:
     """Convert a :class:`FloatEmotion` to neurotransmitter deltas.
 

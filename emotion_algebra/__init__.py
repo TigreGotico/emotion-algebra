@@ -37,6 +37,8 @@ from emotion_algebra.base import SupportsEmotionVector, hourglass_polarity, AXES
 # --- the affect core: the empirically-grounded model everything converts through
 from emotion_algebra import evidence, views as _views  # noqa: F401 (wires the graph)
 from emotion_algebra.evidence import Grade, grade_of
+from emotion_algebra import provenance
+from emotion_algebra.provenance import Provenance
 from emotion_algebra.affect import AffectState, CORE_AXES, ORIGIN, mixture
 from emotion_algebra.prototypes import PROTOTYPES, prototype
 from emotion_algebra.readout import label, dominant, entropy
@@ -71,6 +73,7 @@ __all__ = [
     "affect_from_text", "affect_from_texts", "affect_from_features",
     "Fidelity", "convert", "fidelity", "explain_loss", "conversion_views",
     "evidence", "Grade", "grade_of",
+    "provenance", "Provenance",
     # core types
     "EmotionBase", "SupportsEmotionVector", "Emotion", "EmotionalDimension",
     "Neutrality", "Feeling", "CompositeEmotion", "CompositeDimension",

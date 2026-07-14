@@ -46,6 +46,8 @@ UNPREDICTABILITY = {
 SUBSTITUTES = {
     "pensiveness": "pensive",
     "amazement": "amazed",
+    # Warriner's "ecstasy" is dominated by the DRUG sense, not the emotion.
+    "ecstasy": "ecstatic",
 }
 
 
@@ -58,6 +60,8 @@ def main() -> int:
 
     w = pd.read_csv(args.warriner).drop_duplicates("Word").set_index("Word")
 
+    print("# valence + arousal from Warriner (human norms).")
+    print("# potency + unpredictability are NOT fitted -- see provenance.py.")
     print("PROTOTYPES = {")
     missing = []
     for name, unp in UNPREDICTABILITY.items():

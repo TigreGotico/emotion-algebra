@@ -54,6 +54,27 @@ import numpy as np
 
 from emotion_algebra.affect import CORE_AXES, AffectState
 
+#: Default half-life of a displacement, in seconds.
+#:
+#: Arbitrary, and exposed as a parameter precisely because it is arbitrary — set
+#: it to whatever your tick rate needs.  Emotion-duration data does exist
+#: (Verduyn & Lavrijsen 2015 find sadness longest-lasting), but the per-emotion
+#: figures are paywalled and could not be verified, so nothing here is fitted to
+#: them.  Nothing in the library depends on this value being right.
+DEFAULT_HALF_LIFE: float = 300.0
+
+#: How close to the set point counts as "at rest" — a threshold on the core's own
+#: metric, roughly 5% of the space's diameter.
+#:
+#: Worth knowing: the claim ":func:`at_rest` is False at the ORIGIN" survives only
+#: **45%** of perturbations (``scripts/robustness.py``), because it holds only
+#: while the set point sits further from the origin than this tolerance. The
+#: CONCEPT — that core affect is always on, and rest is not a blank state
+#: (Barrett & Bliss-Moreau 2009) — is evidenced. The NUMERICAL assertion depends
+#: on magnitudes nobody has measured. Do not cite the latter as though it were
+#: the former.
+REST_TOLERANCE: float = 0.1
+
 #: The default resting set point.
 #:
 #: Not the origin.  Mildly positive (the positivity offset), low arousal, mildly
@@ -70,9 +91,21 @@ SET_POINT = AffectState(
 
 #: How much more steeply negativity responds than positivity.
 #:
-#: The negativity bias.  A displacement that pushes negativity up moves further
-#: than an equal push on positivity.  Graded ``ESTABLISHED`` in direction,
-#: ``calibrated`` in magnitude.
+#: The **direction** is well-evidenced: negative events weigh more than positive
+#: ones of equal size.  The **magnitude is invented**, and it is worth being
+#: precise about why, because the obvious citation does not say what it is
+#: usually quoted as saying.
+#:
+#: "Bad is stronger than good" (Baumeister, Bratslavsky, Finkenauer & Vohs, 2001,
+#: *Review of General Psychology* 5(4):323-70) is a **narrative review**.  It
+#: surveys many literatures and reports **no ratio**.  The familiar "bad counts
+#: about twice as much" is Kahneman & Tversky's loss-aversion coefficient
+#: (λ ≈ 2.25) — fitted to **monetary gambles**, which is a different domain, and
+#: never established for affective weighting.
+#:
+#: So 1.5 is a number we chose.  It is registered ``ASSUMED`` in
+#: :mod:`emotion_algebra.provenance`, and ``scripts/robustness.py`` reports which
+#: of the library's claims (if any) depend on it.
 NEGATIVITY_BIAS: float = 1.5
 
 
@@ -98,7 +131,7 @@ class Temperament:
 
     set_point: AffectState = SET_POINT
     negativity_bias: float = NEGATIVITY_BIAS
-    resilience: float = 300.0
+    resilience: float = DEFAULT_HALF_LIFE
 
     def __post_init__(self) -> None:
         if self.negativity_bias <= 0:
@@ -145,7 +178,7 @@ def drive_magnitude(state: AffectState, set_point: AffectState = SET_POINT) -> f
 def at_rest(
     state: AffectState,
     set_point: AffectState = SET_POINT,
-    tolerance: float = 0.1,
+    tolerance: float = REST_TOLERANCE,
 ) -> bool:
     """``True`` when *state* is within *tolerance* of the set point.
 
@@ -158,7 +191,7 @@ def at_rest(
 def relax(
     state: AffectState,
     dt: float,
-    half_life: float = 300.0,
+    half_life: float = DEFAULT_HALF_LIFE,
     toward: AffectState = SET_POINT,
 ) -> AffectState:
     """Contract *state* toward the set point, halving the gap every *half_life*.
