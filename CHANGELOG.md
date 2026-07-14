@@ -1,5 +1,13 @@
 # Changelog
 
+## [3.3.0a1](https://github.com/TigreGotico/emotion-algebra/tree/3.3.0a1) (2026-07-14)
+
+[Full Changelog](https://github.com/TigreGotico/emotion-algebra/compare/3.2.0a1...3.3.0a1)
+
+**Merged pull requests:**
+
+- feat: refuse languages the text layer cannot read, instead of guessing [\#20](https://github.com/TigreGotico/emotion-algebra/pull/20) ([JarbasAl](https://github.com/JarbasAl))
+
 ## [3.2.0a1](https://github.com/TigreGotico/emotion-algebra/tree/3.2.0a1) (2026-07-14)
 
 [Full Changelog](https://github.com/TigreGotico/emotion-algebra/compare/3.1.0a1...3.2.0a1)
