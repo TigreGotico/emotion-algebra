@@ -161,37 +161,44 @@ class TestItRecoversPotencyFromRealText:
         assert state_for("this is wonderful, thank you so much").valence > 0
 
 
-class TestLanguageRefusal:
-    """The encoder reads English. Everything else is refused, not guessed.
+class TestLanguageRouting:
+    """DeepMoji reads English. Other languages go elsewhere, or nowhere.
 
-    DeepMoji is English-trained and every feature around it is English
-    orthography. Handed Arabic it does not fail — it returns a confident,
+    Handed Arabic, the English pipeline does not fail — it returns a confident,
     plausible, wrong AffectState. Since an affect reading is consumed as evidence
     by everything downstream of it, that is worse than no reading at all: it does
     not degrade the decision, it corrupts it, with no signal that anything is
-    wrong.
+    wrong. So a language either has an encoder that has been EVALUATED on it, or
+    it is refused.
     """
 
-    def test_arabic_is_refused(self):
+    def test_an_unevaluated_language_is_refused(self):
         with pytest.raises(UnsupportedLanguageError):
-            affect_from_text("لا أعرف إن كنت أفعل هذا بشكل صحيح", lang="ar")
+            affect_from_text("Ich weiss nicht was ich tun soll", lang="de")
 
-    def test_portuguese_is_refused(self):
-        with pytest.raises(UnsupportedLanguageError):
-            affect_from_text("Não sei se estou a fazer isto bem", lang="pt")
-
-    def test_the_refusal_names_what_it_can_read(self):
-        with pytest.raises(UnsupportedLanguageError) as e:
-            affect_from_texts(["ola"], lang="pt")
-        assert e.value.supported == ("en",)
-
-    def test_it_refuses_before_downloading_ninety_megabytes(self):
+    def test_it_refuses_before_downloading_a_model(self):
         # The gate is in front of the encoder, not behind it. This test would
         # otherwise reach the network, and it does not.
         with pytest.raises(UnsupportedLanguageError):
             affect_from_texts(["irrelevant"], lang="ja")
 
-    def test_english_is_still_the_default(self):
-        # The gate must not change the shape of the existing API.
+    def test_supported_languages_route_to_the_multilingual_encoder(self, monkeypatch):
+        # pt and ar are not read by DeepMoji — they are handed to the
+        # multilingual probe, which was fitted on English and evaluated on them.
+        seen = {}
+
+        def fake(texts, lang):
+            seen["lang"] = lang
+            return ["routed"]
+
+        monkeypatch.setattr(
+            "emotion_algebra.multilingual.affect_from_texts", fake
+        )
+        assert affect_from_texts(["Não sei"], lang="pt") == ["routed"]
+        assert seen["lang"] == "pt"
+
+    def test_english_is_still_the_default_and_still_deepmoji(self):
+        # The gate must not change the shape of the existing API, and English
+        # must not be quietly re-routed: its numbers are the published ones.
         import inspect
         assert inspect.signature(affect_from_text).parameters["lang"].default == "en"

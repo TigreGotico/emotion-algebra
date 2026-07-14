@@ -270,11 +270,23 @@ not. Both are now labelled as what they are.
 Standing, and not currently fixable:
 
 - **Potency and unpredictability are not fitted.** Pending the GRID data.
-- **English only, and it now says so.** Every dataset behind the text layer
-  (DeepMoji, GoEmotions, EmoBank, Warriner) is English. The *core* — appraisal →
-  affect → tendency — is language-agnostic; the text layer is not, and it
-  [refuses other languages](text_emoji.md#the-language-boundary) rather than
-  returning a number it cannot stand behind.
+- **The text layer is English; Portuguese and Arabic are experimental.** Every
+  dataset behind it (DeepMoji, GoEmotions, EmoBank, Warriner) is English. The
+  *core* — appraisal → affect → tendency — is language-agnostic; the text layer is
+  not. A language with no evaluated encoder is
+  [refused](text_emoji.md#the-language-boundary) rather than approximated.
+
+  Where a probe fitted on English is applied zero-shot, the crux test — do anger
+  and fear separate, and do they separate on **potency**? — gives:
+
+  | lang | potency *d* | separating axis | verdict |
+  |---|---|---|---|
+  | en | +0.77 | potency | — |
+  | pt | +0.46 | potency | transfers |
+  | ar | +0.28 | **unpredictability** | **partial** |
+
+  **The anger/fear-on-potency claim is NOT established for Arabic.** It is shipped
+  with this table beside it, not without one.
 - **No Arabic affective norms exist.** Not "we could not obtain them" — there is
   no human-rated Arabic valence/arousal/dominance lexicon at all. The Arabic
   entries in the widely-used NRC lexicon family are *machine translations* of
