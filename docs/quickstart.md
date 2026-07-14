@@ -101,11 +101,10 @@ afraid.valence, afraid.potency   # -0.47, -0.43  -> 'apprehension'
 Near-identical valence. **Opposite potency.** One will escalate; one will quietly
 disappear.
 
-> **Trust valence and potency here. Do not trust arousal.** This path uses a
-> DeepMoji probe, which scores valence at r=0.47 on held-out data but arousal at
-> r=0.03 — emoji usage carries hedonic tone far more than activation. *Arousal
-> from text is an unsolved problem in this library.* See
-> [text & emoji](text_emoji.md).
+> Held-out scores: valence **r=0.42**, arousal **r=0.35**. **Emoji tell you how
+> someone feels; punctuation tells you how loudly** — the probe reads emoji *and*
+> typographic cues (`!!!`, CAPS, `sooo`), because emphasis is what carries
+> arousal. See [text & emoji](text_emoji.md).
 
 ## 6. Go from an event to an emotion
 

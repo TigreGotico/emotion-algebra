@@ -320,7 +320,7 @@ that went against us.
 | …and the axis it uses to do it | **potency, r=+0.306** — 3× valence, arousal or unpredictability |
 | **Lerner & Keltner (2001)** risk-judgement reproduction | anger patterns with *happiness*, not fear; fully mediated by control + certainty |
 | Valence & arousal vs **human norms** (Warriner, 13,915 words) | taken directly from the data |
-| Arousal *from text* | **unsolved** — r=0.03. Reported, not hidden. |
+| Arousal *from text* | r=**0.35** — emoji carry valence, *punctuation* carries arousal |
 
 Scripts in `scripts/validate/`. The honest limits of each are written into the
 script that produces it.

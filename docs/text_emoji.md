@@ -47,19 +47,42 @@ affect_from_features(features)      # (n, 64) -> list[AffectState]
 Measured on **EmoBank** (Buechel & Hahn 2017), held out — a different corpus, at
 sentence level, never seen during fitting.
 
-| axis | correlation with human ratings |
+| axis | held-out correlation |
 | --- | --- |
-| **valence** | **+0.47** |
+| **valence** | **+0.42** |
+| **arousal** | **+0.35** |
 | **potency** | recovers the angry/frightened distinction (see above) |
-| **arousal** | **+0.03** |
 
-**Trust valence and potency. Do not trust arousal.**
+### Emoji tell you how someone feels. Punctuation tells you how loudly.
 
-Emoji usage carries hedonic tone far more than activation, which is not obvious in
-advance but is plainly true. **Arousal from text is an unsolved problem in this
-library**, and it is reported rather than hidden. If your application depends on
-knowing how *worked up* someone is from their words alone, this will not give it to
-you.
+Arousal is the interesting one. A probe built on the **emoji distribution alone**
+scores +0.16. Eight **typographic cues** — exclamation density, capitals ratio,
+stretched vowels (`sooo`), length, ellipses, intensifiers — score **+0.32 on their
+own**, twice as well. Together they reach +0.35.
+
+Emoji encode hedonic tone; **emphasis encodes activation**. SHOUTING is arousal.
+
+So the probe gets both, and the typographic rows are wired to arousal and nothing
+else — letting them touch valence measurably degraded it.
+
+One subtlety worth knowing about: DeepMoji reads `!` as *excitement*, and
+excitement looks positive to it. Left alone, both *"this is wonderful!!!"* and
+*"this is unacceptable!!!"* drift toward **neutral valence** — nonsense in one
+direction and dangerously wrong in the other. So the encoder is shown the text
+with emphasis stripped, while the typographic cues see it intact:
+
+```python
+affect_from_text("this is wonderful")             # arousal 0.52, valence +0.56
+affect_from_text("this is wonderful!!!")          # arousal 0.95, valence +0.56
+affect_from_text("THIS IS COMPLETELY UNACCEPTABLE!!!")   # arousal 0.90, valence -0.51
+```
+
+Emphasis changes how *loud* something is. It does not change whether it is good or
+bad. That is now true of the model as well as of people.
+
+> Honest ceiling: EmoBank's arousal ratings have low inter-annotator agreement, so
+> +0.35 from 72 linear features is decent but not a solved problem. A fine-tuned
+> transformer would do better and cost far more.
 
 ## Emoji
 
