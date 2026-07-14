@@ -1,5 +1,13 @@
 # Changelog
 
+## [3.1.0a1](https://github.com/TigreGotico/emotion-algebra/tree/3.1.0a1) (2026-07-14)
+
+[Full Changelog](https://github.com/TigreGotico/emotion-algebra/compare/3.0.0a1...3.1.0a1)
+
+**Merged pull requests:**
+
+- feat: recover arousal from text — emoji carry valence, punctuation carries arousal [\#16](https://github.com/TigreGotico/emotion-algebra/pull/16) ([JarbasAl](https://github.com/JarbasAl))
+
 ## [3.0.0a1](https://github.com/TigreGotico/emotion-algebra/tree/3.0.0a1) (2026-07-13)
 
 [Full Changelog](https://github.com/TigreGotico/emotion-algebra/compare/2.0.0a2...3.0.0a1)
@@ -47,6 +55,10 @@
 **Merged pull requests:**
 
 - feat: continuous appraisal, need-deficit emotions, FloatEmotion.blend [\#1](https://github.com/TigreGotico/emotion-algebra/pull/1) ([JarbasAl](https://github.com/JarbasAl))
+
+## [1.0.0](https://github.com/TigreGotico/emotion-algebra/tree/1.0.0) (2026-03-30)
+
+[Full Changelog](https://github.com/TigreGotico/emotion-algebra/compare/4e69aeb919d36945b556e1bb3a10266aace43ace...1.0.0)
 
 
 
