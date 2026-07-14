@@ -19,11 +19,20 @@ dependencies = [
 viz = [
     "matplotlib",
 ]
+# Portuguese and Arabic. Pulls an ONNX sentence encoder and its tokenizer; no
+# torch. Without it, the text layer reads English and refuses the rest.
+multilingual = [
+    "onnxruntime",
+    "tokenizers",
+    "huggingface-hub",
+]
 all = [
     "emotion-algebra[viz]",
+    "emotion-algebra[multilingual]",
 ]
 test = [
     "emotion-algebra[viz]",
+    "emotion-algebra[multilingual]",
     "pytest",
     "pytest-cov",
     "hypothesis",

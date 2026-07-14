@@ -142,39 +142,6 @@ def typographic_features(text: str) -> List[float]:
     ]
 
 
-def _require_english(lang: str) -> None:
-    """Refuse anything but English, loudly.
-
-    DeepMoji was trained on English tweets, and every feature around it is
-    English orthography: ``?`` is the question mark, capitals are shouting,
-    ``([a-z])\\1{2,}`` is a stretched word, and *very / really / totally* are the
-    intensifiers.
-
-    Hand it Arabic and **not one of those assumptions holds**. Arabic asks
-    questions with ``؟`` (U+061F), so the question feature reads zero on every
-    Arabic question ever written. Arabic is caseless, so the shouting ratio is
-    not low — it is undefined, and reports ``0.0`` forever. The emphasis-stripping
-    guard above, which is the only thing stopping ``!`` from being read as
-    excitement and neutralising the valence of *"this is unacceptable!!!"*, is an
-    ASCII regex: on Arabic it silently matches nothing and the bug it was written
-    to fix comes straight back.
-
-    None of that raises. It returns a confident, plausible, entirely wrong
-    ``AffectState``, and the caller has no way to tell. Since an affect reading
-    is consumed as evidence by everything downstream of it, a wrong one is worse
-    than none at all: it does not degrade the decision, it corrupts it, silently,
-    with no signal that anything is amiss.
-
-    So: refuse. :mod:`emotion_algebra.lang` describes what each language's
-    typography actually does, and the multilingual encoder that will read those
-    languages is the next piece of work. Until it is fitted **and evaluated**,
-    the honest answer to "what does this Arabic sentence feel like" is that this
-    function does not know.
-    """
-    if lang != "en":
-        raise UnsupportedLanguageError(lang, supported=("en",))
-
-
 @lru_cache(maxsize=1)
 def _probe() -> np.ndarray:
     """The (73, 5) probe: 64 emoji + 8 typographic features + intercept -> 5 axes."""
@@ -269,9 +236,16 @@ def affect_from_texts(
     ValueError
         If *texts* is empty, or any entry is not a string.
     UnsupportedLanguageError
-        If *lang* is anything but ``"en"``.
+        If *lang* has no profile.
     """
-    _require_english(lang)
+    if lang != "en":
+        # DeepMoji reads English. Everything else goes to the multilingual
+        # encoder, which was fitted on English gold and evaluated zero-shot —
+        # see emotion_algebra.multilingual. An unregistered language reaches
+        # neither, and raises.
+        from emotion_algebra.multilingual import affect_from_texts as multilingual
+
+        return multilingual(texts, lang=lang)
 
     texts = list(texts)
     if not texts:

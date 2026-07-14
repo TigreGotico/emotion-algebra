@@ -479,3 +479,21 @@ register_constant(
          "multilingual evaluation is what tests it. The bound itself is "
          "arbitrary and any probe fitted downstream absorbs it.",
 )
+
+register_constant(
+    "multilingual.PROBE",
+    "393 x 5 linear probe",
+    Provenance.FITTED,
+    cite="FITTED on ENGLISH ONLY, by scripts/validate/fit_multilingual_probe.py: "
+         "valence/potency/unpredictability on GoEmotions (Demszky et al. 2020) "
+         "label prototypes, arousal on EmoBank (Buechel & Hahn 2017) human "
+         "ratings. Held out on EmoBank: valence r=+0.56, arousal r=+0.50.",
+    note="Fitted on English and applied to Portuguese and Arabic ZERO-SHOT, "
+         "relying on the encoder's cross-lingual alignment. That the mapping "
+         "crosses is not assumed — it is measured on XED and reported per "
+         "language in docs/evidence.md, INCLUDING where it fails. It transfers "
+         "to Portuguese (potency d=+0.46, the dominant axis) and only PARTIALLY "
+         "to Arabic (potency d=+0.28; unpredictability dominates instead). No "
+         "in-language fitting is possible: no human-rated Arabic VAD lexicon "
+         "exists, and the open Portuguese norms are Brazilian, not European.",
+)

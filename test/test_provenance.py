@@ -32,6 +32,12 @@ STRUCTURAL = {
     "CORE_AXES",
     "MODULATORS",
     "PROBE_AXES",
+    "N_EMBED",           # the encoder's output width
+    "MAX_TOKENS",        # truncation bound: these are utterances, not documents
+    "BATCH_SIZE",        # memory bound on the forward pass
+    "ENCODER_THREADS",   # CPU courtesy, not a judgement about emotion
+    "CHANNELS",
+    "EVALUATED",
     "BASELINE_TEMPERAMENT",
     "SET_POINT",         # registered as homeostasis.SET_POINT
     "ORIGIN",

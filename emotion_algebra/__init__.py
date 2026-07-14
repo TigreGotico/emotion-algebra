@@ -55,6 +55,9 @@ from emotion_algebra.lang import (
     CHANNELS, LanguageProfile, PROFILES, UnsupportedLanguageError,
     detect_language, typographic_features,
 )
+# Portuguese and Arabic. EXPERIMENTAL, and needs the `multilingual` extra — see
+# the module docstring for what transfers and what does not.
+from emotion_algebra import multilingual
 from emotion_algebra.projection import (
     Fidelity, convert, fidelity, explain_loss, views as conversion_views,
 )
@@ -78,6 +81,7 @@ __all__ = [
     # --- the language boundary: text -> AffectState, and nowhere else
     "CHANNELS", "LanguageProfile", "PROFILES", "UnsupportedLanguageError",
     "detect_language", "typographic_features",
+    "multilingual",
     "Fidelity", "convert", "fidelity", "explain_loss", "conversion_views",
     "evidence", "Grade", "grade_of",
     "provenance", "Provenance",

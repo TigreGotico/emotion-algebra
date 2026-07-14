@@ -176,8 +176,92 @@ A missing channel is then a known absence rather than a silent zero — which is
 the difference between *missing data* and *evidence of calm*, and they are not
 the same thing.
 
-Profiles exist for `en`, `pt` and `ar`. Only `en` has an encoder behind it. The
-other two describe the typography correctly and are what the multilingual encoder
-will be built on; until that encoder is fitted **and evaluated**, the honest
-answer to "what does this Arabic sentence feel like" is that this library does
-not yet know.
+## Portuguese and Arabic — experimental
+
+```bash
+pip install emotion-algebra[multilingual]
+```
+
+```python
+from emotion_algebra import affect_from_text
+
+affect_from_text("Não sei se estou a fazer isto bem", lang="pt")
+```
+
+English still goes through DeepMoji, unchanged. Portuguese and Arabic go through
+`paraphrase-multilingual-MiniLM-L12-v2` (Apache-2.0), and **the probe behind them
+was fitted on English gold and has never seen a word of either language.**
+
+That sounds like cheating. It works because the encoder is *distilled so a
+sentence and its translation land in the same place*:
+
+|  | en~pt | en~ar | pt~ar |
+|---|---|---|---|
+| *"your app has lost my work"* | 0.87 | 0.78 | 0.95 |
+
+...against **0.15** for the angry-English/frightened-Portuguese mismatch. If a
+direction fitted in the English region of that space is the same direction in the
+Arabic region, the mapping crosses for free.
+
+**If.** That is a claim, and it is measured, not assumed.
+
+### What actually transfers
+
+Gold is [XED](https://github.com/Helsinki-NLP/XED) (CC-BY-4.0). The test is the
+one the library lives or dies by: **do anger and fear still separate, and do they
+separate on _potency_?**
+
+| lang | n | accuracy | shuffled control | potency *d* | separating axis |
+|---|---|---|---|---|---|
+| en | 1200 | 0.695 | 0.467 | **+0.77** | potency |
+| pt | 1099 | 0.656 | 0.529 | **+0.46** | potency |
+| ar | 794 | 0.668 | 0.637 | +0.28 | **unpredictability** |
+
+**Portuguese transfers.** Potency is the dominant axis, anger sits on the
+high-potency side, and the result survives the shuffled-label control. The
+complaint and the goodbye stay distinguishable.
+
+**Arabic transfers only partially, and this is the honest headline.** Potency
+keeps the right *sign* but attenuates by nearly two-thirds, and
+**unpredictability dominates instead**. Held-out accuracy is only three points
+above the majority baseline. So:
+
+> **The anger/fear-on-potency distinction is NOT established for Arabic.**
+
+The Arabic reading is usable and the numbers are not noise, but the axis that
+justifies this library's existence is not the one doing the work there, and it
+would be dishonest to ship it as though it were.
+
+Two caveats, and they cut in opposite directions. The XED labels for *both*
+languages are **projected** across subtitle alignments rather than
+human-annotated, so this is weak gold — and the Portuguese is *Brazilian*. And
+the Arabic text carries visible tokenisation damage (words run together:
+`أنيكبيرجداًفيالسن`), which plausibly depresses the Arabic result rather than
+reflecting a true failure of transfer. It is a lead, not an excuse.
+
+### Why the prototypes are not translated
+
+Only the *coordinates'* names could be. The coordinates themselves stay canonical
+and language-neutral, because **there is no human-rated Arabic
+valence/arousal/dominance lexicon in existence.** The Arabic entries in the
+widely-used NRC lexicon family are *machine translations* of English sentiment
+scores: English raters' judgements in Arabic clothing. Fitting Arabic prototypes
+on them would launder an English opinion into an Arabic-looking number, which is
+precisely the failure this library exists to name. The only open Portuguese norms
+are Brazilian.
+
+`prototypes.cross_lingual_transfer` is graded `CONTESTED` for exactly this reason:
+GRID supports the four *dimensions* replicating across cultures, but not the
+*per-term positions*.
+
+### A note on the encoder
+
+On English — the one language with real gold — the multilingual encoder scores
+**+0.56 valence / +0.50 arousal** against DeepMoji's **+0.42 / +0.35**, on the
+same held-out EmoBank split. It is, on that measure, the better English encoder.
+
+DeepMoji remains the English path anyway. Its value here was never accuracy: it
+is that a model trained on 1.2 billion tweets, with no theory of emotion, reached
+for *potency* on its own to tell anger from fear. That is an independent witness,
+and independent witnesses are worth more than a tenth of a correlation
+coefficient.

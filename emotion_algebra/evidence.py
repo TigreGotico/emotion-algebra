@@ -421,3 +421,22 @@ register(
     "machine-translated 'Arabic' sentiment lexicons that do exist encode English "
     "raters' judgements, not Arabic speakers', and are not used here.",
 )
+
+register(
+    "text.multilingual_transfer",
+    Grade.CONTESTED,
+    "Reimers & Gurevych (2020), EMNLP — the encoder's cross-lingual distillation; "
+    "Öhman, Pàmies, Kajava & Tiedemann (2020), COLING — XED, the evaluation gold.",
+    "The probe is fitted on English and applied to other languages zero-shot. "
+    "Whether that crosses is MEASURED, not assumed, and the answer differs by "
+    "language. PORTUGUESE: it transfers — anger and fear separate on potency "
+    "(d=+0.46), the axis the library is built on, with anger on the high-potency "
+    "side. ARABIC: it transfers only PARTIALLY — potency keeps the right sign but "
+    "attenuates (d=+0.28) and UNPREDICTABILITY dominates instead (d=-0.40); "
+    "held-out accuracy is only 3 points above the majority baseline. The core "
+    "anger/fear claim is therefore NOT established for Arabic. Two caveats cut "
+    "both ways: the XED labels for both languages are PROJECTED across subtitle "
+    "alignments rather than human-annotated (weak gold), and the Arabic text "
+    "carries visible tokenisation damage (words run together), which plausibly "
+    "depresses the Arabic result. Non-English support is EXPERIMENTAL.",
+)
