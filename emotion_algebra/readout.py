@@ -38,6 +38,7 @@ def label(
     state: AffectState,
     temperature: float = TEMPERATURE,
     top_k: Optional[int] = None,
+    lang: str = "en",
 ) -> Dict[str, float]:
     """Return ``P(label | state)`` over the named prototypes.
 
@@ -48,6 +49,11 @@ def label(
     ----------
     state:
         The :class:`~emotion_algebra.affect.AffectState` to name.
+    lang:
+        The language to answer in. This renames the labels; it does **not** move
+        the prototypes, and the probabilities are identical in every language.
+        See :mod:`emotion_algebra.names` for why that is a claim worth being
+        careful about rather than an implementation detail.
     temperature:
         Softness. Must be positive.
     top_k:
@@ -68,8 +74,9 @@ def label(
     if top_k is not None and int(top_k) <= 0:
         raise ValueError(f"top_k must be positive, got {top_k!r}")
 
-    names = list(PROTOTYPES)
-    dists = np.array([state.distance(PROTOTYPES[n]) for n in names], dtype=float)
+    table = _table(lang)
+    names = list(table)
+    dists = np.array([state.distance(table[n]) for n in names], dtype=float)
 
     # Softmax over negative distance. Subtracting the min is the standard
     # overflow guard and leaves the distribution unchanged.
@@ -86,16 +93,37 @@ def label(
     return {n: float(w) for n, w in ranked}
 
 
-def dominant(state: AffectState) -> str:
+def dominant(state: AffectState, lang: str = "en") -> str:
     """The single most probable label — the argmax of :func:`label`.
 
     A convenience, and a lossy one: it throws away the runners-up, which are
     where the gradient structure lives. Prefer :func:`label` when the answer
     matters.
+
+    *lang* changes the **name** returned, never the geometry that chose it. The
+    nearest prototype to a state is the same point whatever it is called.
     """
-    names = list(PROTOTYPES)
-    dists = [(state.distance(PROTOTYPES[n]), n) for n in names]
+    table = _table(lang)
+    dists = [(state.distance(table[n]), n) for n in table]
     return min(dists)[1]
+
+
+def _table(lang: str) -> dict:
+    """The prototypes, keyed by their names in *lang*.
+
+    The coordinates are canonical and language-neutral. Only the keys move — see
+    :mod:`emotion_algebra.names` for why that distinction is load-bearing rather
+    than pedantic.
+    """
+    if lang == "en":
+        return PROTOTYPES
+
+    from emotion_algebra.names import names_in
+
+    return {
+        localized: PROTOTYPES[name]
+        for localized, name in names_in(lang).items()
+    }
 
 
 def entropy(state: AffectState, temperature: float = TEMPERATURE) -> float:
