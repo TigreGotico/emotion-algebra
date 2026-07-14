@@ -270,9 +270,20 @@ not. Both are now labelled as what they are.
 Standing, and not currently fixable:
 
 - **Potency and unpredictability are not fitted.** Pending the GRID data.
-- **English only.** Every dataset behind the text layer (DeepMoji, GoEmotions,
-  EmoBank, Warriner) is English. The *core* — appraisal → affect → tendency — is
-  language-agnostic; `neural.py` is not.
+- **English only, and it now says so.** Every dataset behind the text layer
+  (DeepMoji, GoEmotions, EmoBank, Warriner) is English. The *core* — appraisal →
+  affect → tendency — is language-agnostic; the text layer is not, and it
+  [refuses other languages](text_emoji.md#the-language-boundary) rather than
+  returning a number it cannot stand behind.
+- **No Arabic affective norms exist.** Not "we could not obtain them" — there is
+  no human-rated Arabic valence/arousal/dominance lexicon at all. The Arabic
+  entries in the widely-used NRC lexicon family are *machine translations* of
+  English sentiment scores, which record English raters' judgements, not Arabic
+  speakers'. They are not used here. The only openly available Portuguese norms
+  are Brazilian, not European. So per-language prototype coordinates cannot be
+  fitted, and `prototypes.cross_lingual_transfer` is graded `CONTESTED`
+  accordingly: GRID supports the four *dimensions* replicating across cultures,
+  but not the *per-term positions*.
 - **The distance metric is unvalidated.** No Euclidean-vs-angular comparison
   against human similarity judgements exists here; Russell's (1980) similarity
   matrix was not obtainable.

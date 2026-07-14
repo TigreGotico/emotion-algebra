@@ -391,3 +391,33 @@ register(
     "hedonically bipolar, which contradicts the bipolar geometry the model "
     "otherwise assumes. Excellent engineering; not a finding.",
 )
+
+register(
+    "text.english_only",
+    Grade.ESTABLISHED,
+    "Felbo et al. (2017), EMNLP — DeepMoji, trained on English tweets; "
+    "Demszky et al. (2020), ACL — GoEmotions, English; "
+    "Buechel & Hahn (2017), EACL — EmoBank, English; "
+    "Warriner, Kuperman & Brysbaert (2013), Behav. Res. Methods — English norms.",
+    "Not a claim about emotion — a claim about this library. EVERY dataset "
+    "behind the text layer is English, so the text layer reads English. The "
+    "typographic cues are English orthography besides: Arabic asks questions "
+    "with U+061F and has no capital letters at all, so two of the eight cues "
+    "are not weak on Arabic, they are structurally dead. Reading another "
+    "language here does not raise; it returns a confident wrong number. It is "
+    "therefore refused. Nothing else in the library is language-bound.",
+)
+
+register(
+    "prototypes.cross_lingual_transfer",
+    Grade.CONTESTED,
+    "Fontaine, Scherer, Roesch & Ellsworth (2007), Psychol. Sci. 18(12):1050-57.",
+    "GRID supports the four DIMENSIONS replicating across languages and "
+    "cultures. It does not establish that the PER-TERM POSITIONS are stable — "
+    "that 'raiva' or 'ghadab' sits exactly where 'anger' sits is an assumption, "
+    "not a finding. It cannot currently be checked either: there is no "
+    "human-rated Arabic valence/arousal/dominance lexicon in existence, and the "
+    "one openly available Portuguese norm set is Brazilian, not European. The "
+    "machine-translated 'Arabic' sentiment lexicons that do exist encode English "
+    "raters' judgements, not Arabic speakers', and are not used here.",
+)
