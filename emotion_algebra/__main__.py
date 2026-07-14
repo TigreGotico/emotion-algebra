@@ -16,6 +16,7 @@ Usage
 
     # Analyze text — the affect core, including potency
     python -m emotion_algebra analyze "nobody has replied to me"
+    python -m emotion_algebra analyze "ninguém me respondeu" --lang pt
 
     # Compare two emotions
     python -m emotion_algebra distance joy grief
@@ -193,12 +194,18 @@ def _repl() -> None:
 # Entry point
 # ---------------------------------------------------------------------------
 
-def _cmd_analyze(text: str, as_json: bool) -> None:
-    """``analyze`` — read the affect core out of a line of text."""
+def _cmd_analyze(text: str, as_json: bool, lang: str = "en") -> None:
+    """``analyze`` — read the affect core out of a line of text.
+
+    *lang* selects the encoder AND the language the labels come back in. Only
+    English is read by DeepMoji; Portuguese and Arabic go through the
+    experimental multilingual probe, and an unevaluated language is refused
+    rather than approximated.
+    """
     from emotion_algebra import affect_from_text, dominant, dominant_tendency, label
 
-    state = affect_from_text(text)
-    top = label(state, top_k=3)
+    state = affect_from_text(text, lang=lang)
+    top = label(state, top_k=3, lang=lang)
 
     if as_json:
         _emit_json({
@@ -210,7 +217,8 @@ def _cmd_analyze(text: str, as_json: bool) -> None:
             "unpredictability": state.unpredictability,
             "valence": state.valence,
             "ambivalence": state.ambivalence,
-            "dominant": dominant(state),
+            "lang": lang,
+            "dominant": dominant(state, lang=lang),
             "tendency": dominant_tendency(state),
             "label": top,
         })
@@ -224,7 +232,7 @@ def _cmd_analyze(text: str, as_json: bool) -> None:
     if state.ambivalence > 0.05:
         print(f"  ambivalence      : {state.ambivalence:.3f}   <- good AND bad at once")
     print()
-    print(f"  dominant  : {dominant(state)}")
+    print(f"  dominant  : {dominant(state, lang=lang)}")
     print(f"  tendency  : {dominant_tendency(state)}")
     print(f"  label     : " + ", ".join(f"{k} {v:.2f}" for k, v in top.items()))
     print()
@@ -290,6 +298,17 @@ def main() -> None:
     if as_json:
         args = [a for a in args if a != "--json"]
 
+    lang = "en"
+    for i, a in enumerate(args):
+        if a == "--lang" and i + 1 < len(args):
+            lang = args[i + 1]
+            args = args[:i] + args[i + 2:]
+            break
+        if a.startswith("--lang="):
+            lang = a.split("=", 1)[1]
+            args = args[:i] + args[i + 1:]
+            break
+
     if not args:
         _repl()
         return
@@ -299,7 +318,7 @@ def main() -> None:
         return
 
     if args[0] == "analyze" and len(args) >= 2:
-        _cmd_analyze(" ".join(args[1:]), as_json)
+        _cmd_analyze(" ".join(args[1:]), as_json, lang=lang)
         return
 
     if args[0] == "distance" and len(args) == 3:

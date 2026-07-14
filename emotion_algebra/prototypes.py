@@ -141,12 +141,19 @@ PROTOTYPES: Dict[str, AffectState] = {
 def prototype(name: str) -> AffectState:
     """Return the core prototype for *name*.
 
+    *name* may be in any supported language: ``anger``, ``raiva`` and ``غضب``
+    all return the same state, because they are three names for one point in the
+    core rather than three points. That the point is the *same* one is an
+    assumption, not a finding — see :mod:`emotion_algebra.names`.
+
     Raises
     ------
     KeyError
-        If *name* is not a known prototype.
+        If *name* is not a known prototype in any language.
     """
-    key = name.lower().strip()
-    if key not in PROTOTYPES:
+    from emotion_algebra.names import canonical
+
+    key = canonical(name)
+    if key is None or key not in PROTOTYPES:
         raise KeyError(f"unknown emotion prototype: {name!r}")
     return PROTOTYPES[key]

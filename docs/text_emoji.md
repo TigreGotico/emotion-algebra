@@ -265,3 +265,48 @@ is that a model trained on 1.2 billion tweets, with no theory of emotion, reache
 for *potency* on its own to tell anger from fear. That is an independent witness,
 and independent witnesses are worth more than a tenth of a correlation
 coefficient.
+
+## Emotion names in other languages
+
+`dominant()` and `label()` take a `lang=`, and the CLI takes `--lang`:
+
+```python
+from emotion_algebra import prototype, dominant
+
+mixed = prototype("fúria").blend(prototype("رعب"), 0.5)
+
+dominant(mixed, lang="en")   # 'distress'
+dominant(mixed, lang="pt")   # 'angústia'
+dominant(mixed, lang="ar")   # 'كرب'
+```
+
+**This translates names. It does not translate coordinates**, and the distinction
+is the whole point.
+
+`raiva` returns the same point in the core as `anger` because this library
+*assumes* it is the same point — not because it has checked. It cannot check.
+There is no human-rated Arabic affective lexicon to check against, and the open
+Portuguese norms are Brazilian. So `prototypes.cross_lingual_transfer` is graded
+`CONTESTED`, and a translated label is a **label**, never a finding about
+Portuguese or Arabic emotion terms.
+
+The probabilities are byte-identical in every language. Only the keys move.
+
+### What this looks like when it half-works
+
+The library's founding example, in Arabic:
+
+| message | potency | label |
+|---|---|---|
+| *"I'm scared I've broken something"* | **−0.488** | `خوف` (fear) |
+| *"third time your app has lost my work"* | **+0.005** | `قبول` (acceptance) |
+
+The **ordering is right** — the complaint sits above the goodbye on potency, which
+is the property everything downstream depends on. But the Arabic complaint's
+potency never climbs high enough to reach *anger*, so it lands on the wrong label.
+
+That is exactly the attenuation the evaluation measured (`d = +0.28` for Arabic,
+against `+0.46` for Portuguese). **The direction survives the crossing; the
+calibration does not.** It is written down here rather than smoothed over, because
+a user who trusts an Arabic label without knowing this would be trusting something
+the evidence does not support.
