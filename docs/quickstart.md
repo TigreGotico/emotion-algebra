@@ -6,7 +6,6 @@ what someone will *do* about it, and give an agent a mood that persists.
 ```bash
 pip install emotion-algebra
 ```
-
 ---
 
 ## 1. An emotion is a point, not a word
@@ -20,9 +19,8 @@ fear  = prototype("fear")
 anger.valence, anger.arousal, anger.potency    # -0.62, 0.62, +0.60
 fear.valence,  fear.arousal,  fear.potency     # -0.52, 0.64, -0.60
 ```
-
 Look carefully. Anger and fear have **nearly the same valence** and **nearly the
-same arousal**. They differ almost entirely on `potency` — the sense of being able
+same arousal**. They differ almost entirely on `potency`, the sense of being able
 to act.
 
 This is why "negative sentiment, high arousal" is not a useful answer: it is true
@@ -36,9 +34,8 @@ from emotion_algebra import dominant
 dominant(anger.blend(fear, 0.5))
 # 'distress'
 ```
-
 Unpleasant, activated, with the sense of control cancelled out. (Libraries that
-treat anger and fear as opposites return **neutrality** here — they average to
+treat anger and fear as opposites return **neutrality** here, they average to
 zero. Blend maximal rage with maximal terror and get *calm*.)
 
 `blend` is a **convex mixture**: `a.blend(b, w)` is `(1-w)·a + w·b`, and it can
@@ -61,7 +58,6 @@ label(mixed, top_k=3)
 entropy(mixed)   # 3.91 bits -- this state sits BETWEEN names, and says so
 dominant(mixed)  # 'distress'  -- the convenient answer, which throws the rest away
 ```
-
 High entropy is not a failure to classify. It is the state genuinely being between
 categories, which is a real thing for a state to do.
 
@@ -78,19 +74,18 @@ dominant_tendency(prototype("sadness"))  # 'withdrawal'  -- give up
 dominant_tendency(prototype("disgust"))  # 'rejection'   -- push it away
 dominant_tendency(prototype("joy"))      # 'affiliation' -- draw close
 ```
-
-> **Trust the direction; prefer the distribution.** "Anger approaches while being
-> unpleasant" is robust — it survives **100%** of perturbations of every guessed
+> **Trust the direction. Prefer the distribution.** "Anger approaches while being
+> unpleasant" is reliable, it survives **100%** of perturbations of every guessed
 > coefficient in the library. But *which* mode wins the argmax is not: `anger →
 > antagonism` holds in only **55%**, `fear → avoidance` in **52%**, because
 > approach and antagonism are neighbouring readings of the same drive. Use
 > `action_readiness()` (the full distribution) when the answer matters, and treat
 > `dominant_tendency()` as the convenience it is. See
-> [the robustness report](evidence.md#robustness).
+> [the reliability report](evidence.md#reliability).
 
 
-Anger is **unpleasant and approach-motivated** — which breaks every "negative =
-avoid" model. Sadness and fear are both unpleasant and both low-control; what
+Anger is **unpleasant and approach-motivated**, which breaks every "negative =
+avoid" model. Sadness and fear are both unpleasant and both low-control. What
 separates them is *certainty*. Fear is an uncertain threat you can't handle, so
 you run. Grief is a certain loss you can't handle, so you stop.
 
@@ -107,18 +102,17 @@ angry, afraid = affect_from_texts([
 angry.valence,  angry.potency    # -0.43, +0.16  -> 'annoyance'
 afraid.valence, afraid.potency   # -0.47, -0.43  -> 'apprehension'
 ```
-
-Near-identical valence. **Opposite potency.** One will escalate; one will quietly
+Near-identical valence. **Opposite potency.** One will escalate. One will quietly
 disappear.
 
 > Held-out scores: valence **r=0.42**, arousal **r=0.35**. **Emoji tell you how
-> someone feels; punctuation tells you how loudly** — the probe reads emoji *and*
+> someone feels. Punctuation tells you how loudly**, the probe reads emoji *and*
 > typographic cues (`!!!`, CAPS, `sooo`), because emphasis is what carries
 > arousal. See [text & emoji](text_emoji.md).
 
 ## 6. Go from an event to an emotion
 
-Emotions aren't caused by events; they're caused by your **appraisal** of events.
+Emotions aren't caused by events. They're caused by your **appraisal** of events.
 
 ```python
 from emotion_algebra import Appraisal, dominant
@@ -131,9 +125,8 @@ flight = Appraisal(goal_relevance=0.9, goal_congruence=0.0, coping_potential=0.1
 dominant(appraisal_to_affect(fight))    # 'rage'
 dominant(appraisal_to_affect(flight))   # 'fear'
 ```
-
-Two of the core's axes *are* appraisal checks — `potency` **is** coping potential,
-`unpredictability` **is** novelty — so most of that mapping is an identity, not a
+Two of the core's axes *are* appraisal checks, `potency` **is** coping potential,
+`unpredictability` **is** novelty, so most of that mapping is an identity, not a
 fit. See [appraisal](appraisal.md).
 
 ## 7. Give an agent a mood
@@ -153,9 +146,8 @@ calmer = relax(prototype("terror"), dt=900, half_life=300)
 drive(prototype("terror"))    # what must change to get home again
 # {'negativity': -0.51, 'potency': +1.05, 'arousal': -0.47, ...}
 ```
-
 `drive()` is the restoring force. **A need deficit *is* a displacement from the
-set point.** That's the whole pattern for a needs-driven agent — see
+set point.** That's the whole pattern for a needs-driven agent, see
 [building an agent](agents.md).
 
 ## 8. Talk to your other tools
@@ -170,7 +162,6 @@ print(explain_loss("circumplex", "core"))
 # potency and unpredictability. This is why the circumplex cannot tell
 # anger from fear: they differ on potency, and it has no potency axis.
 ```
-
 Every model converts to every other, and every conversion tells you what it
 destroys. See [interop](interop.md).
 
@@ -186,7 +177,6 @@ evidence.grade_of("plutchik.antipodal")  # Grade.METAPHOR
 
 print(evidence.report())                 # the whole table, with citations
 ```
-
 See [evidence](evidence.md).
 
 ---
@@ -197,3 +187,6 @@ See [evidence](evidence.md).
 - Want to know *why* these axes → **[the model](theory.md)**
 - Want the formal algebra → **[the laws](core-laws.md)**
 - Came here for `joy + trust == love` → **[the models](models.md)**
+
+---
+[Home](index.md) · [The model →](theory.md)

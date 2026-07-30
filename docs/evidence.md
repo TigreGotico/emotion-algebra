@@ -17,19 +17,18 @@ print(evidence.report())                 # the whole table, with citations
 
 evidence.get("lovheim.cube").citable     # False
 ```
-
 ## The grades
 
 | Grade | Meaning |
 | --- | --- |
 | `ESTABLISHED` | Replicated, cross-cultural, and/or meta-analytic. Safe to build on. |
 | `SUPPORTED` | Good primary evidence, but thin or same-group replication. |
-| `CONTESTED` | A live scientific conflict. **Both readings are implemented**; the library does not pick a winner. |
-| `SPECULATIVE` | Proposed, plausible, never empirically tested. Usable — but it may not be cited as evidence for anything. |
+| `CONTESTED` | A live scientific conflict. **Both readings are implemented**. The library does not pick a winner. |
+| `SPECULATIVE` | Proposed, plausible, never empirically tested. Usable, but it may not be cited as evidence for anything. |
 | `METAPHOR` | A design device. Either empirically disconfirmed, or never intended as an empirical claim. Often still the most convenient way to *talk* about emotion, which is why it ships. |
 
 A grade is **not** a judgement of usefulness. Plutchik's wheel is graded
-`METAPHOR` and is extremely useful — as a vocabulary. The grade says what the
+`METAPHOR` and is extremely useful, as a vocabulary. The grade says what the
 evidence supports, not what the construct is good for.
 
 `ESTABLISHED` and `SUPPORTED` are `CITABLE`. The rest are not.
@@ -38,54 +37,51 @@ evidence supports, not what the construct is good for.
 
 **`ESTABLISHED`**
 
-- **The circumplex** (Russell 1980; Watson & Tellegen 1985). Valence × arousal is
-  the best-replicated structure in affective science — it recurs across
+- **The circumplex** (Russell 1980, Watson & Tellegen 1985). Valence × arousal is
+  the best-replicated structure in affective science. It recurs across
   self-report, similarity ratings, languages and cultures.
-- **Control separates anger from fear** (Smith & Ellsworth 1985; Roseman 1996;
-  Scherer's SECs; Lerner & Keltner 2001). Four independent programmes converge.
-  Lerner & Keltner show control *mediates* the divergent risk judgements — causal,
-  not correlational.
-- **Discrete emotions have no consistent signature** (Lindquist et al. 2012;
-  Siegel et al. 2018). Two meta-analyses, different modalities (neuroimaging;
-  autonomic physiology), the same null. This is why emotion names are a **readout**
+- **Control separates anger from fear** (Smith & Ellsworth 1985, Roseman 1996,
+  Scherer's SECs, Lerner & Keltner 2001). Four independent programmes converge.
+  Lerner & Keltner show control *mediates* the divergent risk judgements. That is
+  causal, not correlational.
+- **Discrete emotions have no consistent signature** (Lindquist et al. 2012,
+  Siegel et al. 2018). Two meta-analyses, different modalities (neuroimaging, autonomic physiology), the same null. This is why emotion names are a **readout**
   in this library, never a basis.
 - **Dopamine encodes reward-prediction error** (Schultz, Dayan & Montague 1997).
-  Note it tracks *wanting*, not *liking* — conflating the two is the classic error.
+  Note it tracks *wanting*, not *liking*. Conflating the two is the classic error.
 - **Noradrenaline signals arousal and unexpected uncertainty** (Aston-Jones &
-  Cohen 2005; Yu & Dayan 2005).
+  Cohen 2005, Yu & Dayan 2005).
 
 **`SUPPORTED`**
 
-- **The GRID four dimensions** (Fontaine, Scherer, Roesch & Ellsworth 2007) —
-  valence, potency, arousal, unpredictability, from 144 componential features
+- **The GRID four dimensions** (Fontaine, Scherer, Roesch & Ellsworth 2007), valence, potency, arousal, unpredictability, from 144 componential features
   across cultures. A 2-D solution was statistically insufficient. Partially
-  self-replicated by the same group; no fully independent replication located,
+  self-replicated by the same group. No fully independent replication located,
   hence `SUPPORTED` rather than `ESTABLISHED`.
-- **Action readiness** (Frijda 1986; Frijda, Kuipers & ter Schure 1989) — and it is
+- **Action readiness** (Frijda 1986, Frijda, Kuipers & ter Schure 1989), and it is
   *predicted by* appraisal, which is why this library derives it rather than
   treating it as an independent axis.
 - **Anger is approach-motivated** despite negative valence (Carver & Harmon-Jones
   2009). This breaks any model tying approach to positive valence.
-- **Serotonin, acetylcholine, cortisol** in their computational roles (Doya 2002;
+- **Serotonin, acetylcholine, cortisol** in their computational roles (Doya 2002,
   Yu & Dayan 2005).
-- **PAD's dominance** — weak psychometrics as a general third factor, but it earns
+- **PAD's dominance**, weak psychometrics as a general third factor, but it earns
   its keep precisely where valence and arousal fail: anger vs fear.
 
 ## What is genuinely unresolved
 
-**`CONTESTED` — and both readings ship.**
+**`CONTESTED`, and both readings ship.**
 
 - **Is valence bipolar?** Russell says yes. Cacioppo & Berntson's evaluative space
-  model says positivity and negativity are separable systems that can co-activate —
-  and Larsen, McGraw & Cacioppo (2001) show happiness and sadness *do* co-activate
+  model says positivity and negativity are separable systems that can co-activate, and Larsen, McGraw & Cacioppo (2001) show happiness and sadness *do* co-activate
   in predictably ambivalent situations (graduation day). On an average day, affect
   behaves bipolarly. **Unresolved.** So the core carries separable
   `positivity`/`negativity` channels *and* exposes signed `valence` as their
   difference. You get both.
-- **Panksepp's primary-process systems** — real causal manipulation (stimulation,
+- **Panksepp's primary-process systems**, real causal manipulation (stimulation,
   lesion, pharmacology), but almost entirely in animals. The leap to "the signature
   of a named human emotion" is exactly what Barrett disputes.
-- **Oxytocin and affiliation** — Kosfeld et al. (2005) show it increases trust; De
+- **Oxytocin and affiliation**, Kosfeld et al. (2005) show it increases trust. De
   Dreu et al. (2010) show it can raise out-group derogation. It is **not** a
   "niceness" dial, and modelling it as one would misread the evidence.
 
@@ -93,9 +89,9 @@ evidence supports, not what the construct is good for.
 
 **`SPECULATIVE`**
 
-- **Lövheim's cube.** **Never empirically tested** — no study has measured monoamine
+- **Lövheim's cube.** **Never empirically tested**, no study has measured monoamine
   levels against discrete emotion reports in the same subjects. The venue,
-  *Medical Hypotheses*, did not practise external peer review; an Elsevier panel
+  *Medical Hypotheses*, did not practise external peer review. An Elsevier panel
   found it was publishing "baseless, speculative, non-testable" material and
   removed the editor in 2010. For scale, the far narrower serotonin-*depression*
   hypothesis did not survive umbrella review (Moncrieff et al. 2022), and a
@@ -120,9 +116,9 @@ evidence supports, not what the construct is good for.
 - **Cambria's Hourglass.** Self-described as "a derivative of Plutchik's wheel",
   constructed to compute a polarity score for sentiment analysis. No
   factor-analytic derivation from ratings data. And its own polarity formula takes
-  the **absolute value** of Attention and Sensitivity — a formal admission that
+  the **absolute value** of Attention and Sensitivity, a formal admission that
   those axes are not hedonically bipolar, which contradicts the bipolar geometry
-  the model otherwise assumes. Excellent engineering; not a finding.
+  the model otherwise assumes. Excellent engineering. Not a finding.
 
 ## Provisional findings
 
@@ -130,14 +126,14 @@ Some things this library has measured but does not consider established. They ar
 marked in the code, and they should not be cited.
 
 **Appraised coping is not felt dominance** (`PROVISIONAL`). Our `potency` axis
-means *appraised coping potential* — "can I act on this?", the antecedent
+means *appraised coping potential*, "can I act on this?", the antecedent
 judgement that Smith & Ellsworth and Lerner & Keltner measured. PAD's *dominance*
 means how in-control you feel *while in the grip* of the state. They correlate at
 only **r = 0.46**, and the residuals look systematic: humans rate `rage` as *less*
 dominant than `anger` (being enraged is not being in control), while the appraisal
 literature has rage as the *higher*-coping state.
 
-The direction is stable; the magnitude is not established. It rests on 25 emotion
+The direction is stable. The magnitude is not established. It rests on 25 emotion
 terms, three of which needed hand-picked substitutes for word-sense confounds
 (Warriner's *ecstasy* is the drug). **Do not cite it.**
 
@@ -150,7 +146,6 @@ there:
 print(evidence.get("plutchik.antipodal").cite)
 print(evidence.get("plutchik.antipodal").note)
 ```
-
 Open an issue. This is the part of the library most worth being wrong about in
 public.
 
@@ -170,13 +165,12 @@ from emotion_algebra import provenance
 provenance.of("homeostasis.NEGATIVITY_BIAS").provenance   # Provenance.CALIBRATED
 print(provenance.report())                                # the full audit
 ```
-
 | Provenance | Meaning | Count |
 | --- | --- | --- |
-| `FITTED` | Derived from a dataset; the record names the script that did it | **3** |
+| `FITTED` | Derived from a dataset. The record names the script that did it | **3** |
 | `PUBLISHED` | Copied verbatim from a named table | **0** |
 | `CALIBRATED` | A judgement call, with a stated rationale | **19** |
-| `ASSUMED` | A bare number with no reason — **every one is a bug** | **0** |
+| `ASSUMED` | A bare number with no reason, **every one is a bug** | **0** |
 
 **19 of 22 constants are not backed by data or a publication.** A test enforces
 that a new magic number cannot be added without saying what is behind it.
@@ -185,25 +179,25 @@ that a new magic number cannot be added without saying what is behind it.
 
 Because the data is not obtainable, and we will not fabricate it:
 
-- **GRID per-emotion coordinates** — Fontaine et al. (2007) state in their own
+- **GRID per-emotion coordinates**, Fontaine et al. (2007) state in their own
   footnote 3 that the numbers are *not published in the article* and "can be
   requested from the first author". No open repository has them. Eyeballing their
   Figure 1 would be fabrication.
 - **Smith & Ellsworth (1985)** appraisal table, **Frijda et al. (1989)**
-  action-readiness table — paywalled, 403 everywhere.
+  action-readiness table, paywalled, 403 everywhere.
 
 ## One constant whose usual citation is wrong
 
 `NEGATIVITY_BIAS = 1.5` is easy to justify by pointing at "bad is stronger than
 good" (Baumeister et al. 2001). **That paper is a narrative review and reports no
 ratio.** The familiar "bad counts about twice as much" is Kahneman & Tversky's
-loss-aversion λ ≈ 2.25 — fitted to **monetary gambles**, a different domain, and
+loss-aversion λ ≈ 2.25, fitted to **monetary gambles**, a different domain, and
 never established for affective weighting.
 
 The direction is well-evidenced. The magnitude is ours. The library says so.
 
-<a name="robustness"></a>
-# Robustness — which claims survive if the guesses are wrong?
+<a name="reliability"></a>
+# Robustness, which claims survive if the guesses are wrong?
 
 You cannot validate a constant you have no data for. You **can** measure which of
 your conclusions depend on it.
@@ -243,12 +237,11 @@ and re-derives every claim the library makes.
   - fear -> avoidance  (50%)
   - rest is NOT the origin  (46%)
 ```
-
 ## What this means
 
-**The science is earned.** Every load-bearing claim — anger and fear separating on
+**The science is earned.** Every load-bearing claim, anger and fear separating on
 potency, `rage + terror → distress`, anger approaching while unpleasant, both
-Lerner & Keltner predictions, the neurochemical coping flip — holds in **100%** of
+Lerner & Keltner predictions, the neurochemical coping flip, holds in **100%** of
 perturbations. Those follow from the *structure* of the model, not from any number
 we picked. That is the strongest statement this library can make about itself.
 
@@ -256,13 +249,13 @@ we picked. That is the strongest statement this library can make about itself.
 coefficient-dependent: `anger → antagonism` survives only 55%, `fear → avoidance`
 52%. Approach and antagonism are neighbouring readings of the same drive, and
 which wins the argmax is a matter of coefficients nobody has fitted. **The
-direction is robust; the label is not.** Prefer `action_readiness()` — the full
-distribution — over `dominant_tendency()`.
+direction is reliable. The label is not.** Prefer `action_readiness()`, the full
+distribution, over `dominant_tendency()`.
 
 **And one claim is a genuine artefact.** "The origin is not rest" survives only
 **45%**: it holds *because* we chose a set point further from the origin than the
-rest tolerance. The concept — core affect is always on, and rest is not a blank
-state (Barrett & Bliss-Moreau 2009) — is evidenced. The numerical assertion is
+rest tolerance. The concept, core affect is always on, and rest is not a blank
+state (Barrett & Bliss-Moreau 2009), is evidenced. The numerical assertion is
 not. Both are now labelled as what they are.
 
 # Open gaps
@@ -270,24 +263,25 @@ not. Both are now labelled as what they are.
 Standing, and not currently fixable:
 
 - **Potency and unpredictability are not fitted.** Pending the GRID data.
-- **The text layer is English; Portuguese and Arabic are experimental.** Every
+- **The text layer is English. Portuguese and Arabic are experimental.** Every
   dataset behind it (DeepMoji, GoEmotions, EmoBank, Warriner) is English. The
-  *core* — appraisal → affect → tendency — is language-agnostic; the text layer is
+  *core*, appraisal → affect → tendency, is language-agnostic. The text layer is
   not. A language with no evaluated encoder is
   [refused](text_emoji.md#the-language-boundary) rather than approximated.
 
-  Where a probe fitted on English is applied zero-shot, the crux test — do anger
-  and fear separate, and do they separate on **potency**? — gives:
+  Where a probe fitted on English is applied zero-shot, the crux test asks two
+  things: do anger and fear separate, and do they separate on **potency**? The
+  results:
 
   | lang | potency *d* | separating axis | verdict |
   |---|---|---|---|
-  | en | +0.77 | potency | — |
+  | en | +0.77 | potency | n/a |
   | pt | +0.46 | potency | transfers |
   | ar | +0.28 | **unpredictability** | **partial** |
 
   **The anger/fear-on-potency claim is NOT established for Arabic.** It is shipped
   with this table beside it, not without one.
-- **No Arabic affective norms exist.** Not "we could not obtain them" — there is
+- **No Arabic affective norms exist.** Not "we could not obtain them", there is
   no human-rated Arabic valence/arousal/dominance lexicon at all. The Arabic
   entries in the widely-used NRC lexicon family are *machine translations* of
   English sentiment scores, which record English raters' judgements, not Arabic
@@ -297,7 +291,10 @@ Standing, and not currently fixable:
   accordingly: GRID supports the four *dimensions* replicating across cultures,
   but not the *per-term positions*.
 - **The distance metric is unvalidated.** No Euclidean-vs-angular comparison
-  against human similarity judgements exists here; Russell's (1980) similarity
+  against human similarity judgements exists here. Russell's (1980) similarity
   matrix was not obtainable.
 - **Ambivalence is representable but never validated** against human mixed-emotion
   reports.
+
+---
+[← The model](theory.md) · [Home](index.md) · [Building an agent →](agents.md)

@@ -1,5 +1,5 @@
 > **Plutchik / Hourglass model.** Operator algebra over Cambria's
-> four signed axes — one of the [models](models.md) this library
+> four signed axes, one of the [models](models.md) this library
 > implements, faithful to the source. See [models](models.md) for how it
 > maps onto the others.
 
@@ -15,7 +15,6 @@ Moving along an axis upgrades or downgrades intensity:
 ```
 annoyance (+1) → anger (+2) → rage (+3) → mega rage (offset 1) → hyper rage (offset ≥3)
 ```
-
 | Operator | Example | Result |
 |----------|---------|--------|
 | `+ int` | `annoyance + 1` | `anger` |
@@ -26,7 +25,7 @@ annoyance (+1) → anger (+2) → rage (+3) → mega rage (offset 1) → hyper r
 | `<< int` | `anger << 1` | `annoyance` |
 | `>> int` | `annoyance >> 1` | `anger` |
 
-## Negation — opposite pole
+## Negation, opposite pole
 
 `-emotion` flips the sign on the same axis, returning the symmetric opposite:
 
@@ -47,7 +46,6 @@ annoyance + annoyance  # flow 1+1 = 2 → anger
 anger + anger          # flow 2+2 = 4 → mega rage (offset 1)
 joy + serenity         # flow 2+1 = 3 → ecstasy
 ```
-
 ## Cross-axis composition
 
 Two emotions on **different** axes produce a `CompositeEmotion`:
@@ -65,9 +63,8 @@ composite.valence         # → 2  (joy's Pleasantness flow)
 composite.arousal         # → 2  (max |flow| across components)
 composite.type            # → "excited positive"
 ```
-
 The result is always a `CompositeEmotion`.  To get a named `Feeling` use
-`Feeling("love")` explicitly — see [feelings.md](feelings.md).
+`Feeling("love")` explicitly, see [feelings.md](feelings.md).
 
 ## `*` operator
 
@@ -83,9 +80,8 @@ rage > anger      # True  (3 > 2)
 anger > annoyance # True  (2 > 1)
 fear < apprehension  # True  (-2 < -1)
 ```
-
 Comparing emotions from different axes is numerically valid but
-psychologically meaningless — use with care.
+psychologically meaningless, use with care.
 
 ## Hyper-intensity
 
@@ -102,9 +98,8 @@ rage + 1    # "mega rage"   (offset=1)
 rage + 2    # "extreme rage" (offset=2)
 rage + 3    # "hyper rage"  (offset=3)
 ```
-
 An in-range arithmetic result (e.g. `annoyance + 1 == anger`, `|flow| <= 3`)
-always carries `intensity_offset == 0` — only flow magnitudes beyond 3 are
+always carries `intensity_offset == 0`, only flow magnitudes beyond 3 are
 "hyper".
 
 ## `<<` / `>>` are exact inverses
@@ -114,17 +109,18 @@ Both operators accept an `int` or another same-dimension `Emotion`:
 ```python
 (anger >> annoyance) << annoyance == anger  # True, for any operand type
 ```
-
-`>>` raises intensity (`self.flow + other.flow`); `<<` lowers it
-(`self.flow - other.flow`) — the same convention for both `int` and
+`>>` raises intensity (`self.flow + other.flow`). `<<` lowers it
+(`self.flow - other.flow`), the same convention for both `int` and
 `Emotion` operands.
 
 ## Composite-emotion arithmetic returns typed results
 
 Every operator on `CompositeEmotion` returns another member of the algebra
-(`Emotion`, `CompositeEmotion`, `FloatEmotion`, or `Neutrality`) — never a
+(`Emotion`, `CompositeEmotion`, `FloatEmotion`, or `Neutrality`), never a
 bare `numpy.ndarray`. In particular `CompositeEmotion * Emotion` computes the
 2×2 matrix product of the two `as_matrix` representations and projects the
 flattened result back into a `FloatEmotion` via
 `FloatEmotion.from_embedding`, rather than returning the raw matrix.
 ```
+---
+[← Feelings](feelings.md) · [Home](index.md) · [Hourglass laws →](laws.md)

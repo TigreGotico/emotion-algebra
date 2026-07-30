@@ -3,8 +3,7 @@
 
 # Feelings
 
-A `Feeling` is a **named cultural label** for a multi-axis emotional state —
-Plutchik's primary dyads and extensions.
+A `Feeling` is a **named cultural label** for a multi-axis emotional state, Plutchik's primary dyads and extensions.
 
 ## Feeling vs CompositeEmotion
 
@@ -19,6 +18,8 @@ The `+` operator always returns `CompositeEmotion`.  `Feeling` is constructed
 explicitly.
 
 ## Named dyads (selection)
+
+Each dyad below names a specific pair of adjacent emotions. The list is a selection, not the full set.
 
 | Expression | Feeling name |
 |------------|-------------|
@@ -45,8 +46,9 @@ print(love.valence)  # 2  (joy's Pleasantness +2)
 print(love.arousal)  # 2  (max |flow| across components)
 print(love.type)     # "excited positive"
 ```
-
 ## Feeling properties
+
+Each `Feeling` exposes the same core properties as an `Emotion`, computed from its component emotions.
 
 | Property | Definition |
 |----------|-----------|
@@ -66,3 +68,5 @@ from emotion_algebra.feelings import FEELINGS, OPPOSITE_FEELINGS_NAMES
 print(OPPOSITE_FEELINGS_NAMES["love"])       # "remorse"
 print(OPPOSITE_FEELINGS_NAMES["optimism"])   # "disapproval"
 ```
+---
+[← Emotion taxonomy](taxonomy.md) · [Home](index.md) · [Emotion algebra →](algebra.md)

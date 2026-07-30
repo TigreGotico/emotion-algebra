@@ -1,7 +1,6 @@
 # The models
 
-This library does not implement *an* emotion model. It implements **several** —
-each faithfully, to its own author's specification — grades them by evidence, and
+This library does not implement *an* emotion model. It implements **several**, each faithfully, to its own author's specification, grades them by evidence, and
 maps between them.
 
 That is the point. Affective science does not agree with itself, and a library
@@ -15,7 +14,6 @@ from emotion_algebra import conversion_views, convert, fidelity, explain_loss
 conversion_views()
 # ['core', 'circumplex', 'hourglass', 'lovheim', 'neuro', 'pad', 'plutchik']
 ```
-
 ## The catalogue
 
 | Model | Author | Grade | Reach for it when… |
@@ -26,10 +24,10 @@ conversion_views()
 | **[Plutchik's wheel](taxonomy.md)** | Plutchik (1980) | `METAPHOR` | you want a *vocabulary*: 24 named emotions, 40 dyads, intensity ladders. |
 | **[Hourglass](algebra.md)** | Cambria, Livingstone & Hussain (2012) | `METAPHOR` | you need SenticNet interop or a signed-integer lattice. |
 | **[Lövheim's cube](lovheim.md)** | Lövheim (2012) | `SPECULATIVE` | something downstream speaks his three monoamines. |
-| **[Neuromodulators](neurochemistry.md)** | Schultz; Doya; Yu & Dayan | `SUPPORTED` | your agent needs learning rates, exploration, drives. |
+| **[Neuromodulators](neurochemistry.md)** | Schultz. Doya. Yu & Dayan | `SUPPORTED` | your agent needs learning rates, exploration, drives. |
 
 **A grade is not a verdict on usefulness.** Plutchik's wheel is graded `METAPHOR`
-and is the most useful *vocabulary* in the field — it simply is not a finding about
+and is the most useful *vocabulary* in the field, it simply is not a finding about
 the structure of emotion. Use the right tool, knowing what it is.
 
 Full grade table with citations: [evidence](evidence.md).
@@ -44,9 +42,8 @@ instead of N².
    Plutchik ──┼──►  AFFECT CORE  ◄─┼─ circumplex
    Lövheim ───┘                    └─ NeuroState
 ```
-
 The core got the job for two reasons: it is the best-evidenced, and it is the most
-**expressive**. It is the only model here with a *potency* axis — and without
+**expressive**. It is the only model here with a *potency* axis, and without
 potency you cannot represent the difference between anger and fear at all. A hub
 that lacked it would silently destroy that distinction on every conversion passing
 through.
@@ -63,11 +60,10 @@ print(explain_loss("circumplex", "core"))
 # potency and unpredictability. This is why the circumplex cannot tell
 # anger from fear: they differ on potency, and it has no potency axis.
 ```
-
 | Fidelity | Meaning |
 | --- | --- |
 | `EXACT` | Bijective on its subspace. |
-| `LOSSY` | Information provably discarded — and `explain_loss` names it. |
+| `LOSSY` | Information provably discarded, and `explain_loss` names it. |
 | `HEURISTIC` | Calibrated, not derived. The numbers are a judgement call. |
 
 A conversion that loses information is fine. One that loses it **silently** is not.
@@ -88,7 +84,6 @@ anger - 1                                   # annoyance   (intensity down)
 
 get_feeling_from_emotions("joy", "trust")   # 'love'      (the named dyad)
 ```
-
 **Know what you are getting.** `-anger == fear` is *Plutchik's claim*, implemented
 faithfully. It is also the claim Smith & Schneider (2009) tested across more than
 2,000 statistical tests and found unsupported: anger and fear are **neighbours**,
@@ -100,11 +95,10 @@ no `__neg__` for exactly this reason.
 
 ### Name collisions
 
-Ten names — `love`, `optimism`, `awe`, `contempt`, `remorse`, and five more — are
-claimed by **both** dyad lineages. A `Feeling` is a Plutchik dyad (two *primaries*);
-a `CompositeEmotion` is an Hourglass compound (the same pairing at maximum
+Ten names, `love`, `optimism`, `awe`, `contempt`, `remorse`, and five more, are
+claimed by **both** dyad lineages. A `Feeling` is a Plutchik dyad (two *primaries*). A `CompositeEmotion` is an Hourglass compound (the same pairing at maximum
 intensity). So `love` is `joy + trust` as a Feeling but `ecstasy + admiration` as a
-CompositeEmotion — the same dyad, a very different intensity.
+CompositeEmotion, the same dyad, a very different intensity.
 
 `resolve()` is the sanctioned lookup, and its preference is explicit rather than an
 accident of import order:
@@ -117,19 +111,17 @@ describe_collision("love")
 # {'name': 'love', 'feeling': ['joy', 'trust'],
 #  'composite': ['ecstasy', 'admiration']}
 ```
-
 Every collision's resolution is locked by a test, so the answer cannot drift.
 
 ## The Hourglass
 
-Four signed axes — Sensitivity, Attention, Pleasantness, Aptitude — each `[-3, 3]`,
+Four signed axes, Sensitivity, Attention, Pleasantness, Aptitude, each `[-3, 3]`,
 with Cambria's published polarity formula:
 
 ```
 polarity = (P + |At| − |S| + Ap) / 3
 ```
-
-Implemented as published, **including the `abs()` terms** — which are worth
+Implemented as published, **including the `abs()` terms**, which are worth
 understanding before you rely on the model.
 
 `−|S|` means **both poles of Sensitivity reduce polarity**: anger and fear alike.
@@ -141,7 +133,6 @@ concrete:
 ```
 (rage + terror) / 2  ==  [0, 0, 0, 0]   ->  neutrality
 ```
-
 Blend the two most intense negative states and the Hourglass reports **calm**.
 
 This is why `hourglass → core` is graded `HEURISTIC`: Sensitivity conflates negative
@@ -153,7 +144,7 @@ Do not reach for it to decide whether someone is angry or afraid.
 
 ## Lövheim's cube
 
-Three monoamines; eight Tomkins affects at the corners. Implemented faithfully,
+Three monoamines. Eight Tomkins affects at the corners. Implemented faithfully,
 graded `SPECULATIVE`.
 
 ```python
@@ -161,9 +152,8 @@ from emotion_algebra import convert, prototype
 
 convert(prototype("rage"), "core", "lovheim")   # -> LovheimPoint
 ```
-
 Never empirically tested, and published in a venue that did not practise external
-peer review. It is here because things downstream speak his three monoamines — and
+peer review. It is here because things downstream speak his three monoamines, and
 letting them interoperate without endorsing the model is precisely what a
 multi-model library is for.
 
@@ -184,6 +174,8 @@ register_view(
     loses="what your model cannot represent",   # required unless EXACT
 )
 ```
-
 A lossy view that does not declare its loss raises `ValueError`. That is deliberate,
 and it is the one rule this library will not bend.
+
+---
+[← Text & emoji](text_emoji.md) · [Home](index.md) · [Emotion taxonomy →](taxonomy.md)

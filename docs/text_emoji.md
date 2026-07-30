@@ -15,17 +15,16 @@ angry, afraid = affect_from_texts([
 angry.valence,  angry.potency    # -0.43, +0.16   -> 'annoyance'
 afraid.valence, afraid.potency   # -0.47, -0.43   -> 'apprehension'
 ```
-
-Near-identical valence. **Opposite potency.** One user will escalate; the other
+Near-identical valence. **Opposite potency.** One user will escalate. The other
 will quietly leave.
 
-Batch with `affect_from_texts` — the forward pass dominates the cost, so one call
+Batch with `affect_from_texts`, the forward pass dominates the cost, so one call
 with a hundred strings is far cheaper than a hundred calls.
 
 ## How it works
 
 **DeepMoji** (Felbo et al. 2017) was trained on **1.2 billion tweets** to predict
-which emoji a message carried. It has no theory of emotion at all — which is
+which emoji a message carried. It has no theory of emotion at all, which is
 exactly why it is worth listening to. It is a representation of how people
 *actually write* when they feel things.
 
@@ -41,10 +40,9 @@ from emotion_algebra import affect_from_features
 # If you already have DeepMoji features, skip the encoder entirely.
 affect_from_features(features)      # (n, 64) -> list[AffectState]
 ```
-
 ## What it is good at, and what it is not
 
-Measured on **EmoBank** (Buechel & Hahn 2017), held out — a different corpus, at
+Measured on **EmoBank** (Buechel & Hahn 2017), held out, a different corpus, at
 sentence level, never seen during fitting.
 
 | axis | held-out correlation |
@@ -56,18 +54,18 @@ sentence level, never seen during fitting.
 ### Emoji tell you how someone feels. Punctuation tells you how loudly.
 
 Arousal is the interesting one. A probe built on the **emoji distribution alone**
-scores +0.16. Eight **typographic cues** — exclamation density, capitals ratio,
-stretched vowels (`sooo`), length, ellipses, intensifiers — score **+0.32 on their
+scores +0.16. Eight **typographic cues**, exclamation density, capitals ratio,
+stretched vowels (`sooo`), length, ellipses, intensifiers, score **+0.32 on their
 own**, twice as well. Together they reach +0.35.
 
-Emoji encode hedonic tone; **emphasis encodes activation**. SHOUTING is arousal.
+Emoji encode hedonic tone. **emphasis encodes activation**. SHOUTING is arousal.
 
 So the probe gets both, and the typographic rows are wired to arousal and nothing
-else — letting them touch valence measurably degraded it.
+else, letting them touch valence measurably degraded it.
 
 One subtlety worth knowing about: DeepMoji reads `!` as *excitement*, and
 excitement looks positive to it. Left alone, both *"this is wonderful!!!"* and
-*"this is unacceptable!!!"* drift toward **neutral valence** — nonsense in one
+*"this is unacceptable!!!"* drift toward **neutral valence**, nonsense in one
 direction and dangerously wrong in the other. So the encoder is shown the text
 with emphasis stripped, while the typographic cues see it intact:
 
@@ -76,7 +74,6 @@ affect_from_text("this is wonderful")             # arousal 0.52, valence +0.56
 affect_from_text("this is wonderful!!!")          # arousal 0.95, valence +0.56
 affect_from_text("THIS IS COMPLETELY UNACCEPTABLE!!!")   # arousal 0.90, valence -0.51
 ```
-
 Emphasis changes how *loud* something is. It does not change whether it is good or
 bad. That is now true of the model as well as of people.
 
@@ -92,16 +89,15 @@ from emotion_algebra import from_emoji, score_emojis, EMOJI_EMOTION_MAP
 from_emoji("😡")
 score_emojis("shipping today 🎉🎉")
 ```
-
 A direct emoji→emotion map, extensible with `register_emoji`. Note that
-`affect_from_text` already handles emoji well — DeepMoji was trained on exactly
-this signal — so reach for the map when you want an explicit, auditable lookup
+`affect_from_text` already handles emoji well, DeepMoji was trained on exactly
+this signal, so reach for the map when you want an explicit, auditable lookup
 rather than a learned one.
 
 ## Why there is no word lexicon
 
 There used to be one. It mapped **`terrified` to positive sentiment**, `happy` to
-*anticipation*, and `miserable` to *anger* — and on *"I'm scared I've broken
+*anticipation*, and `miserable` to *anger*, and on *"I'm scared I've broken
 something"* it fired on **`broken` → anger**, reporting an angry, approach-motivated
 user. The exact opposite of the truth.
 
@@ -118,26 +114,25 @@ That refusal is deliberate, and it is worth being precise about why, because
 "unsupported" usually means *degraded* and here it means something worse.
 
 DeepMoji was trained on English tweets. The eight typographic cues around it are
-English orthography — `?` is the question mark, capital letters are shouting,
+English orthography, `?` is the question mark, capital letters are shouting,
 `([a-z])\1{2,}` is a stretched word, and *very / really / totally* are the
 intensifiers. Give that pipeline a sentence of Arabic and none of it holds:
 
 | cue | on Arabic |
 |---|---|
 | `?` count | Arabic asks questions with **`؟`** (U+061F). Reads **0.0 on every Arabic question ever written.** |
-| CAPS ratio | Arabic is **caseless**. Not "rarely capitalised" — the category does not exist. Reads **0.0 forever.** |
+| CAPS ratio | Arabic is **caseless**. Not "rarely capitalised", the category does not exist. Reads **0.0 forever.** |
 | `([a-z])\1{2,}` | Matches **no Arabic at all.** |
 | intensifier list | Contains **no Arabic words.** |
 
-And the emphasis-stripping guard — the thing that stops `!` being read as
-excitement and quietly neutralising the valence of *"this is unacceptable!!!"* —
-is an ASCII regex. On Arabic it matches nothing, so the guard silently does
+And the emphasis-stripping guard, the thing that stops `!` being read as
+excitement and quietly neutralising the valence of *"this is unacceptable!!!"*, is an ASCII regex. On Arabic it matches nothing, so the guard silently does
 nothing and the bug it exists to prevent comes straight back.
 
 **None of this raises.** It returns an `AffectState`: five plausible floats, with
 no indication that four of the eight arousal cues were structurally dead and the
 encoder was reading a language it has never seen. An affect reading is consumed
-as *evidence* by everything downstream of it — the tendency it implies, the drive
+as *evidence* by everything downstream of it, the tendency it implies, the drive
 it creates, the reply it shapes. A wrong one does not degrade that decision, it
 corrupts it, silently, forever.
 
@@ -146,25 +141,24 @@ So the text layer refuses. **A confident wrong number is worse than no number.**
 ### What is *not* refused
 
 Only the `text → AffectState` arrow is language-bound. Everything else in the
-library — appraisal, tendency, homeostasis, the neuromodulator readout, blending,
-the distance metric — operates on five floats and has never seen a word. If you
+library, appraisal, tendency, homeostasis, the neuromodulator readout, blending,
+the distance metric, operates on five floats and has never seen a word. If you
 can produce an `AffectState` for Portuguese or Arabic by some other means, the
 entire rest of the library works on it unchanged.
 
 ### Language profiles
 
 `emotion_algebra.lang` describes what each language's typography actually *does*.
-The eight features are defined as **functional channels** — emphasis,
-questioning, shouting, elongation, length, trailing-off, intensification — and
+The eight features are defined as **functional channels**, emphasis,
+questioning, shouting, elongation, length, trailing-off, intensification, and
 each `LanguageProfile` says how its language realises them.
 
 ```python
 from emotion_algebra import typographic_features, CHANNELS
 
 features, available = typographic_features("لماذا؟؟", lang="ar")
-features[CHANNELS.index("questioning")]   # 0.4 — read with Arabic's eyes
+features[CHANNELS.index("questioning")]   # 0.4, read with Arabic's eyes
 ```
-
 The interesting case is shouting. Arabic cannot capitalise, but Arabic writers do
 stretch words for emphasis with the **kashida** (tatweel, U+0640): `مرحبـــــا` is
 the written equivalent of raising your voice. Same channel, same feature index,
@@ -172,22 +166,20 @@ different orthography.
 
 Where a language realises a channel with *nothing at all*, the profile says so,
 and `typographic_features` returns an **availability mask** alongside the values.
-A missing channel is then a known absence rather than a silent zero — which is
+A missing channel is then a known absence rather than a silent zero, which is
 the difference between *missing data* and *evidence of calm*, and they are not
 the same thing.
 
-## Portuguese and Arabic — experimental
+## Portuguese and Arabic, experimental
 
 ```bash
 pip install emotion-algebra[multilingual]
 ```
-
 ```python
 from emotion_algebra import affect_from_text
 
 affect_from_text("Não sei se estou a fazer isto bem", lang="pt")
 ```
-
 English still goes through DeepMoji, unchanged. Portuguese and Arabic go through
 `paraphrase-multilingual-MiniLM-L12-v2` (Apache-2.0), and **the probe behind them
 was fitted on English gold and has never seen a word of either language.**
@@ -234,7 +226,7 @@ would be dishonest to ship it as though it were.
 
 Two caveats, and they cut in opposite directions. The XED labels for *both*
 languages are **projected** across subtitle alignments rather than
-human-annotated, so this is weak gold — and the Portuguese is *Brazilian*. And
+human-annotated, so this is weak gold, and the Portuguese is *Brazilian*. And
 the Arabic text carries visible tokenisation damage (words run together:
 `أنيكبيرجداًفيالسن`), which plausibly depresses the Arabic result rather than
 reflecting a true failure of transfer. It is a lead, not an excuse.
@@ -256,7 +248,7 @@ GRID supports the four *dimensions* replicating across cultures, but not the
 
 ### A note on the encoder
 
-On English — the one language with real gold — the multilingual encoder scores
+On English, the one language with real gold, the multilingual encoder scores
 **+0.56 valence / +0.50 arousal** against DeepMoji's **+0.42 / +0.35**, on the
 same held-out EmoBank split. It is, on that measure, the better English encoder.
 
@@ -279,12 +271,11 @@ dominant(mixed, lang="en")   # 'distress'
 dominant(mixed, lang="pt")   # 'angústia'
 dominant(mixed, lang="ar")   # 'كرب'
 ```
-
 **This translates names. It does not translate coordinates**, and the distinction
 is the whole point.
 
 `raiva` returns the same point in the core as `anger` because this library
-*assumes* it is the same point — not because it has checked. It cannot check.
+*assumes* it is the same point, not because it has checked. It cannot check.
 There is no human-rated Arabic affective lexicon to check against, and the open
 Portuguese norms are Brazilian. So `prototypes.cross_lingual_transfer` is graded
 `CONTESTED`, and a translated label is a **label**, never a finding about
@@ -301,12 +292,15 @@ The library's founding example, in Arabic:
 | *"I'm scared I've broken something"* | **−0.488** | `خوف` (fear) |
 | *"third time your app has lost my work"* | **+0.005** | `قبول` (acceptance) |
 
-The **ordering is right** — the complaint sits above the goodbye on potency, which
+The **ordering is right**, the complaint sits above the goodbye on potency, which
 is the property everything downstream depends on. But the Arabic complaint's
 potency never climbs high enough to reach *anger*, so it lands on the wrong label.
 
 That is exactly the attenuation the evaluation measured (`d = +0.28` for Arabic,
-against `+0.46` for Portuguese). **The direction survives the crossing; the
+against `+0.46` for Portuguese). **The direction survives the crossing. The
 calibration does not.** It is written down here rather than smoothed over, because
 a user who trusts an Arabic label without knowing this would be trusting something
 the evidence does not support.
+
+---
+[← Valence & arousal](valence_arousal.md) · [Home](index.md) · [The models →](models.md)
