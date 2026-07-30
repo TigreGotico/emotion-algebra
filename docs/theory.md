@@ -13,13 +13,12 @@ Ask the Hourglass axes what the average of maximal rage and maximal terror is:
 ```
 (rage + terror) / 2  ==  [0, 0, 0, 0]   ->  neutrality
 ```
-
 Blend the two most intense negative states a person can have, and get **calm**.
 
 That is not a rounding error. It follows necessarily from putting anger and fear
-at opposite ends of one signed axis — and they are **not opposites**. Four
-independent research programmes (Smith & Ellsworth 1985; Roseman 1996; Scherer's
-SECs; Lerner & Keltner 2001, with *causal mediation*) find that anger and fear
+at opposite ends of one signed axis, and they are **not opposites**. Four
+independent research programmes (Smith & Ellsworth 1985, Roseman 1996, Scherer's
+SECs, Lerner & Keltner 2001, with *causal mediation*) find that anger and fear
 are both unpleasant, both highly aroused, and separated by **control / coping
 potential**. They are neighbours.
 
@@ -27,7 +26,7 @@ Two more symptoms of the same mistake:
 
 - The Hourglass's own polarity formula is `(P + |At| − |S| + Ap) / 3`. Those
   absolute values are an **admission**: both poles of Sensitivity are
-  unpleasant, so the axis is not hedonically bipolar — which contradicts the
+  unpleasant, so the axis is not hedonically bipolar, which contradicts the
   bipolar geometry the model otherwise assumes.
 - PAD's Dominance had to be *reconstructed by fitted regression*, because
   collapsing anger and fear onto one axis had thrown the dimension away.
@@ -36,14 +35,14 @@ And the audit itself:
 
 | Model | Grade | Why |
 |---|---|---|
-| Russell's circumplex | `ESTABLISHED` | Best-replicated structure in affective science; cross-cultural, cross-modal |
-| Control separates anger/fear | `ESTABLISHED` | Four programmes converge; Lerner & Keltner show causal mediation |
+| Russell's circumplex | `ESTABLISHED` | Best-replicated structure in affective science. Cross-cultural, cross-modal |
+| Control separates anger/fear | `ESTABLISHED` | Four programmes converge. Lerner & Keltner show causal mediation |
 | No discrete-emotion signatures | `ESTABLISHED` | Lindquist (2012) + Siegel (2018): two meta-analyses, two modalities, same null |
 | Fontaine's GRID (4-D) | `SUPPORTED` | Derived from 144 componential features across cultures |
-| Valence bipolarity | `CONTESTED` | Happy and sad **co-activate** (Larsen 2001). Unresolved — both readings shipped |
+| Valence bipolarity | `CONTESTED` | Happy and sad **co-activate** (Larsen 2001). Unresolved, both readings shipped |
 | Lövheim's cube | `SPECULATIVE` | **Never tested.** Venue did not practise external peer review |
 | Plutchik's antipodal wheel | `METAPHOR` | Smith & Schneider (2009), >2,000 tests: *"no empirical support"* |
-| Cambria's Hourglass | `METAPHOR` | Self-described derivative of the wheel; built for sentiment engineering |
+| Cambria's Hourglass | `METAPHOR` | Self-described derivative of the wheel. Built for sentiment engineering |
 
 Ask the library yourself:
 
@@ -51,23 +50,21 @@ Ask the library yourself:
 from emotion_algebra import evidence
 print(evidence.report())
 ```
-
 ## The core
 
 Fontaine, Scherer, Roesch & Ellsworth (2007), *The world of emotions is not
 two-dimensional*, derived four dimensions empirically and cross-culturally.
-That is the core — with one refinement.
+That is the core, with one refinement.
 
 ```python
 AffectState(
     positivity,        # [0, 1]   separable hedonic channels...
     negativity,        # [0, 1]   ...so bittersweet is representable
-    potency,           # [-1, 1]  control/coping — THE anger/fear axis
+    potency,           # [-1, 1]  control/coping, THE anger/fear axis
     arousal,           # [0, 1]
     unpredictability,  # [0, 1]
 )
 ```
-
 `valence = positivity − negativity` is available as an exact projection, and
 `ambivalence = min(positivity, negativity)` is what a signed axis destroys.
 
@@ -79,33 +76,32 @@ Now the crux case comes out right:
 >>> dominant(anger.blend(fear, 0.5))
 'distress'                       # not 'neutrality'
 ```
-
 ## It is not a vector space
 
 There is no `__neg__`, no `__sub__`, no `__mul__`.
 
-Sadness is **not** "minus joy". It has its own action readiness — withdraw,
-help-seek — which is not "negative approach". The supported operations are
+Sadness is **not** "minus joy". It has its own action readiness, withdraw,
+help-seek, which is not "negative approach". The supported operations are
 **convex mixture**, **intensification** (a positive scalar), **decay**
 (contraction toward the set point) and **distance**: a convex cone with a metric.
 
 It is not polar or conical either. Plutchik's cone needs a constant-radius circle
-to separate quality (angle) from intensity (radius) — and the affect circumplex
+to separate quality (angle) from intensity (radius), and the affect circumplex
 is an **ellipse**, not a circle (Stanisławski, Cieciuch & Strus 2021). The cone
 dies with the wheel.
 
 ## Neutrality is not the origin
 
 **"Lack of emotion" is not a state.** Core affect is always on (Barrett &
-Bliss-Moreau 2009) — you are never without valence and arousal, any more than you
+Bliss-Moreau 2009), you are never without valence and arousal, any more than you
 are without a body temperature. The coordinate origin is a *mathematical
 reference that nothing occupies.*
 
 What an organism falls toward is a **set point**, and it is not at zero:
 
-- **positivity offset** — at rest, positivity slightly exceeds negativity. This
+- **positivity offset**, at rest, positivity slightly exceeds negativity. This
   is why an organism at rest *explores* instead of freezing.
-- **negativity bias** — negativity, once engaged, rises more steeply.
+- **negativity bias**, negativity, once engaged, rises more steeply.
   "Bad is stronger than good" (Baumeister et al. 2001).
 
 ```python
@@ -114,24 +110,22 @@ False
 >>> at_rest(SET_POINT)   # this is
 True
 ```
-
 Which gives the dynamical system an agent actually needs:
 
 | layer | what it is | timescale |
 |---|---|---|
-| **emotion** | the current displacement | seconds–minutes |
-| **mood** | a slow-moving estimate | hours–days |
+| **emotion** | the current displacement | seconds to minutes |
+| **mood** | a slow-moving estimate | hours to days |
 | **temperament** | the constitutional set point (the attractor) | stable, per-agent |
 
 **A need deficit is a displacement from the set point**, and the emotion is the
-felt signal of it. `drive(state)` returns the restoring vector — the thing a
+felt signal of it. `drive(state)` returns the restoring vector, the thing a
 needs-driven agent minimises:
 
 ```python
 >>> relax(prototype("terror"), dt=..., half_life=300)
 terror -> fear -> apprehension -> acceptance     # a recovery trajectory
 ```
-
 ## Names are a readout, not a basis
 
 Lindquist (2012) and Siegel (2018) find no consistent signature for discrete
@@ -142,9 +136,8 @@ gradients**. So the honest answer to "what emotion is this?" is a *distribution*
 >>> label(mid, top_k=3)
 {'distress': 0.81, 'fear': 0.10, 'loathing': 0.10}
 >>> entropy(mid)
-2.98   # it sits between names — and says so
+2.98   # it sits between names, and says so
 ```
-
 `dominant()` is the argmax convenience. It throws away the runners-up, which is
 where the gradient lives.
 
@@ -164,21 +157,21 @@ it.** Arousal tells you whether you will do it now.
 
 ## Neurochemistry, done honestly
 
-Lövheim's error was not "neurochemistry" — it was mapping three monoamines onto
+Lövheim's error was not "neurochemistry", it was mapping three monoamines onto
 eight **emotion names**, a claim nobody knows how to test. Map them to
 **computational roles** instead and you stand on replicated ground:
 
 | modulator | role | drives |
 |---|---|---|
 | dopamine | reward-prediction error, incentive salience, vigor (Schultz 1997) | potency, positivity |
-| noradrenaline | arousal; **unexpected** uncertainty (Yu & Dayan 2005) | arousal, unpredictability |
-| acetylcholine | **expected** uncertainty; attentional precision | unpredictability |
+| noradrenaline | arousal. **unexpected** uncertainty (Yu & Dayan 2005) | arousal, unpredictability |
+| acetylcholine | **expected** uncertainty. Attentional precision | unpredictability |
 | serotonin | patience, inhibition, time-horizon (Doya 2002) | negativity(−), inhibition |
 | cortisol | sustained threat under low coping | negativity, potency(−) |
-| opioids | hedonic *liking* — the pleasure dopamine is not | positivity |
+| opioids | hedonic *liking*, the pleasure dopamine is not | positivity |
 | testosterone | dominance, status seeking | potency |
 
-Those roles land **directly on the core axes** — because both are describing the
+Those roles land **directly on the core axes**, because both are describing the
 same functional dimensions. A mapping to emotion *names* could never show that.
 
 The payoff, in one test:
@@ -188,7 +181,6 @@ The payoff, in one test:
 NeuroState(noradrenaline=.95, cortisol=.95, dopamine=.15).to_affect()   # potency -0.77 -> fear
 NeuroState(noradrenaline=.90, dopamine=.85, testosterone=.9).to_affect() # potency +0.86 -> approach
 ```
-
 Lövheim's three monoamines are a **subset** of these, so his cube stays reachable
 as a coordinate drop. Nothing downstream breaks.
 
@@ -202,8 +194,7 @@ The theories are not mutually consistent, so they are not merged. They are
    Plutchik ──┼──►  AFFECT CORE  ◄─┼─ circumplex
    Lövheim ───┘                    └─ NeuroState
 ```
-
-N models, 2N maps, not N². Every pair is reachable — **always** — and every map
+N models, 2N maps, not N². Every pair is reachable, **always**, and every map
 says what it costs:
 
 ```python
@@ -213,11 +204,13 @@ says what it costs:
 potency and unpredictability. This is why the circumplex cannot tell anger
 from fear: they differ on potency, and it has no potency axis.
 ```
-
 **PAD is now exact on its own axes.** Pleasure *is* valence, Arousal *is* arousal,
 Dominance *is* potency. The fitted weights, the closed-form inverse, and the ~40%
-unreachable region are all gone — they were only ever compensating for an axis the
+unreachable region are all gone, they were only ever compensating for an axis the
 Hourglass had destroyed.
 
 A conversion that loses information is fine. A conversion that loses it
 **silently** is not.
+
+---
+[← Quickstart](quickstart.md) · [Home](index.md) · [Evidence →](evidence.md)

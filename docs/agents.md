@@ -1,7 +1,7 @@
 # Building an agent that feels
 
 This is the page for anyone making something that has to have an emotional life
-over time — a game NPC, a conversational agent, a companion, a simulation.
+over time, a game NPC, a conversational agent, a companion, a simulation.
 
 The short version: **an emotion is a displacement, and a need is the force that
 caused it.**
@@ -12,7 +12,7 @@ caused it.**
 
 Start here, because everything else depends on it.
 
-"No emotion" is not a state anything is ever in. Core affect is always on — you
+"No emotion" is not a state anything is ever in. Core affect is always on, you
 are never without valence and arousal, any more than you are without a body
 temperature. So the coordinate origin is a *mathematical reference that nothing
 occupies*.
@@ -30,21 +30,20 @@ SET_POINT.valence    # +0.15  -- mildly POSITIVE
 SET_POINT.potency    # +0.15  -- mildly in control
 SET_POINT.arousal    #  0.20  -- awake, not activated
 ```
-
 Rest is *mildly pleasant*. That's the **positivity offset**, and it is why a
 creature at rest **explores** instead of freezing. An agent that decays to zero
-is an agent that becomes inert; an agent that decays to the set point is one that
+is an agent that becomes inert. An agent that decays to the set point is one that
 gets curious again.
 
 ## The three timescales
 
 | layer | what it is | timescale |
 | --- | --- | --- |
-| **emotion** | the current displacement | seconds–minutes |
-| **mood** | a slow-moving estimate of where you've been | hours–days |
-| **temperament** | the constitutional set point — the attractor | stable, per-agent |
+| **emotion** | the current displacement | seconds to minutes |
+| **mood** | a slow-moving estimate of where you've been | hours to days |
+| **temperament** | the constitutional set point, the attractor | stable, per-agent |
 
-Emotion relaxes toward mood; mood drifts toward temperament. This is Mehrabian's
+Emotion relaxes toward mood. Mood drifts toward temperament. This is Mehrabian's
 distinction, made mechanical.
 
 ## Emotion decays home, not to nothing
@@ -64,7 +63,6 @@ for dt in (0, 150, 300, 900, 3600):
 # 900   pensiveness   0.23
 # 3600  acceptance    0.00
 ```
-
 That is a **recovery trajectory**, not a switch. The agent passes down through
 fear and apprehension on its way back from terror, gets quietly pensive, and
 finally settles.
@@ -79,7 +77,7 @@ by the Banach fixed-point theorem the set point is its **unique** attractor and
 Here is the pattern.
 
 **A need deficit *is* a displacement from the set point**, and the emotion is the
-felt signal of that displacement. So `drive()` — the vector pointing home — is
+felt signal of that displacement. So `drive()`, the vector pointing home, is
 exactly the quantity a needs-driven agent minimises.
 
 ```python
@@ -94,9 +92,8 @@ drive(prototype("terror"))
 
 drive_magnitude(prototype("terror"))   # 1.80 -- total unmet regulatory demand
 ```
-
 Read that as a to-do list. A terrified agent's single loudest need is **to regain
-control** — and an agent that knows this can *act on it*, which an agent holding
+control**, and an agent that knows this can *act on it*, which an agent holding
 only "negative, aroused" cannot.
 
 ### The loop
@@ -134,7 +131,6 @@ class Agent:
         """What is out of balance, and how badly?"""
         return drive(self.state, self.temperament.set_point)
 ```
-
 That's the whole architecture:
 
 ```
@@ -142,7 +138,6 @@ event -> appraisal -> affect -> (tendency, drive) -> behaviour
                         ^                              |
                         +------- relax toward rest ----+
 ```
-
 ## Temperament: why two agents differ
 
 Two agents in identical circumstances feel differently because they fall toward
@@ -165,10 +160,9 @@ anxious = Temperament(
     negativity_bias=2.0,       # and bad news lands twice as hard
 )
 ```
-
 An anxious agent rests at *lower control* and *higher expected surprise*. Give it
 the same bad news as the cheerful one and it will land harder, and take five
-times as long to come back. You didn't script that — it falls out of where its
+times as long to come back. You didn't script that, it falls out of where its
 attractor is.
 
 ## Bad news lands harder than good news
@@ -179,8 +173,7 @@ from emotion_algebra import perturb, SET_POINT
 perturb(SET_POINT, {"positivity": 0.3}).positivity - SET_POINT.positivity  # 0.30
 perturb(SET_POINT, {"negativity": 0.3}).negativity - SET_POINT.negativity  # 0.45
 ```
-
-The **negativity bias** — equal pushes, unequal landings. One insult outweighs one
+The **negativity bias**, equal pushes, unequal landings. One insult outweighs one
 compliment, and your agent should behave the same way, because people do.
 
 ## Reading the agent's chemistry
@@ -194,8 +187,7 @@ from emotion_algebra import NeuroState
 NeuroState.from_affect(agent.state)
 # NeuroState(dopamine=0.27, noradrenaline=0.56, serotonin=0.13, cortisol=1.0, ...)
 ```
-
-Modulators map to **computational roles** — dopamine as reward-prediction error,
+Modulators map to **computational roles**, dopamine as reward-prediction error,
 noradrenaline as unexpected uncertainty, serotonin as patience and time-horizon.
 Those roles are directly useful to a learning agent. See
 [neurochemistry](neurochemistry.md).
@@ -211,12 +203,11 @@ There is no `+`, and there is no `-`. Weight is "how much did this land", in
 `[0, 1]`.
 
 **Use the distribution, not just the name.** `label(state)` gives you the full
-picture and `entropy(state)` tells you when the agent is genuinely conflicted —
-which is often the most interesting thing to render.
+picture and `entropy(state)` tells you when the agent is genuinely conflicted, which is often the most interesting thing to render.
 
 **Ambivalence is a feature.** An agent can be genuinely happy *and* sad at once
 (`positivity` and `negativity` are separate channels). That's the bittersweet
-ending, the reluctant victory, the goodbye — and a signed-valence model cannot
+ending, the reluctant victory, the goodbye, and a signed-valence model cannot
 represent any of them.
 
 ---
@@ -226,3 +217,6 @@ represent any of them.
 - Why the axes are what they are → **[the model](theory.md)**
 - The formal guarantees (including Banach) → **[the laws](core-laws.md)**
 - Turning events into emotions → **[appraisal](appraisal.md)**
+
+---
+[← Evidence](evidence.md) · [Home](index.md) · [State & timeline →](state.md)

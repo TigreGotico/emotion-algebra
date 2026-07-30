@@ -1,8 +1,8 @@
 # emotion-algebra
 
-A Python library for representing, reasoning about, and computing with emotion —
-built on the parts of affective science that actually replicate, and honest about
-the parts that don't.
+A Python library for representing, reasoning about, and computing with emotion.
+It builds on the parts of affective science that replicate, and it is honest about
+the parts that do not.
 
 ```python
 from emotion_algebra import prototype, dominant
@@ -14,9 +14,9 @@ dominant(anger.blend(fear, 0.5))
 # 'distress'
 ```
 
-Most emotion libraries would tell you that blend is **neutrality** — that anger
-and fear, being "opposites", cancel out. They don't, and this one doesn't say
-they do. Understanding why is most of what this library is about.
+Most emotion libraries would tell you that blend is **neutrality**: that anger
+and fear, being "opposites", cancel out. They do not, and this library does not
+say they do. Understanding why is most of what this library is about.
 
 ---
 
@@ -53,8 +53,8 @@ AffectState(
 Two things about that are unusual, and both are deliberate.
 
 **Positivity and negativity are separate.** People genuinely feel good and bad at
-the same time — the classic case is graduation day. A single "valence" number
-cannot represent that; two channels can.
+the same time. The classic case is graduation day. A single "valence" number
+cannot represent that. Two channels can.
 
 ```python
 graduation = AffectState(positivity=0.8, negativity=0.6, arousal=0.7)
@@ -74,7 +74,7 @@ take away.
 
 ## What you can do with it
 
-### Name a feeling — with honest uncertainty
+### Name a feeling, with honest uncertainty
 
 Emotion names are **labels over regions**, not coordinates. So the answer to
 "what emotion is this?" is a distribution, not a word.
@@ -106,11 +106,11 @@ dominant_tendency(prototype("sadness"))  # 'withdrawal'  -- give up
 dominant_tendency(prototype("joy"))      # 'affiliation' -- draw close
 ```
 
-> **Trust the direction; prefer the distribution.** "Anger approaches while being
-> unpleasant" is robust — it survives **100%** of perturbations of every guessed
-> coefficient in the library. But *which* mode wins the argmax is not: `anger →
-> antagonism` holds in only **55%**, `fear → avoidance` in **52%**, because
-> approach and antagonism are neighbouring readings of the same drive. Use
+> **Trust the direction. Prefer the distribution.** "Anger approaches while being
+> unpleasant" holds up well. It survives **100%** of perturbations of every guessed
+> coefficient in the library. But *which* mode wins the argmax does not hold up as
+> well: `anger → antagonism` holds in only **55%**, `fear → avoidance` in **52%**,
+> because approach and antagonism are neighboring readings of the same drive. Use
 > `action_readiness()` (the full distribution) when the answer matters, and treat
 > `dominant_tendency()` as the convenience it is. See
 > [the robustness report](docs/evidence.md#robustness).
@@ -118,8 +118,8 @@ dominant_tendency(prototype("joy"))      # 'affiliation' -- draw close
 
 ### Go from an event to an emotion
 
-Emotions aren't triggered by events. They're triggered by your *appraisal* of
-events — and the appraisal checks map almost one-to-one onto the core's axes.
+Emotions are not triggered by events. They are triggered by your *appraisal* of
+events, and the appraisal checks map almost one-to-one onto the core's axes.
 
 ```python
 from emotion_algebra import Appraisal
@@ -137,9 +137,9 @@ Same event. Same unpleasantness. Coping decides whether you fight or flee.
 
 ### Build an agent that has moods
 
-Emotion decays toward a **set point** — not toward zero. "No emotion" isn't a
-state anything is ever in; resting is a mildly positive, calm, mildly-in-control
-place. That's why a creature at rest *explores* rather than freezing.
+Emotion decays toward a **set point**, not toward zero. "No emotion" is not a
+state anything is ever in. Resting is a mildly positive, calm, mildly-in-control
+place. That is why a creature at rest *explores* rather than freezing.
 
 ```python
 from emotion_algebra import SET_POINT, at_rest, relax, drive, ORIGIN
@@ -155,7 +155,7 @@ drive(prototype("terror"))   # what must change to get home again
 # {'negativity': -0.51, 'potency': +1.05, 'arousal': -0.47, ...}
 ```
 
-`drive()` is the restoring force — the thing a needs-driven agent minimises. **A
+`drive()` is the restoring force, the thing a needs-driven agent minimizes. **A
 need deficit *is* a displacement from the set point**, and the emotion is the felt
 signal of it.
 
@@ -169,9 +169,9 @@ NeuroState(noradrenaline=.95, cortisol=.95, dopamine=.15).to_affect()   # potenc
 NeuroState(noradrenaline=.90, dopamine=.85, testosterone=.9).to_affect() # potency +0.86 -> approach
 ```
 
-Neuromodulators are mapped to **computational roles** — dopamine as
-reward-prediction error, noradrenaline as unexpected uncertainty — not to emotion
-names. That's what makes it testable.
+Neuromodulators are mapped to **computational roles**: dopamine as
+reward-prediction error, noradrenaline as unexpected uncertainty, not to emotion
+names. That is what makes it testable.
 
 ### Convert to whatever your other tools speak
 
@@ -188,7 +188,7 @@ print(explain_loss("circumplex", "core"))
 ```
 
 Every model converts to every other. **Every conversion tells you what it
-destroys.** A conversion that loses information is fine; one that loses it
+destroys.** A conversion that loses information is fine. One that loses it
 *silently* is not.
 
 ---
@@ -199,8 +199,8 @@ This is the feature we're proudest of, and we don't know of another library that
 has it.
 
 Affective science does not speak with one voice. Some of the models in here are
-replicated across cultures and meta-analyses; one was published in a journal that
-did not practise external peer review. A library that presents them all in the
+replicated across cultures and meta-analyses. One was published in a journal that
+did not practice external peer review. A library that presents them all in the
 same typeface is lying by omission.
 
 So every construct carries a **grade** and its **citation**, in code:
@@ -221,9 +221,9 @@ print(evidence.report())                 # the whole table, with citations
 | --- | --- |
 | `ESTABLISHED` | Replicated, cross-cultural, meta-analytic. Build on it. |
 | `SUPPORTED` | Good primary evidence, thin replication. |
-| `CONTESTED` | A live scientific conflict — **both readings are implemented**. |
-| `SPECULATIVE` | Proposed, plausible, never tested. Usable; not citable. |
-| `METAPHOR` | A design device. Often the most convenient way to *talk* about emotion — which is why it ships. |
+| `CONTESTED` | A live scientific conflict. **Both readings are implemented**. |
+| `SPECULATIVE` | Proposed, plausible, never tested. Usable, not citable. |
+| `METAPHOR` | A design device. Often the most convenient way to *talk* about emotion, which is why it ships. |
 
 If you think a grade is wrong, the citation is right there to argue with.
 
@@ -231,29 +231,29 @@ If you think a grade is wrong, the citation is right there to argue with.
 
 ## Is it still an algebra?
 
-Yes — a better-specified one than it used to be.
+Yes, a better-specified one than it used to be.
 
 The old claim was "vector space with negation": emotions add, scale, and every
-emotion has an opposite. That claim is false, and it's what produced
+emotion has an opposite. That claim is false. It is what produced
 `(rage + terror)/2 == calm`.
 
-What's actually true:
+What is actually true:
 
-- **`(S, blend)` is a barycentric algebra** — a convex space. By Stone's theorem
-  its models are exactly the convex subsets of vector spaces, so no rigour is
-  lost; we just say precisely *which* subset. Closure comes free: blending never
+- **`(S, blend)` is a barycentric algebra**, a convex space. By Stone's theorem
+  its models are exactly the convex subsets of vector spaces, so no rigor is
+  lost. It just says precisely *which* subset. Closure comes free. Blending never
   needs clamping.
 - **`(S, d)` is a metric space.**
 - **`{relax_t}` is a contraction semigroup**, so by the Banach fixed-point theorem
   the set point is its **unique** attractor. Every state converges to rest,
-  exponentially, from anywhere. That's a theorem, not a preference.
+  exponentially, from anywhere. That is a theorem, not a preference.
 
 The supported operations are **mixture**, **intensification**, **decay**, and
-**distance**. There is no `__neg__`, `__sub__`, `__add__` or `__mul__` — and tests
+**distance**. There is no `__neg__`, `__sub__`, `__add__` or `__mul__`, and tests
 assert their absence.
 
-**Sadness is not "minus joy."** It has its own pull — withdraw, seek help — and
-that is not "negative approach."
+**Sadness is not "minus joy."** It has its own pull: withdraw, seek help. That
+is not "negative approach."
 
 Full laws, with the ones that *don't* hold: **[docs/core-laws.md](docs/core-laws.md)**
 
@@ -261,8 +261,8 @@ Full laws, with the ones that *don't* hold: **[docs/core-laws.md](docs/core-laws
 
 ## Many models, honestly mapped
 
-This library does not implement *an* emotion model. It implements **several** —
-each faithfully, to its own author's specification — grades them by evidence, and
+This library does not implement *an* emotion model. It implements **several**,
+each faithfully, to its own author's specification, grades them by evidence, and
 maps between them.
 
 | Model | Author | Grade |
@@ -289,14 +289,14 @@ get_feeling_from_emotions("joy", "trust")   # 'love'
 ```
 
 That arithmetic is correct **for Plutchik's model**. Plutchik's model is not
-correct about people — anger and fear are neighbours, not opposites. Both things
+correct about people. Anger and fear are neighbors, not opposites. Both things
 are true, and the library tells you both: the wheel is graded `METAPHOR`, and the
 core has no `__neg__`.
 
-**Use the wheel to talk. Use the core to compute.** And convert between them with
+**Use the wheel to talk. Use the core to compute.** Convert between them with
 a map that says what it costs.
 
-**[docs/models.md](docs/models.md)** — the full catalogue.
+**[docs/models.md](docs/models.md)** has the full catalog.
 
 ## Documentation
 
@@ -308,7 +308,7 @@ a map that says what it costs.
 | **[The model](docs/theory.md)** | Why these axes, and not the others. The science. |
 | **[Evidence](docs/evidence.md)** | Every construct, its grade, and its citation. |
 | **[Building an agent](docs/agents.md)** | Set points, drives, moods, temperament. The pattern. |
-| **[The laws](docs/core-laws.md)** | The algebra, formally — including what it refuses to do. |
+| **[The laws](docs/core-laws.md)** | The algebra, formally, including what it refuses to do. |
 | **[Appraisal](docs/appraisal.md)** | From events to emotions. |
 | **[Neurochemistry](docs/neurochemistry.md)** | Neuromodulators as computational roles. |
 | **[Interop](docs/interop.md)** | PAD, circumplex, and the conversion graph. |
@@ -321,16 +321,16 @@ a map that says what it costs.
 
 ## Validation
 
-The claims above are tested, and the tests are in the repo — including the ones
+The claims above are tested, and the tests are in the repo, including the ones
 that went against us.
 
 | | |
 | --- | --- |
 | Anger/fear separable in **DeepMoji** (1.2B tweets, no theory of emotion) | **0.773** held out (baseline 0.598; permutation control 0.600) |
-| …and the axis it uses to do it | **potency, r=+0.306** — 3× valence, arousal or unpredictability |
+| ...and the axis it uses to do it | **potency, r=+0.306**, 3x valence, arousal or unpredictability |
 | **Lerner & Keltner (2001)** risk-judgement reproduction | anger patterns with *happiness*, not fear; fully mediated by control + certainty |
 | Valence & arousal vs **human norms** (Warriner, 13,915 words) | taken directly from the data |
-| Arousal *from text* | r=**0.35** — emoji carry valence, *punctuation* carries arousal |
+| Arousal *from text* | r=**0.35**, emoji carry valence, *punctuation* carries arousal |
 
 Scripts in `scripts/validate/`. The honest limits of each are written into the
 script that produces it.
