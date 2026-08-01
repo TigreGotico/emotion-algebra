@@ -53,9 +53,9 @@ from emotion_algebra import label, entropy
 mixed = prototype("rage").blend(prototype("terror"), 0.5)
 
 label(mixed, top_k=3)
-# {'distress': 0.66, 'distraction': 0.19, 'apprehension': 0.15}
+# {'distress': 0.49, 'distraction': 0.29, 'apprehension': 0.22}
 
-entropy(mixed)   # 3.91 bits -- this state sits BETWEEN names, and says so
+entropy(mixed)   # 4.25 bits -- this state sits BETWEEN names, and says so
 dominant(mixed)  # 'distress'  -- the convenient answer, which throws the rest away
 ```
 High entropy is not a failure to classify. It is the state genuinely being between
@@ -99,7 +99,7 @@ angry, afraid = affect_from_texts([
     "I don't know if I'm doing this right and I'm scared I've broken something.",
 ])
 
-angry.valence,  angry.potency    # -0.43, +0.16  -> 'annoyance'
+angry.valence,  angry.potency    # -0.43, +0.16  -> 'disgust'
 afraid.valence, afraid.potency   # -0.47, -0.43  -> 'apprehension'
 ```
 Near-identical valence. **Opposite potency.** One will escalate. One will quietly
