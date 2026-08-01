@@ -1,5 +1,13 @@
 # Changelog
 
+## [3.5.0a3](https://github.com/TigreGotico/emotion-algebra/tree/3.5.0a3) (2026-08-01)
+
+[Full Changelog](https://github.com/TigreGotico/emotion-algebra/compare/3.5.0a2...3.5.0a3)
+
+**Merged pull requests:**
+
+- docs: correct example outputs to match runtime [\#28](https://github.com/TigreGotico/emotion-algebra/pull/28) ([JarbasAl](https://github.com/JarbasAl))
+
 ## [3.5.0a2](https://github.com/TigreGotico/emotion-algebra/tree/3.5.0a2) (2026-07-30)
 
 [Full Changelog](https://github.com/TigreGotico/emotion-algebra/compare/3.5.0a1...3.5.0a2)
