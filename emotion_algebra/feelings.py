@@ -11,7 +11,7 @@ from types import MappingProxyType
 from typing import List, Optional, Union
 
 from emotion_algebra.base import EmotionBase
-from emotion_algebra.plutchik import Emotion, Neutrality
+from emotion_algebra.plutchik import Emotion, Neutrality, _is_scalar
 
 
 FEELING_NAMES = {'acknowledgement': ['serenity', 'acceptance'],
@@ -187,9 +187,9 @@ class Feeling(EmotionBase):
 
     @property
     def type(self) -> str:
-        """Russell (1980) Circumplex classification using feeling valence and arousal."""
+        """Russell (1980) Circumplex classification using feeling polarity and arousal."""
         from emotion_algebra.plutchik import _circumplex_type
-        return _circumplex_type(self.valence, self.arousal)
+        return _circumplex_type(self.polarity, self.arousal)
 
     def __str__(self):
         return self.secondary_name
@@ -238,18 +238,20 @@ class Feeling(EmotionBase):
             feel.emotions.append(other)
             return feel
 
+        from emotion_algebra.composite_emotions import CompositeEmotion
+        if isinstance(other, CompositeEmotion):
+            return other + self
+
         # upgrade emotions
-        try:
-            other = int(other)
+        if _is_scalar(other):
             feel = deepcopy(self)
             for idx, emo in enumerate(feel.emotions):
-                feel.emotions[idx] = emo + other
+                feel.emotions[idx] = emo + int(other)
             feel.emotions = [e for e in feel.emotions if isinstance(e, Emotion)]
             if len(feel.emotions) == 1:
                 return feel.emotions[0]
             return feel
-        except:
-            return NotImplemented
+        return NotImplemented
 
     def __sub__(self, other):
         if isinstance(other, str):
@@ -285,14 +287,12 @@ class Feeling(EmotionBase):
             return feel
 
         # upgrade emotions
-        try:
-            other = int(other)
+        if _is_scalar(other):
             feel = deepcopy(self)
             for idx, emo in enumerate(feel.emotions):
-                feel.emotions[idx] = emo - other
+                feel.emotions[idx] = emo - int(other)
             return feel
-        except:
-            return NotImplemented
+        return NotImplemented
 
     def __mul__(self, other):
         """Intensify all component emotions by *other* steps up their axis.
@@ -306,81 +306,76 @@ class Feeling(EmotionBase):
             other = Emotion.string_to_emotion(other)
         if isinstance(other, Neutrality):
             return deepcopy(self)
-        try:
-            other = int(other)
-            feel = deepcopy(self)
-            for idx, emo in enumerate(feel.emotions):
-                feel.emotions[idx] = emo + other
-            feel.emotions = [e for e in feel.emotions if isinstance(e, Emotion)]
-            if len(feel.emotions) == 1:
-                return feel.emotions[0]
-            return feel
-        except Exception:
+        if not _is_scalar(other):
             return NotImplemented
+        other = int(other)
+        feel = deepcopy(self)
+        for idx, emo in enumerate(feel.emotions):
+            feel.emotions[idx] = emo + other
+        feel.emotions = [e for e in feel.emotions if isinstance(e, Emotion)]
+        if len(feel.emotions) == 1:
+            return feel.emotions[0]
+        return feel
 
     def __truediv__(self, other):
         """Divide all component emotion flows by *other* (int or float)."""
         if isinstance(other, Neutrality):
             return deepcopy(self)
-        try:
-            other = int(other)
-            feel = deepcopy(self)
-            for idx, emo in enumerate(feel.emotions):
-                feel.emotions[idx] = emo / other
-            feel.emotions = [e for e in feel.emotions if isinstance(e, Emotion)]
-            if len(feel.emotions) == 1:
-                return feel.emotions[0]
-            return feel
-        except Exception:
+        if not _is_scalar(other):
             return NotImplemented
+        other = int(other)
+        feel = deepcopy(self)
+        for idx, emo in enumerate(feel.emotions):
+            feel.emotions[idx] = emo / other
+        feel.emotions = [e for e in feel.emotions if isinstance(e, Emotion)]
+        if len(feel.emotions) == 1:
+            return feel.emotions[0]
+        return feel
 
     def __floordiv__(self, other):
         """Floor-divide all component emotion flows by *other* (int)."""
         if isinstance(other, Neutrality):
             return deepcopy(self)
-        try:
-            other = int(other)
-            feel = deepcopy(self)
-            for idx, emo in enumerate(feel.emotions):
-                feel.emotions[idx] = emo // other
-            feel.emotions = [e for e in feel.emotions if isinstance(e, Emotion)]
-            if len(feel.emotions) == 1:
-                return feel.emotions[0]
-            return feel
-        except Exception:
+        if not _is_scalar(other):
             return NotImplemented
+        other = int(other)
+        feel = deepcopy(self)
+        for idx, emo in enumerate(feel.emotions):
+            feel.emotions[idx] = emo // other
+        feel.emotions = [e for e in feel.emotions if isinstance(e, Emotion)]
+        if len(feel.emotions) == 1:
+            return feel.emotions[0]
+        return feel
 
     def __lshift__(self, other):
         """Decrease all component emotions by *other* intensity steps."""
         if isinstance(other, Neutrality):
             return deepcopy(self)
-        try:
-            other = int(other)
-            feel = deepcopy(self)
-            for idx, emo in enumerate(feel.emotions):
-                feel.emotions[idx] = emo << other
-            feel.emotions = [e for e in feel.emotions if isinstance(e, Emotion)]
-            if len(feel.emotions) == 1:
-                return feel.emotions[0]
-            return feel
-        except Exception:
+        if not _is_scalar(other):
             return NotImplemented
+        other = int(other)
+        feel = deepcopy(self)
+        for idx, emo in enumerate(feel.emotions):
+            feel.emotions[idx] = emo << other
+        feel.emotions = [e for e in feel.emotions if isinstance(e, Emotion)]
+        if len(feel.emotions) == 1:
+            return feel.emotions[0]
+        return feel
 
     def __rshift__(self, other):
         """Increase all component emotions by *other* intensity steps."""
         if isinstance(other, Neutrality):
             return deepcopy(self)
-        try:
-            other = int(other)
-            feel = deepcopy(self)
-            for idx, emo in enumerate(feel.emotions):
-                feel.emotions[idx] = emo >> other
-            feel.emotions = [e for e in feel.emotions if isinstance(e, Emotion)]
-            if len(feel.emotions) == 1:
-                return feel.emotions[0]
-            return feel
-        except Exception:
+        if not _is_scalar(other):
             return NotImplemented
+        other = int(other)
+        feel = deepcopy(self)
+        for idx, emo in enumerate(feel.emotions):
+            feel.emotions[idx] = emo >> other
+        feel.emotions = [e for e in feel.emotions if isinstance(e, Emotion)]
+        if len(feel.emotions) == 1:
+            return feel.emotions[0]
+        return feel
 
     def __eq__(self, other):
         # compare emotion vectors

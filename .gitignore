@@ -40,3 +40,7 @@ Thumbs.db
 *.whl
 *.tar.gz
 MANIFEST
+
+# Local planning files
+TODO.md
+ROADMAP.md

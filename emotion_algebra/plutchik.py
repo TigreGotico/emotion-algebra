@@ -49,15 +49,42 @@ from emotion_algebra.base import EmotionBase
 from emotion_algebra.reference_maps import EMOTION_CONTRASTS
 
 
-def _circumplex_type(valence: int, arousal: int) -> str:
-    """Russell (1980) Circumplex classification from valence and arousal.
+def _is_scalar(value: object) -> bool:
+    """``True`` only for a real number — an intensity step, not an emotion.
+
+    The operators used to end with ``try: other = int(other)``, which accepted
+    *anything* with an ``__int__``.  Every emotion type has one (it returns the
+    net flow), so an unhandled operand — a ``CompositeEmotion``, say — was
+    silently flattened to a single integer instead of raising: ``acceptance +
+    (acceptance + amazement)`` collapsed a two-axis composite into ``boredom``.
+    Coercion is now explicit, so an operand the algebra does not understand
+    returns ``NotImplemented`` and Python raises ``TypeError``, as it should.
+
+    ``bool`` is excluded on purpose: ``True`` is not an intensity of 1.
+    """
+    if isinstance(value, bool):
+        return False
+    return isinstance(value, (int, float, np.integer, np.floating))
+
+
+def _circumplex_type(polarity: float, arousal: float) -> str:
+    """Russell (1980) Circumplex classification from polarity and arousal.
+
+    Russell's model has two axes: hedonic tone and activation.  The hedonic
+    axis here is :attr:`~emotion_algebra.base.EmotionBase.polarity` (Cambria's
+    four-axis sentiment formula), *not*
+    :attr:`~emotion_algebra.base.EmotionBase.valence` (Pleasantness only).
+    Using valence would place anger and fear — the textbook high-arousal
+    *negative* emotions — in the hedonically-neutral band, since neither sits
+    on the Pleasantness axis.  Polarity resolves that: both are aversive.
 
     Parameters
     ----------
-    valence:
-        Hedonic tone (Pleasantness component).  Positive = pleasant, negative = unpleasant.
+    polarity:
+        Sentiment polarity in ``[-1, 1]``.  Positive = pleasant, negative =
+        unpleasant, exactly 0 = no hedonic lean.
     arousal:
-        Activation intensity (|emotional_flow|).  0 = inert, 1 = low, 2–3 = high.
+        Activation intensity.  0 = inert, ≤1 = low (calm), >1 = high (excited).
 
     Returns
     -------
@@ -67,13 +94,13 @@ def _circumplex_type(valence: int, arousal: int) -> str:
     """
     if arousal == 0:
         return "neutral"
-    if valence == 0:
+    if polarity == 0:
         return "activated neutral"
-    if valence > 0 and arousal > 1:
+    if polarity > 0 and arousal > 1:
         return "excited positive"
-    if valence < 0 and arousal > 1:
+    if polarity < 0 and arousal > 1:
         return "excited negative"
-    if valence > 0:
+    if polarity > 0:
         return "calm positive"
     return "calm negative"
 
@@ -108,14 +135,20 @@ EMOTION_KIND_NAMES['event related'].append("acceptance")
 EMOTION_KIND_NAMES['event related'].append("ecstasy")
 EMOTION_KIND_NAMES['event related'].append("apprehension")
 EMOTION_KIND_NAMES['event related'].append("loathing")
-EMOTION_KIND_NAMES['event related'].append("gloat")  # TODO where does this fit better?
+# "frivolity" (ecstasy+amazement): an intense-pleasant reaction to a
+# surprising event, alongside ecstasy/joy/elation already in this bucket —
+# not inherently social (Ortony/OCC classifies it as event-based, not a
+# fortunes-of-others emotion).
+EMOTION_KIND_NAMES['event related'].append("frivolity")
 
 EMOTION_KIND_NAMES['social'].append("coercion")
 EMOTION_KIND_NAMES['social'].append("trust")
 EMOTION_KIND_NAMES['social'].append("submission")
 EMOTION_KIND_NAMES['social'].append("rivalry")
 EMOTION_KIND_NAMES['social'].append("rejection")
-EMOTION_KIND_NAMES['social'].append("frivolity")  # TODO where does this fit better?
+# "gloat" (ecstasy+loathing): joy at another's misfortune — Ortony/OCC
+# classifies Schadenfreude as a fortunes-of-others emotion, i.e. social.
+EMOTION_KIND_NAMES['social'].append("gloat")
 
 EMOTION_KIND_NAMES['future appraisal'].append("pensiveness")
 EMOTION_KIND_NAMES['future appraisal'].append("optimism")
@@ -233,17 +266,18 @@ class Emotion(EmotionBase):
     def type(self) -> str:
         """Russell (1980) Circumplex classification.
 
-        Uses ``self.valence`` (Pleasantness component) and ``self.arousal``
-        (``|emotional_flow|``) to place this emotion in one of six categories:
+        Uses :attr:`polarity` (Cambria's four-axis sentiment score) and
+        :attr:`arousal` (``|emotional_flow|``) to place this emotion in one of
+        six categories:
 
         - ``"excited positive"``  — high arousal, pleasant (joy, ecstasy)
-        - ``"excited negative"``  — high arousal, unpleasant (grief, sadness)
-        - ``"calm positive"``     — low arousal, pleasant (serenity)
-        - ``"calm negative"``     — low arousal, unpleasant (pensiveness)
-        - ``"activated neutral"`` — nonzero arousal, no hedonic polarity (anger, fear)
+        - ``"excited negative"``  — high arousal, unpleasant (anger, fear, grief)
+        - ``"calm positive"``     — low arousal, pleasant (serenity, acceptance)
+        - ``"calm negative"``     — low arousal, unpleasant (pensiveness, boredom)
+        - ``"activated neutral"`` — nonzero arousal, exactly zero polarity
         - ``"neutral"``           — zero arousal (Neutrality)
         """
-        return _circumplex_type(self.valence, self.arousal)
+        return _circumplex_type(self.polarity, self.arousal)
 
 
     @property
@@ -326,7 +360,7 @@ class Emotion(EmotionBase):
         flow = int(flow)
         # how to handle invalid flows?
         flow = 9 if flow > 9 else flow if flow > -9 else -9
-        offset = abs(flow) - 3
+        offset = max(0, abs(flow) - 3)
         flow = 3 if flow > 3 else flow if flow > -3 else -3
         if flow == 1:
             emo = copy(self._dimension.basic_emotion)
@@ -352,7 +386,12 @@ class Emotion(EmotionBase):
             emo = copy(self._dimension.intense_opposite)
             emo.intensity_offset = offset
             return emo
-        return copy(Neutrality())
+        # Zero flow is still zero flow *on this axis*. Returning a bare
+        # Neutrality() would drop the dimension, and the algebra cannot be
+        # continued on an axis it has forgotten: `joy - joy` would produce
+        # something that no longer knows it is a pleasantness value, so
+        # `(joy - joy) >> 1` had nowhere to go and raised TypeError.
+        return Neutrality(dimension=self._dimension)
 
     def __repr__(self):
         return "EmotionObject:" + self.name
@@ -410,18 +449,18 @@ class Emotion(EmotionBase):
             c = CompositeEmotion()
             return c + self + other
 
+        from emotion_algebra.composite_emotions import CompositeEmotion
+        if isinstance(other, CompositeEmotion):
+            # Addition is commutative; the composite knows how to absorb us.
+            return other + self
+
         from emotion_algebra.feelings import Feeling
         if isinstance(other, Feeling):
-            other = other + self
-            return other
+            return other + self
 
-        # upgrade emotion
-        try:
-            other = int(other)
-            flow = self.emotional_flow + other
-            return self.emotion_from_flow(flow)
-        except:
-            return NotImplemented
+        if _is_scalar(other):
+            return self.emotion_from_flow(self.emotional_flow + int(other))
+        return NotImplemented
 
     def __sub__(self, other):
         if isinstance(other, str):
@@ -432,15 +471,17 @@ class Emotion(EmotionBase):
             return deepcopy(self)
         if isinstance(other, Emotion):
             # add opposite emotion
-            other = - other
-            return self.__add__(other)
-        # upgrade emotion
-        try:
-            other = int(other)
-            flow = self.emotional_flow - other
-            return self.emotion_from_flow(flow)
-        except:
-            return NotImplemented
+            return self.__add__(-other)
+
+        from emotion_algebra.composite_emotions import CompositeEmotion
+        if isinstance(other, CompositeEmotion):
+            # a - b == -(b - a); the composite implements the hard direction.
+            result = other.__sub__(self)
+            return -result if result is not NotImplemented else NotImplemented
+
+        if _is_scalar(other):
+            return self.emotion_from_flow(self.emotional_flow - int(other))
+        return NotImplemented
 
     def __mul__(self, other):
         if isinstance(other, str):
@@ -462,13 +503,9 @@ class Emotion(EmotionBase):
             return deepcopy(self)
         if isinstance(other, Emotion):
             return NotImplemented
-
-        try:
-            other = int(other)
-            flow = self.emotional_flow / other
-            return self.emotion_from_flow(flow)
-        except:
-            return NotImplemented
+        if _is_scalar(other) and int(other) != 0:
+            return self.emotion_from_flow(self.emotional_flow / int(other))
+        return NotImplemented
 
     def __floordiv__(self, other):
         if isinstance(other, str):
@@ -477,12 +514,9 @@ class Emotion(EmotionBase):
             return deepcopy(self)
         if isinstance(other, Emotion):
             return NotImplemented
-        try:
-            other = int(other)
-            flow = self.emotional_flow // other
-            return self.emotion_from_flow(flow)
-        except:
-            return NotImplemented
+        if _is_scalar(other) and int(other) != 0:
+            return self.emotion_from_flow(self.emotional_flow // int(other))
+        return NotImplemented
 
     def __lshift__(self, other):
         if isinstance(other, str):
@@ -491,15 +525,12 @@ class Emotion(EmotionBase):
             return deepcopy(self)
         if isinstance(other, Emotion):
             if other._dimension == self._dimension:
-                flow = other.emotional_flow - self.emotional_flow
+                flow = self.emotional_flow - other.emotional_flow
                 return self.emotion_from_flow(flow)
             return NotImplemented
-        try:
-            other = int(other)
-            flow = self.emotional_flow - other
-            return self.emotion_from_flow(flow)
-        except:
-            return NotImplemented
+        if _is_scalar(other):
+            return self.emotion_from_flow(self.emotional_flow - int(other))
+        return NotImplemented
 
     def __rshift__(self, other):
         if isinstance(other, str):
@@ -511,28 +542,9 @@ class Emotion(EmotionBase):
                 flow = other.emotional_flow + self.emotional_flow
                 return self.emotion_from_flow(flow)
             return NotImplemented
-        try:
-            other = int(other)
-            flow = self.emotional_flow + other
-            return self.emotion_from_flow(flow)
-        except:
-            return NotImplemented
-
-    # TODO
-    # (+=, -=, *=, @=, /=, //=, %=, **=, <<=, >>=, &=, ^=, |=).
-    #    object.__iadd__(self, other)
-    # object.__isub__(self, other)
-    # object.__imul__(self, other)
-    # object.__imatmul__(self, other)¶
-    # object.__itruediv__(self, other)
-    # object.__ifloordiv__(self, other)
-    # object.__imod__(self, other)
-    # object.__ipow__(self, other[, modulo])
-    # object.__ilshift__(self, other)
-    # object.__irshift__(self, other)
-    # object.__iand__(self, other)
-    # object.__ixor__(self, other)
-    # object.__ior__(self, other)
+        if _is_scalar(other):
+            return self.emotion_from_flow(self.emotional_flow + int(other))
+        return NotImplemented
 
     def __neg__(self):
         # get opposite emotion
@@ -566,6 +578,13 @@ class Emotion(EmotionBase):
             return True
         return self._name != other
 
+    def __hash__(self):
+        # Emotions are immutable value objects; hash consistently with
+        # __eq__ (same dimension + same flow == equal), so they are usable
+        # as dict keys and in sets.
+        dimension_name = self._dimension.axis if self._dimension else None
+        return hash((dimension_name, self.emotional_flow))
+
     def __contains__(self, item):
         if isinstance(item, Neutrality):
             return True
@@ -583,9 +602,20 @@ class Emotion(EmotionBase):
 
     @classmethod
     def from_dict(cls, data: dict) -> "Emotion":
-        """Deserialize from a dict produced by :meth:`to_dict`."""
+        """Deserialize from a dict produced by :meth:`to_dict`.
+
+        Raises
+        ------
+        ValueError
+            If ``name`` is not a known emotion.  Returning ``None`` here would
+            turn a corrupt payload into a silent hole downstream.
+        """
         from emotion_algebra.emotions import get_emotion
-        return get_emotion(data["name"])
+        name = data["name"]
+        emotion = get_emotion(name)
+        if emotion is None:
+            raise ValueError(f"unknown emotion: {name!r}")
+        return emotion
 
 
 class Neutrality(Emotion):
@@ -600,6 +630,23 @@ class Neutrality(Emotion):
     @property
     def intensity(self):
         return "null"
+
+    def to_dict(self) -> dict:
+        """Serialize to a JSON-compatible dict.
+
+        Neutrality carries its own discriminator: it is not in the ``EMOTIONS``
+        registry, so the :class:`Emotion` loader cannot reconstruct it.  It does
+        keep its axis, which ``Neutrality << emotion`` depends on.
+        """
+        return {
+            "type": "neutrality",
+            "dimension": self._dimension.name if self._dimension else "",
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict) -> "Neutrality":
+        """Deserialize from a dict produced by :meth:`to_dict`."""
+        return cls(dimension=data.get("dimension", ""))
 
     @property
     def type(self):
@@ -639,10 +686,21 @@ class Neutrality(Emotion):
         if isinstance(other, str):
             return self.name + other
         if isinstance(other, Emotion):
-            if self.dimension:
-                other._kind = other.kind
-                other._dimension = self._dimension
-                other._name = self.name + " " + other.name
+            # Neutrality is the additive *identity*: it returns the other
+            # operand untouched.
+            #
+            # It used to reach into `other` and overwrite its `_dimension`,
+            # `_kind` and `_name` when this Neutrality carried a dimension.
+            # That is wrong twice over. It mutates an operand, which the whole
+            # library promises never to do; and the operands are the *shared
+            # singletons* held in the EMOTIONS registry, so adding a
+            # dimensioned Neutrality to `joy` permanently re-labelled the one
+            # global `joy` onto the wrong axis for every later caller.
+            return deepcopy(other)
+        if _is_scalar(other) and self.dimension:
+            # Neutrality(dim) + flow constructs the emotion at that flow on
+            # that dimension, rather than falling through to the bare number.
+            return self.dimension.basic_emotion.emotion_from_flow(other)
 
         return other
 
@@ -651,6 +709,8 @@ class Neutrality(Emotion):
             other = self.string_to_emotion(other)
         if isinstance(other, Emotion):
             return - other
+        if _is_scalar(other) and self.dimension:
+            return self.dimension.basic_emotion.emotion_from_flow(-other)
         return other
 
     def __eq__(self, other):

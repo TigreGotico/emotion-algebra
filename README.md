@@ -1,179 +1,342 @@
 # emotion-algebra
 
-Signed integer arithmetic over a 4-axis affective space, grounded in Plutchik's Wheel of Emotions (1980) and Cambria's Hourglass of Emotions (2012). Emotions are first-class mathematical objects; every operator returns a typed result.
+A Python library for representing, reasoning about, and computing with emotion.
+It builds on the parts of affective science that replicate, and it is honest about
+the parts that do not.
 
 ```python
-from emotion_algebra.emotions import get_emotion
+from emotion_algebra import prototype, dominant
 
-anger = get_emotion("anger")
+anger = prototype("anger")   # unpleasant, aroused, and IN CONTROL
+fear  = prototype("fear")    # unpleasant, aroused, and NOT
 
-anger + 1          # → rage          (intensity up)
-anger - 1          # → annoyance     (intensity down)
--anger             # → fear          (opposite pole)
-anger >> 2         # → hyper anger
-anger * fear       # → CompositeEmotion (cross-axis product)
+dominant(anger.blend(fear, 0.5))
+# 'distress'
 ```
+
+Most emotion libraries would tell you that blend is **neutrality**: that anger
+and fear, being "opposites", cancel out. They do not, and this library does not
+say they do. Understanding why is most of what this library is about.
 
 ---
 
-## Installation
+## Install
 
 ```bash
 pip install emotion-algebra
 ```
 
-Optional extras:
+| Extra | Adds |
+| --- | --- |
+| `emotion-algebra[viz]` | plots (matplotlib) |
 
-| Extra | Deps | Enables |
-|-------|------|---------|
-| `[lexicon]` | pandas | `lexicons.py` — word→emotion CSV lookup |
-| `[fast]` | ahocorasick-ner | Phrase-aware Aho-Corasick backend for `score_text`/`from_text` |
-
-`deepmoji-onnx` is a **core dependency** — neural text→emoji→emotion scoring via `DeepMojiONNXAdapter` is always available.
+Requires Python 3.10+.
 
 ---
 
-## The model
+## The 60-second version
 
-### Four axes (Cambria 2012)
+An emotion is a point in a five-coordinate space:
 
-| Axis | Positive pole | Negative pole | Hedonic? |
-|------|--------------|---------------|----------|
-| Sensitivity | rage → anger → annoyance | apprehension → fear → terror | No |
-| Attention | vigilance → anticipation → interest | distraction → surprise → amazement | No |
-| Pleasantness | ecstasy → joy → serenity | pensiveness → sadness → grief | **Yes** |
-| Aptitude | admiration → trust → acceptance | boredom → disgust → loathing | **Yes** |
+```python
+from emotion_algebra import AffectState
 
-Each axis has three integer intensity levels: ±1 (mild), ±2 (primary), ±3 (intense).
+AffectState(
+    positivity=0.8,        # how good it feels          [0, 1]
+    negativity=0.6,        # how bad it feels           [0, 1]   (yes, both at once)
+    potency=0.3,           # how in-control you feel    [-1, 1]
+    arousal=0.7,           # how activated you are      [0, 1]
+    unpredictability=0.2,  # how unexpected it is       [0, 1]
+)
+```
 
-### Valence and arousal (Russell 1980)
+Two things about that are unusual, and both are deliberate.
 
-- **Valence** — Pleasantness axis only. `anger.valence == 0`; `joy.valence == 2`.
-- **Arousal** — `abs(emotional_flow)`. Axis-independent activation intensity.
-- **Type** — Russell Circumplex quadrant: `"excited positive"`, `"calm positive"`, `"excited negative"`, `"calm negative"`, `"activated neutral"`, `"neutral"`.
+**Positivity and negativity are separate.** People genuinely feel good and bad at
+the same time. The classic case is graduation day. A single "valence" number
+cannot represent that. Two channels can.
 
-### Feelings (Plutchik dyads)
+```python
+graduation = AffectState(positivity=0.8, negativity=0.6, arousal=0.7)
+graduation.valence      # +0.2  -- "mildly happy", says a one-axis model
+graduation.ambivalence  #  0.6  -- what the one-axis model destroyed
+```
+
+**Potency is the axis nobody ships.** Anger and fear are both unpleasant and both
+highly aroused, so valence and arousal *cannot tell them apart*. What separates
+them is your sense of control. Anger is what you feel when something is wrong and
+you can act. Fear is what you feel when you can't.
+
+That single axis is why this library exists, and it's the one thing you should
+take away.
+
+---
+
+## What you can do with it
+
+### Name a feeling, with honest uncertainty
+
+Emotion names are **labels over regions**, not coordinates. So the answer to
+"what emotion is this?" is a distribution, not a word.
+
+```python
+from emotion_algebra import prototype, label, dominant, entropy
+
+mixed = prototype("rage").blend(prototype("terror"), 0.5)
+
+label(mixed, top_k=3)
+# {'distress': 0.49, 'distraction': 0.29, 'apprehension': 0.22}
+
+entropy(mixed)   # 4.25 bits -- it sits BETWEEN names, and says so
+dominant(mixed)  # 'distress'   (the convenient answer; throws away the rest)
+```
+
+### Work out what someone will *do*
+
+Motivational direction tracks **potency**, not pleasantness. This is why "negative
+= avoid" sentiment systems get anger wrong: anger is unpleasant *and*
+approach-motivated.
+
+```python
+from emotion_algebra import dominant_tendency
+
+dominant_tendency(prototype("anger"))    # 'antagonism'  -- move against it
+dominant_tendency(prototype("fear"))     # 'avoidance'   -- move away
+dominant_tendency(prototype("sadness"))  # 'withdrawal'  -- give up
+dominant_tendency(prototype("joy"))      # 'affiliation' -- draw close
+```
+
+> **Trust the direction. Prefer the distribution.** "Anger approaches while being
+> unpleasant" holds up well. It survives **100%** of perturbations of every guessed
+> coefficient in the library. But *which* mode wins the argmax does not hold up as
+> well: `anger → antagonism` holds in only **55%**, `fear → avoidance` in **52%**,
+> because approach and antagonism are neighboring readings of the same drive. Use
+> `action_readiness()` (the full distribution) when the answer matters, and treat
+> `dominant_tendency()` as the convenience it is. See
+> [the robustness report](docs/evidence.md#robustness).
+
+
+### Go from an event to an emotion
+
+Emotions are not triggered by events. They are triggered by your *appraisal* of
+events, and the appraisal checks map almost one-to-one onto the core's axes.
+
+```python
+from emotion_algebra import Appraisal
+from emotion_algebra.appraisal import appraisal_to_affect
+
+# One obstructing event. Vary NOTHING but whether you can cope.
+fight  = Appraisal(goal_relevance=0.9, goal_congruence=0.0, coping_potential=0.9)
+flight = Appraisal(goal_relevance=0.9, goal_congruence=0.0, coping_potential=0.1)
+
+dominant(appraisal_to_affect(fight))    # 'rage'
+dominant(appraisal_to_affect(flight))   # 'fear'
+```
+
+Same event. Same unpleasantness. Coping decides whether you fight or flee.
+
+### Build an agent that has moods
+
+Emotion decays toward a **set point**, not toward zero. "No emotion" is not a
+state anything is ever in. Resting is a mildly positive, calm, mildly-in-control
+place. That is why a creature at rest *explores* rather than freezing.
+
+```python
+from emotion_algebra import SET_POINT, at_rest, relax, drive, ORIGIN
+
+at_rest(ORIGIN)      # False -- the coordinate origin is NOT rest
+at_rest(SET_POINT)   # True
+
+# Recovery is a trajectory, not a switch:
+#   terror -> fear -> apprehension -> acceptance
+relax(prototype("terror"), dt=900, half_life=300)
+
+drive(prototype("terror"))   # what must change to get home again
+# {'negativity': -0.51, 'potency': +1.05, 'arousal': -0.47, ...}
+```
+
+`drive()` is the restoring force, the thing a needs-driven agent minimizes. **A
+need deficit *is* a displacement from the set point**, and the emotion is the felt
+signal of it.
+
+### Read the neurochemistry
+
+```python
+from emotion_algebra import NeuroState
+
+# Same threat. Only the coping chemistry differs.
+NeuroState(noradrenaline=.95, cortisol=.95, dopamine=.15).to_affect()   # potency -0.77 -> fear
+NeuroState(noradrenaline=.90, dopamine=.85, testosterone=.9).to_affect() # potency +0.86 -> approach
+```
+
+Neuromodulators are mapped to **computational roles**: dopamine as
+reward-prediction error, noradrenaline as unexpected uncertainty, not to emotion
+names. That is what makes it testable.
+
+### Convert to whatever your other tools speak
+
+```python
+from emotion_algebra import convert, fidelity, explain_loss
+
+convert(prototype("anger"), "core", "pad")    # (-0.62, 0.62, 0.60)
+convert((-0.6, 0.8, 0.6), "pad", "core")      # -> AffectState
+
+fidelity("hourglass", "pad")                  # Fidelity.HEURISTIC
+print(explain_loss("circumplex", "core"))
+# potency and unpredictability. This is why the circumplex cannot tell
+# anger from fear: they differ on potency, and it has no potency axis.
+```
+
+Every model converts to every other. **Every conversion tells you what it
+destroys.** A conversion that loses information is fine. One that loses it
+*silently* is not.
+
+---
+
+## The library grades its own claims
+
+This is the feature we're proudest of, and we don't know of another library that
+has it.
+
+Affective science does not speak with one voice. Some of the models in here are
+replicated across cultures and meta-analyses. One was published in a journal that
+did not practice external peer review. A library that presents them all in the
+same typeface is lying by omission.
+
+So every construct carries a **grade** and its **citation**, in code:
+
+```python
+from emotion_algebra import evidence
+
+evidence.grade_of("circumplex")          # Grade.ESTABLISHED
+evidence.grade_of("grid")                # Grade.SUPPORTED
+evidence.grade_of("valence.bipolarity")  # Grade.CONTESTED   <- both readings shipped
+evidence.grade_of("lovheim.cube")        # Grade.SPECULATIVE
+evidence.grade_of("plutchik.antipodal")  # Grade.METAPHOR
+
+print(evidence.report())                 # the whole table, with citations
+```
+
+| Grade | Meaning |
+| --- | --- |
+| `ESTABLISHED` | Replicated, cross-cultural, meta-analytic. Build on it. |
+| `SUPPORTED` | Good primary evidence, thin replication. |
+| `CONTESTED` | A live scientific conflict. **Both readings are implemented**. |
+| `SPECULATIVE` | Proposed, plausible, never tested. Usable, not citable. |
+| `METAPHOR` | A design device. Often the most convenient way to *talk* about emotion, which is why it ships. |
+
+If you think a grade is wrong, the citation is right there to argue with.
+
+---
+
+## Is it still an algebra?
+
+Yes, a better-specified one than it used to be.
+
+The old claim was "vector space with negation": emotions add, scale, and every
+emotion has an opposite. That claim is false. It is what produced
+`(rage + terror)/2 == calm`.
+
+What is actually true:
+
+- **`(S, blend)` is a barycentric algebra**, a convex space. By Stone's theorem
+  its models are exactly the convex subsets of vector spaces, so no rigor is
+  lost. It just says precisely *which* subset. Closure comes free. Blending never
+  needs clamping.
+- **`(S, d)` is a metric space.**
+- **`{relax_t}` is a contraction semigroup**, so by the Banach fixed-point theorem
+  the set point is its **unique** attractor. Every state converges to rest,
+  exponentially, from anywhere. That is a theorem, not a preference.
+
+The supported operations are **mixture**, **intensification**, **decay**, and
+**distance**. There is no `__neg__`, `__sub__`, `__add__` or `__mul__`, and tests
+assert their absence.
+
+**Sadness is not "minus joy."** It has its own pull: withdraw, seek help. That
+is not "negative approach."
+
+Full laws, with the ones that *don't* hold: **[docs/core-laws.md](docs/core-laws.md)**
+
+---
+
+## Many models, honestly mapped
+
+This library does not implement *an* emotion model. It implements **several**,
+each faithfully, to its own author's specification, grades them by evidence, and
+maps between them.
+
+| Model | Author | Grade |
+| --- | --- | --- |
+| **Affect core** | Fontaine, Scherer, Roesch & Ellsworth (2007) | `SUPPORTED` |
+| **Circumplex** | Russell (1980) | `ESTABLISHED` |
+| **PAD / VAD** | Mehrabian & Russell (1974) | `SUPPORTED` |
+| **Plutchik's wheel** | Plutchik (1980) | `METAPHOR` |
+| **Hourglass** | Cambria, Livingstone & Hussain (2012) | `METAPHOR` |
+| **Lövheim's cube** | Lövheim (2012) | `SPECULATIVE` |
+| **Neuromodulators** | Schultz; Doya; Yu & Dayan | `SUPPORTED` |
+
+So if you came for `joy + trust == love` and `-anger == fear`, they're here, and
+they work:
 
 ```python
 from emotion_algebra.emotions import get_emotion
-joy   = get_emotion("joy")
-trust = get_emotion("trust")
-joy + trust   # → Feeling("love")
+from emotion_algebra.feelings import get_feeling_from_emotions
+
+anger = get_emotion("anger")
+anger + 1                                   # rage
+-anger                                      # fear   (Plutchik's "opposite")
+get_feeling_from_emotions("joy", "trust")   # 'love'
 ```
 
----
+That arithmetic is correct **for Plutchik's model**. Plutchik's model is not
+correct about people. Anger and fear are neighbors, not opposites. Both things
+are true, and the library tells you both: the wheel is graded `METAPHOR`, and the
+core has no `__neg__`.
 
-## Feature overview
+**Use the wheel to talk. Use the core to compute.** Convert between them with
+a map that says what it costs.
 
-| Feature | API | Module |
-|---------|-----|--------|
-| Core emotion algebra | `Emotion`, `+`, `-`, `*`, `<<`, `>>` | `plutchik.py` |
-| Named feelings (dyads) | `Feeling`, `get_feeling()` | `feelings.py` |
-| Multi-axis composites | `CompositeEmotion` | `composite_emotions.py` |
-| Continuous space | `FloatEmotion`, `from_embedding()` | `float_emotion.py` |
-| Stateful accumulation | `EmotionalState`, `EmotionTimeline` | `state.py` |
-| Word lexicon | `from_text()`, `score_text()` | `text.py` |
-| Emoji mapping | `from_emoji()`, `score_emojis()`, `DeepMojiAdapter` | `emoji.py` |
-| Mixed word+emoji | `score_mixed()`, `from_mixed()` | `text.py` |
-| Geometry | `emotion_distance()`, `closest_emotion()` | `distance.py` |
-| Cognitive appraisal | `Appraisal`, `appraisal_to_emotion()` | `appraisal.py` |
-| CLI | `python -m emotion_algebra` | `__main__.py` |
+**[docs/models.md](docs/models.md)** has the full catalog.
 
----
+## Documentation
 
-## Quick reference
+**New here?** Read them in this order.
 
-```python
-from emotion_algebra import (
-    get_emotion, get_feeling,
-    EmotionalState, EmotionTimeline,
-    from_text, score_text, score_mixed, from_mixed,
-    from_emoji, score_emojis, DeepMojiAdapter,
-    register_emoji, unregister_emoji,
-    emotion_distance, closest_emotion, emotion_clusters,
-    Appraisal, appraisal_to_emotion,
-    FloatEmotion,
-)
-
-# --- Emotion properties ---
-e = get_emotion("joy")
-e.emotional_flow   # 2
-e.valence          # 2    (pleasantness axis)
-e.arousal          # 2
-e.type             # "excited positive"
-e.opposite_emotion # sadness
-e.as_array         # np.array([0, 0, 2, 0])
-
-# --- State accumulation ---
-state = EmotionalState()
-state.apply(get_emotion("joy"), weight=0.8)
-state.apply(get_emotion("trust"), weight=0.5)
-state.decay(0.9)
-state.dominant()   # → Emotion or None
-
-# --- Text analysis ---
-from_text("rage and fury")          # → Emotion (lexicon)
-score_mixed("I'm so happy 😄🎉")   # → EmotionalState (words + emoji)
-from_mixed("grief 😭")             # → dominant Emotion
-
-# --- Emoji ---
-from_emoji("😊")                   # → Emotion("serenity")
-register_emoji("🤖", "trust")      # custom mapping
-
-# --- DeepMoji bridge ---
-adapter = DeepMojiAdapter()
-adapter.from_scores({"😂": 0.6, "😭": 0.4})  # → Emotion
-adapter.score_state({"😂": 0.6, "😭": 0.4})  # → EmotionalState
-
-# --- Geometry ---
-a, b = get_emotion("anger"), get_emotion("joy")
-emotion_distance(a, b)             # Euclidean distance in 4D Hourglass space
-closest_emotion([2, 0, 1, 0])     # nearest named Emotion to a float vector
-
-# --- Cognitive appraisal (Scherer CPM) ---
-a = Appraisal(goal_relevance="relevant", goal_congruence="incongruent",
-              agency="other", coping_potential="low")
-appraisal_to_emotion(a)           # → fear
-
-# --- Continuous space ---
-FloatEmotion(sensitivity=1.5, pleasantness=-0.8)
-FloatEmotion.from_embedding(np.array([0.3, -0.1, 0.7, 0.2]))
-```
+| | |
+| --- | --- |
+| **[Quickstart](docs/quickstart.md)** | Five minutes, hands-on. Start here. |
+| **[The model](docs/theory.md)** | Why these axes, and not the others. The science. |
+| **[Evidence](docs/evidence.md)** | Every construct, its grade, and its citation. |
+| **[Building an agent](docs/agents.md)** | Set points, drives, moods, temperament. The pattern. |
+| **[The laws](docs/core-laws.md)** | The algebra, formally, including what it refuses to do. |
+| **[Appraisal](docs/appraisal.md)** | From events to emotions. |
+| **[Neurochemistry](docs/neurochemistry.md)** | Neuromodulators as computational roles. |
+| **[Interop](docs/interop.md)** | PAD, circumplex, and the conversion graph. |
+| **[Text & emoji](docs/text_emoji.md)** | Getting emotion out of language. |
+| **[The models](docs/models.md)** | Every model, its grade, and how they map. |
+| **[CLI](docs/cli.md)** | `emotion-algebra` on the command line. |
+| **[API reference](docs/api_reference.md)** | Every public symbol. |
 
 ---
 
-## CLI
+## Validation
 
-```bash
-# Info about an emotion, feeling, or dimension
-python -m emotion_algebra info anger
-python -m emotion_algebra info love
-python -m emotion_algebra info pleasantness
+The claims above are tested, and the tests are in the repo, including the ones
+that went against us.
 
-# Evaluate an expression
-python -m emotion_algebra "joy + trust"
-python -m emotion_algebra "rage - 1"
+| | |
+| --- | --- |
+| Anger/fear separable in **DeepMoji** (1.2B tweets, no theory of emotion) | **0.773** held out (baseline 0.598; permutation control 0.600) |
+| ...and the axis it uses to do it | **potency, r=+0.306**, 3x valence, arousal or unpredictability |
+| **Lerner & Keltner (2001)** risk-judgement reproduction | anger patterns with *happiness*, not fear; fully mediated by control + certainty |
+| Valence & arousal vs **human norms** (Warriner, 13,915 words) | taken directly from the data |
+| Arousal *from text* | r=**0.35**, emoji carry valence, *punctuation* carries arousal |
 
-# Single emoji
-python -m emotion_algebra 😊
-
-# Interactive REPL (all 24 emotions pre-loaded)
-python -m emotion_algebra
-```
-
----
-
-## Scientific references
-
-- Plutchik, R. (1980). *A general psychoevolutionary theory of emotion.* In R. Plutchik & H. Kellerman (Eds.), *Emotion: Theory, research, and experience* (Vol. 1, pp. 3–33).
-- Cambria, E., Livingstone, A., & Hussain, A. (2012). *The Hourglass of Emotions.* In A. Esposito et al. (Eds.), *Cognitive Behavioural Systems*, LNCS 7403.
-- Russell, J. A. (1980). *A circumplex model of affect.* Journal of Personality and Social Psychology, 39(6), 1161–1178.
-- Posner, J., Russell, J. A., & Peterson, B. S. (2005). *The circumplex model of affect: An integrative approach.* Development and Psychopathology, 17(3), 715–734.
-- Felbo, B., Mislove, A., Søgaard, A., Rahwan, I., & Lehmann, S. (2017). *Using millions of emoji occurrences to learn any-domain representations for detecting sentiment, emotion and sarcasm.* EMNLP 2017.
-- Scherer, K. R. (2001). *Appraisal considered as a process of multilevel sequential checking.* In K. R. Scherer et al. (Eds.), *Appraisal processes in emotion* (pp. 92–120).
+Scripts in `scripts/validate/`. The honest limits of each are written into the
+script that produces it.
 
 ---
 
 ## License
 
-Apache 2.0
+Apache-2.0.

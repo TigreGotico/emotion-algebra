@@ -1,0 +1,84 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "emotion-algebra"
+abstract: >-
+  Signed integer arithmetic over a 4-axis affective space, grounding Plutchik's
+  Wheel of Emotions, Cambria's Hourglass of Emotions, Scherer's Component Process
+  Model and Lövheim's monoamine cube in a single typed, machine-checked algebra.
+type: software
+license: Apache-2.0
+repository-code: "https://github.com/TigreGotico/emotion-algebra"
+authors:
+  - given-names: Casimiro
+    family-names: Ferreira
+    email: jarbasai@mailfence.com
+    alias: JarbasAi
+keywords:
+  - affective-computing
+  - emotion
+  - sentiment-analysis
+  - plutchik
+  - hourglass-of-emotions
+  - appraisal-theory
+references:
+  - type: article
+    title: "A general psychoevolutionary theory of emotion"
+    authors:
+      - family-names: Plutchik
+        given-names: Robert
+    year: 1980
+    collection-title: "Theories of Emotion"
+    publisher:
+      name: Academic Press
+  - type: article
+    title: "The Hourglass of Emotions"
+    authors:
+      - family-names: Cambria
+        given-names: Erik
+      - family-names: Livingstone
+        given-names: Andrew
+      - family-names: Hussain
+        given-names: Amir
+    year: 2012
+    collection-title: "Cognitive Behavioural Systems"
+    publisher:
+      name: Springer
+  - type: article
+    title: "Appraisal considered as a process of multilevel sequential checking"
+    authors:
+      - family-names: Scherer
+        given-names: Klaus R.
+    year: 2001
+    collection-title: "Appraisal Processes in Emotion"
+    publisher:
+      name: Oxford University Press
+  - type: article
+    title: "A new three-dimensional model for emotions and monoamine neurotransmitters"
+    authors:
+      - family-names: Lövheim
+        given-names: Hugo
+    year: 2012
+    journal: "Medical Hypotheses"
+    volume: 78
+    issue: 2
+    start: 341
+    end: 348
+  - type: article
+    title: "Lexicon-Based Methods for Sentiment Analysis"
+    authors:
+      - family-names: Taboada
+        given-names: Maite
+      - family-names: Brooke
+        given-names: Julian
+      - family-names: Tofiloski
+        given-names: Milan
+      - family-names: Voll
+        given-names: Kimberly
+      - family-names: Stede
+        given-names: Manfred
+    year: 2011
+    journal: "Computational Linguistics"
+    volume: 37
+    issue: 2
+    start: 267
+    end: 307

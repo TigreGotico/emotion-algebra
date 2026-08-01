@@ -271,6 +271,31 @@ class TestCompositeEmotionSub:
         result = c - love
         assert result is not None
 
+    def test_sub_computes_self_minus_other_not_other_minus_self(self):
+        # love = joy + trust; love - joy should leave trust (the component
+        # NOT shared with the subtrahend), not disgust (-trust).
+        joy = copy(EMOTIONS["joy"])
+        trust = copy(EMOTIONS["trust"])
+        love = joy + trust
+        result = love - joy
+        assert result.name == "trust", (
+            f"Expected 'trust' (love - joy leaves the trust component), "
+            f"got {result.name!r}"
+        )
+
+    def test_sub_emotion_is_anti_commutative_via_negation(self):
+        # (c - e) should be the negation of what (e - c) "conceptually" is
+        # for the shared-axis component: subtracting a stronger same-axis
+        # emotion than the composite holds should flip the resulting sign
+        # relative to subtracting a weaker one.
+        rage = copy(EMOTIONS["rage"])  # sensitivity flow 3
+        vigilance = copy(EMOTIONS["vigilance"])  # attention flow 2
+        c = rage * vigilance
+        annoyance = copy(EMOTIONS["annoyance"])  # sensitivity flow 1
+        result = c - annoyance
+        # self(rage=3) - other(annoyance=1) on sensitivity axis -> flow 2 (anger)
+        assert result.components[0].emotional_flow == 2
+
 
 # ---------------------------------------------------------------------------
 # matrix_to_array / array_to_emotion
@@ -287,6 +312,21 @@ class TestMatrixConversions:
         arr = np.array([3, 3, 0, 0])
         result = CompositeEmotion.array_to_emotion(arr)
         assert result is not None
+
+    def test_array_to_emotion_round_trips_two_axes(self):
+        # Regression for TEA08.10: Neutrality(dim) + int used to collapse to
+        # a bare int, so array_to_emotion silently returned an int for ANY
+        # input instead of a CompositeEmotion/Emotion.
+        arr = np.array([2, 0, 2, 0])
+        result = CompositeEmotion.array_to_emotion(arr)
+        assert isinstance(result, (Emotion, CompositeEmotion))
+        assert result.as_array.tolist() == arr.tolist()
+
+    def test_array_to_emotion_round_trips_four_axes(self):
+        arr = np.array([2, 2, 2, 2])
+        result = CompositeEmotion.array_to_emotion(arr)
+        assert isinstance(result, CompositeEmotion)
+        assert result.as_array.tolist() == arr.tolist()
 
 
 # ---------------------------------------------------------------------------
@@ -520,13 +560,24 @@ class TestCompositeDimensionProperties:
         cd = self._get_cd("pleasantness", "aptitude")
         assert cd.mild_opposite is not None
 
-    def test_basic_emotion_is_none(self):
-        cd = self._get_cd()
-        assert cd.basic_emotion is None
+    def test_basic_emotion_composes_from_each_dimensions_basic_emotion(self):
+        # Unlike intense_emotion/mild_emotion, there is no named 16-entry
+        # composite for the basic (flow=1) tier, so basic_emotion is built
+        # on the fly from each axis's own basic_emotion primitive.
+        cd = self._get_cd("sensitivity", "attention")
+        result = cd.basic_emotion
+        assert result is not None
+        assert result.as_array.tolist() == (
+            DIMENSIONS["sensitivity"].basic_emotion + DIMENSIONS["attention"].basic_emotion
+        ).as_array.tolist()
 
-    def test_basic_opposite_is_none(self):
-        cd = self._get_cd()
-        assert cd.basic_opposite is None
+    def test_basic_opposite_composes_from_each_dimensions_basic_opposite(self):
+        cd = self._get_cd("sensitivity", "attention")
+        result = cd.basic_opposite
+        assert result is not None
+        assert result.as_array.tolist() == (
+            DIMENSIONS["sensitivity"].basic_opposite + DIMENSIONS["attention"].basic_opposite
+        ).as_array.tolist()
 
     def test_sub_removes_dimension(self):
         d1 = DIMENSIONS["sensitivity"]
@@ -704,11 +755,17 @@ class TestCompositeDimensionProperties:
         assert isinstance(result, bool)
 
     def test_mul_composite_with_emotion(self):
-        # CompositeEmotion.__mul__(Emotion) returns matrix product
+        # CompositeEmotion.__mul__(Emotion) must return an EmotionBase (a
+        # FloatEmotion projected from the matrix product), never a bare
+        # numpy array — every operator returns a typed algebra member.
+        from emotion_algebra.base import EmotionBase
+        from emotion_algebra.float_emotion import FloatEmotion
         c = rage_and_vigilance_composite()
         joy = copy(EMOTIONS["joy"])
         result = c.__mul__(joy)
         assert result is not None
+        assert isinstance(result, EmotionBase)
+        assert isinstance(result, FloatEmotion)
 
 
 # ---------------------------------------------------------------------------

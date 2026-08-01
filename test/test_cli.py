@@ -1,4 +1,5 @@
 """Tests for emotion_algebra.__main__ — CLI entry point."""
+import json
 import subprocess
 import sys
 import pytest
@@ -218,3 +219,79 @@ class TestCLIFunctions:
         main()
         out = capsys.readouterr().out
         assert "anger" in out
+
+
+class TestCLIAnalyze:
+    """`analyze` reads the affect core out of text — including potency."""
+
+    def test_reports_the_core_axes(self):
+        rc, out, _ = run("analyze", "I am furious about this")
+        assert rc == 0
+        assert "valence" in out
+        assert "potency" in out
+        assert "dominant" in out
+        assert "tendency" in out
+
+    def test_separates_an_angry_user_from_a_frightened_one(self):
+        # The whole point: both are negative, and they need opposite responses.
+        _, angry, _ = run("analyze", "I am furious about this", "--json")
+        _, afraid, _ = run("analyze", "I'm terrified something has gone wrong", "--json")
+
+        angry, afraid = json.loads(angry), json.loads(afraid)
+        assert angry["valence"] < 0 and afraid["valence"] < 0
+        assert angry["potency"] > 0 > afraid["potency"]
+
+    def test_json(self):
+        rc, out, _ = run("analyze", "I am furious about this", "--json")
+        assert rc == 0
+        payload = json.loads(out)
+        for key in ("valence", "potency", "arousal", "unpredictability",
+                    "ambivalence", "dominant", "tendency", "label"):
+            assert key in payload
+        assert -1.0 <= payload["potency"] <= 1.0
+
+    def test_label_is_a_distribution(self):
+        rc, out, _ = run("analyze", "I am furious", "--json")
+        assert rc == 0
+        label = json.loads(out)["label"]
+        assert sum(label.values()) == pytest.approx(1.0)
+
+
+class TestCLIDistance:
+    def test_distance_reports_all_three_metrics(self):
+        rc, out, _ = run("distance", "joy", "grief")
+        assert rc == 0
+        assert "distance" in out
+        assert "similarity" in out
+        assert "cosine" in out
+
+    def test_distance_json(self):
+        rc, out, _ = run("distance", "joy", "grief", "--json")
+        assert rc == 0
+        payload = json.loads(out)
+        assert payload["a"] == "joy"
+        assert payload["b"] == "grief"
+        assert payload["distance"] > 0
+        assert 0.0 <= payload["similarity"] <= 1.0
+
+    def test_identical_emotions_are_zero_distance(self):
+        rc, out, _ = run("distance", "joy", "joy", "--json")
+        assert rc == 0
+        payload = json.loads(out)
+        assert payload["distance"] == pytest.approx(0.0)
+        assert payload["similarity"] == pytest.approx(1.0)
+
+    def test_unknown_emotion_exits_nonzero(self):
+        rc, _, err = run("distance", "joy", "definitely-not-an-emotion")
+        assert rc != 0
+        assert "Unknown emotion" in err
+
+
+class TestCLIWheel:
+    def test_wheel_writes_a_png(self, tmp_path):
+        result = subprocess.run(
+            [sys.executable, "-m", "emotion_algebra", "wheel", "joy"],
+            capture_output=True, text=True, cwd=tmp_path,
+        )
+        assert result.returncode == 0, result.stderr
+        assert (tmp_path / "joy_wheel.png").is_file()

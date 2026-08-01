@@ -1,0 +1,109 @@
+# Changelog
+
+## [3.5.0a3](https://github.com/TigreGotico/emotion-algebra/tree/3.5.0a3) (2026-08-01)
+
+[Full Changelog](https://github.com/TigreGotico/emotion-algebra/compare/3.5.0a2...3.5.0a3)
+
+**Merged pull requests:**
+
+- docs: correct example outputs to match runtime [\#28](https://github.com/TigreGotico/emotion-algebra/pull/28) ([JarbasAl](https://github.com/JarbasAl))
+
+## [3.5.0a2](https://github.com/TigreGotico/emotion-algebra/tree/3.5.0a2) (2026-07-30)
+
+[Full Changelog](https://github.com/TigreGotico/emotion-algebra/compare/3.5.0a1...3.5.0a2)
+
+**Merged pull requests:**
+
+- docs: rewrite README in Simplified Technical English [\#26](https://github.com/TigreGotico/emotion-algebra/pull/26) ([JarbasAl](https://github.com/JarbasAl))
+
+## [3.5.0a1](https://github.com/TigreGotico/emotion-algebra/tree/3.5.0a1) (2026-07-14)
+
+[Full Changelog](https://github.com/TigreGotico/emotion-algebra/compare/3.4.0a1...3.5.0a1)
+
+**Merged pull requests:**
+
+- feat: emotion names in Portuguese and Arabic [\#24](https://github.com/TigreGotico/emotion-algebra/pull/24) ([JarbasAl](https://github.com/JarbasAl))
+
+## [3.4.0a1](https://github.com/TigreGotico/emotion-algebra/tree/3.4.0a1) (2026-07-14)
+
+[Full Changelog](https://github.com/TigreGotico/emotion-algebra/compare/3.3.0a1...3.4.0a1)
+
+**Merged pull requests:**
+
+- feat: experimental Portuguese and Arabic — fitted on English, and measured on them [\#22](https://github.com/TigreGotico/emotion-algebra/pull/22) ([JarbasAl](https://github.com/JarbasAl))
+
+## [3.3.0a1](https://github.com/TigreGotico/emotion-algebra/tree/3.3.0a1) (2026-07-14)
+
+[Full Changelog](https://github.com/TigreGotico/emotion-algebra/compare/3.2.0a1...3.3.0a1)
+
+**Merged pull requests:**
+
+- feat: refuse languages the text layer cannot read, instead of guessing [\#20](https://github.com/TigreGotico/emotion-algebra/pull/20) ([JarbasAl](https://github.com/JarbasAl))
+
+## [3.2.0a1](https://github.com/TigreGotico/emotion-algebra/tree/3.2.0a1) (2026-07-14)
+
+[Full Changelog](https://github.com/TigreGotico/emotion-algebra/compare/3.1.0a1...3.2.0a1)
+
+**Merged pull requests:**
+
+- feat: grade the numbers, not just the theories [\#18](https://github.com/TigreGotico/emotion-algebra/pull/18) ([JarbasAl](https://github.com/JarbasAl))
+
+## [3.1.0a1](https://github.com/TigreGotico/emotion-algebra/tree/3.1.0a1) (2026-07-14)
+
+[Full Changelog](https://github.com/TigreGotico/emotion-algebra/compare/3.0.0a1...3.1.0a1)
+
+**Merged pull requests:**
+
+- feat: recover arousal from text — emoji carry valence, punctuation carries arousal [\#16](https://github.com/TigreGotico/emotion-algebra/pull/16) ([JarbasAl](https://github.com/JarbasAl))
+
+## [3.0.0a1](https://github.com/TigreGotico/emotion-algebra/tree/3.0.0a1) (2026-07-13)
+
+[Full Changelog](https://github.com/TigreGotico/emotion-algebra/compare/2.0.0a2...3.0.0a1)
+
+**Breaking changes:**
+
+- feat!: drop the word lexicon [\#14](https://github.com/TigreGotico/emotion-algebra/pull/14) ([JarbasAl](https://github.com/JarbasAl))
+
+## [2.0.0a2](https://github.com/TigreGotico/emotion-algebra/tree/2.0.0a2) (2026-07-13)
+
+[Full Changelog](https://github.com/TigreGotico/emotion-algebra/compare/2.0.0a1...2.0.0a2)
+
+**Merged pull requests:**
+
+- docs: rebuild the documentation, and recover potency from text [\#12](https://github.com/TigreGotico/emotion-algebra/pull/12) ([JarbasAl](https://github.com/JarbasAl))
+
+## [2.0.0a1](https://github.com/TigreGotico/emotion-algebra/tree/2.0.0a1) (2026-07-13)
+
+[Full Changelog](https://github.com/TigreGotico/emotion-algebra/compare/1.2.0a1...2.0.0a1)
+
+**Breaking changes:**
+
+- feat!: an evidence-graded affect core, with a defensible neurochemistry [\#10](https://github.com/TigreGotico/emotion-algebra/pull/10) ([JarbasAl](https://github.com/JarbasAl))
+
+## [1.2.0a1](https://github.com/TigreGotico/emotion-algebra/tree/1.2.0a1) (2026-07-13)
+
+[Full Changelog](https://github.com/TigreGotico/emotion-algebra/compare/1.1.1a1...1.2.0a1)
+
+**Merged pull requests:**
+
+- feat: Lövheim cube, PAD interop, taxonomy, serialization, viz and the law suite [\#8](https://github.com/TigreGotico/emotion-algebra/pull/8) ([JarbasAl](https://github.com/JarbasAl))
+
+## [1.1.1a1](https://github.com/TigreGotico/emotion-algebra/tree/1.1.1a1) (2026-07-10)
+
+[Full Changelog](https://github.com/TigreGotico/emotion-algebra/compare/1.1.0a1...1.1.1a1)
+
+**Merged pull requests:**
+
+- fix: StrEnum backport for Python 3.10 broke every need-deficit lookup [\#6](https://github.com/TigreGotico/emotion-algebra/pull/6) ([JarbasAl](https://github.com/JarbasAl))
+
+## [1.1.0a1](https://github.com/TigreGotico/emotion-algebra/tree/1.1.0a1) (2026-06-10)
+
+[Full Changelog](https://github.com/TigreGotico/emotion-algebra/compare/1.0.0...1.1.0a1)
+
+**Merged pull requests:**
+
+- feat: continuous appraisal, need-deficit emotions, FloatEmotion.blend [\#1](https://github.com/TigreGotico/emotion-algebra/pull/1) ([JarbasAl](https://github.com/JarbasAl))
+
+
+
+\* *This Changelog was automatically generated by [github_changelog_generator](https://github.com/github-changelog-generator/github-changelog-generator)*

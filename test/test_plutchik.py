@@ -313,14 +313,56 @@ class TestEmotionTypeKind:
     def test_pensiveness_is_calm_negative(self):
         assert copy(EMOTIONS["pensiveness"]).type == "calm negative"
 
-    def test_anger_is_activated_neutral(self):
-        assert copy(EMOTIONS["anger"]).type == "activated neutral"
+    def test_gloat_classified_as_social(self):
+        from emotion_algebra.plutchik import EMOTION_KIND_NAMES
+        # gloat (ecstasy+loathing): Schadenfreude is a fortunes-of-others
+        # emotion (Ortony/OCC) -- inherently social, not merely event-based.
+        assert "gloat" in EMOTION_KIND_NAMES["social"]
+        assert "gloat" not in EMOTION_KIND_NAMES["event related"]
 
-    def test_fear_is_activated_neutral(self):
-        assert copy(EMOTIONS["fear"]).type == "activated neutral"
+    def test_frivolity_classified_as_event_related(self):
+        from emotion_algebra.plutchik import EMOTION_KIND_NAMES
+        # frivolity (ecstasy+amazement): intense-pleasant reaction to a
+        # surprising event, alongside ecstasy/joy/elation -- not social.
+        assert "frivolity" in EMOTION_KIND_NAMES["event related"]
+        assert "frivolity" not in EMOTION_KIND_NAMES["social"]
 
-    def test_anticipation_is_activated_neutral(self):
-        assert copy(EMOTIONS["anticipation"]).type == "activated neutral"
+    # `type` classifies on polarity (Cambria's 4-axis sentiment score), not on
+    # valence (Pleasantness only). Under valence, every emotion off the
+    # Pleasantness axis -- three axes out of four -- collapsed to "activated
+    # neutral", which put anger and fear, the textbook high-arousal *negative*
+    # emotions, in the hedonically-neutral band. Polarity places them correctly.
+    def test_anger_is_excited_negative(self):
+        assert copy(EMOTIONS["anger"]).type == "excited negative"
+
+    def test_fear_is_excited_negative(self):
+        assert copy(EMOTIONS["fear"]).type == "excited negative"
+
+    def test_sensitivity_axis_is_aversive_at_both_poles(self):
+        """Anger and fear are both negative; they differ in coping, not hedonic sign."""
+        assert copy(EMOTIONS["rage"]).polarity < 0
+        assert copy(EMOTIONS["terror"]).polarity < 0
+
+    def test_anticipation_is_excited_positive(self):
+        assert copy(EMOTIONS["anticipation"]).type == "excited positive"
+
+    def test_both_attention_poles_score_positive(self):
+        """|Attention| in Cambria's formula makes surprise positive too.
+
+        Surprise is hedonically ambiguous in Russell's circumplex, so a case
+        could be made for classifying it neutral. We do not: the polarity
+        formula is Cambria's published one, and bending it so that one emotion
+        reads more intuitively would make every other number in this library
+        un-citable. The quirk is locked here so it stays a decision rather than
+        drifting into an accident.
+        """
+        assert copy(EMOTIONS["surprise"]).polarity > 0
+        assert copy(EMOTIONS["anticipation"]).polarity > 0
+
+    def test_valence_still_pleasantness_only(self):
+        """polarity changed; valence did NOT -- they are different questions."""
+        assert copy(EMOTIONS["anger"]).valence == 0
+        assert copy(EMOTIONS["joy"]).valence == 2
 
     def test_neutrality_type_is_neutral(self):
         assert Neutrality().type == "neutral"
@@ -498,6 +540,22 @@ class TestEmotionArithmetic:
         result = anger >> annoyance
         assert isinstance(result, Emotion)
 
+    def test_shift_round_trip_int_operand(self, annoyance):
+        shifted = annoyance >> 1
+        back = shifted << 1
+        assert back.emotional_flow == annoyance.emotional_flow
+
+    def test_shift_round_trip_emotion_operand(self, annoyance):
+        # (a >> b) << b must return a, for any same-dimension b — << and >>
+        # must be exact inverses regardless of operand type.
+        shifted = annoyance >> annoyance
+        back = shifted << annoyance
+        assert back.emotional_flow == annoyance.emotional_flow
+
+    def test_lshift_emotion_operand_is_self_minus_other(self, anger, annoyance):
+        result = anger << annoyance
+        assert result.emotional_flow == anger.emotional_flow - annoyance.emotional_flow
+
 
 # ---------------------------------------------------------------------------
 # Emotion — unary operators
@@ -561,6 +619,28 @@ class TestEmotionComparisons:
 
     def test_eq_by_name_string(self, anger):
         assert anger == "anger"
+
+
+class TestEmotionHashability:
+    """Emotions are immutable value objects and must be hashable — usable
+    as dict keys and in sets, consistent with __eq__ (same-dimension,
+    same-flow emotions hash equal)."""
+
+    def test_is_hashable(self, anger):
+        hash(anger)  # must not raise
+
+    def test_equal_emotions_hash_equal(self, anger):
+        other = copy(EMOTIONS["anger"])
+        assert anger == other
+        assert hash(anger) == hash(other)
+
+    def test_usable_as_dict_key(self, anger, joy):
+        d = {anger: "sensitivity", joy: "pleasantness"}
+        assert d[copy(EMOTIONS["anger"])] == "sensitivity"
+
+    def test_usable_in_set_dedup(self, anger):
+        s = {anger, copy(EMOTIONS["anger"]), copy(EMOTIONS["anger"])}
+        assert len(s) == 1
 
 
 # ---------------------------------------------------------------------------
@@ -687,6 +767,30 @@ class TestNeutrality:
     def test_neutrality_add_string_known(self):
         result = Neutrality() + "anger"
         assert isinstance(result, Emotion)
+
+    @pytest.mark.parametrize(
+        "dimension,flow",
+        [
+            (d, f)
+            for d in ("sensitivity", "attention", "pleasantness", "aptitude")
+            for f in (-3, -2, -1, 1, 2, 3)
+        ],
+    )
+    def test_neutrality_plus_int_is_additive_identity(self, dimension, flow):
+        # Neutrality is the additive identity: Neutrality(dim) + flow must
+        # construct an Emotion at that flow on that dimension, not fall
+        # through to a bare int.
+        n = Neutrality(dimension=dimension)
+        result = n + flow
+        assert isinstance(result, Emotion)
+        assert result.emotional_flow == flow
+        assert result.dimension.axis == dimension
+
+    def test_neutrality_minus_int_is_additive_identity(self):
+        n = Neutrality(dimension="sensitivity")
+        result = n - 2
+        assert isinstance(result, Emotion)
+        assert result.emotional_flow == -2
 
     def test_neutrality_sub_emotion_returns_opposite(self, anger):
         result = Neutrality() - anger
