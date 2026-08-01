@@ -85,9 +85,9 @@ from emotion_algebra import prototype, label, dominant, entropy
 mixed = prototype("rage").blend(prototype("terror"), 0.5)
 
 label(mixed, top_k=3)
-# {'distress': 0.66, 'distraction': 0.19, 'apprehension': 0.15}
+# {'distress': 0.49, 'distraction': 0.29, 'apprehension': 0.22}
 
-entropy(mixed)   # 3.91 bits -- it sits BETWEEN names, and says so
+entropy(mixed)   # 4.25 bits -- it sits BETWEEN names, and says so
 dominant(mixed)  # 'distress'   (the convenient answer; throws away the rest)
 ```
 
