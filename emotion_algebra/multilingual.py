@@ -137,8 +137,19 @@ def _encoder():
         ) from e
 
     tokenizer = Tokenizer.from_file(hf_hub_download(ENCODER_REPO, "tokenizer.json"))
-    tokenizer.enable_padding()
-    tokenizer.enable_truncation(max_length=MAX_TOKENS)
+    # tokenizers 1.0 keeps padding and truncation as settings. From 1.0.0rc4
+    # only the CompiledTokenizer that compile() builds can encode, and
+    # compile() freezes the settings, so they come first. The release
+    # candidates differ, so each step tests for the method, not the version.
+    if hasattr(tokenizer, "enable_padding"):
+        tokenizer.enable_padding()
+        tokenizer.enable_truncation(max_length=MAX_TOKENS)
+    else:
+        from tokenizers import Padding, Truncation
+        tokenizer.padding = Padding()
+        tokenizer.truncation = Truncation(max_length=MAX_TOKENS)
+    if hasattr(tokenizer, "compile"):
+        tokenizer = tokenizer.compile()
 
     options = ort.SessionOptions()
     options.intra_op_num_threads = ENCODER_THREADS
