@@ -230,3 +230,60 @@ class TestTheTokenizerSettings:
             [1] * 4 + [0] * (MAX_TOKENS - 4),
             [1] * MAX_TOKENS,
         ]
+
+
+class _Rc3Tokenizer:
+    """tokenizers 1.0.0rc3: settings are properties and the Tokenizer itself
+    encodes; there is no compile()."""
+
+    padding = truncation = None
+
+    @classmethod
+    def from_file(cls, path):
+        return cls()
+
+
+class _Rc4Tokenizer(_Rc3Tokenizer):
+    """tokenizers 1.0.0rc4: only what compile() returns encodes, and it keeps
+    the settings the Tokenizer had at that moment."""
+
+    def compile(self):
+        return ("compiled", self.padding, self.truncation)
+
+
+class TestTheLoaderFollowsTheApi:
+    """The release candidates of tokenizers 1.0 share the major version and
+    differ in API, so a version check picks the wrong path on one of them."""
+
+    @pytest.fixture
+    def load(self, monkeypatch):
+        import tokenizers
+        from emotion_algebra import multilingual
+
+        monkeypatch.setattr("huggingface_hub.hf_hub_download",
+                            lambda repo, filename: filename)
+        monkeypatch.setattr("onnxruntime.InferenceSession", lambda *a, **k: None)
+        monkeypatch.setattr(tokenizers, "Padding", lambda: "pad", raising=False)
+        monkeypatch.setattr(tokenizers, "Truncation",
+                            lambda max_length: ("cut", max_length), raising=False)
+
+        def load(stub, version):
+            monkeypatch.setattr(tokenizers, "Tokenizer", stub)
+            monkeypatch.setattr(tokenizers, "__version__", version)
+            multilingual._encoder.cache_clear()
+            return multilingual._encoder()[0]
+
+        yield load
+        multilingual._encoder.cache_clear()
+
+    def test_a_tokenizer_without_compile_is_set_up_and_used(self, load):
+        from emotion_algebra.multilingual import MAX_TOKENS
+
+        tokenizer = load(_Rc3Tokenizer, "1.0.0-rc.3")
+        assert isinstance(tokenizer, _Rc3Tokenizer)
+        assert (tokenizer.padding, tokenizer.truncation) == ("pad", ("cut", MAX_TOKENS))
+
+    def test_a_tokenizer_is_set_up_before_it_is_compiled(self, load):
+        from emotion_algebra.multilingual import MAX_TOKENS
+
+        assert load(_Rc4Tokenizer, "0.0.0") == ("compiled", "pad", ("cut", MAX_TOKENS))
