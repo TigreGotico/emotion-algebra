@@ -165,7 +165,8 @@ class TestTheTokenizerSettings:
     0.23.3 gives the same rows.
     """
 
-    WORDS = "one two three four five six seven eight nine ten".split()
+    WORDS = ("one", "two", "three", "four", "five", "six", "seven", "eight",
+             "nine", "ten")
 
     @pytest.fixture
     def feed(self, tmp_path, monkeypatch):
@@ -258,6 +259,7 @@ class TestTheLoaderFollowsTheApi:
     @pytest.fixture
     def load(self, monkeypatch):
         import tokenizers
+
         from emotion_algebra import multilingual
 
         monkeypatch.setattr("huggingface_hub.hf_hub_download",
