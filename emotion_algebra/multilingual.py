@@ -76,6 +76,7 @@ from __future__ import annotations
 import json
 import os
 from functools import lru_cache
+from importlib.metadata import version
 from pathlib import Path
 from typing import List, Sequence
 
@@ -137,8 +138,16 @@ def _encoder():
         ) from e
 
     tokenizer = Tokenizer.from_file(hf_hub_download(ENCODER_REPO, "tokenizer.json"))
-    tokenizer.enable_padding()
-    tokenizer.enable_truncation(max_length=MAX_TOKENS)
+    if int(version("tokenizers").split(".")[0]) >= 1:
+        # tokenizers 1.x keeps padding and truncation as settings, and only the
+        # CompiledTokenizer that compile() builds from them can encode
+        from tokenizers import Padding, Truncation
+        tokenizer.padding = Padding()
+        tokenizer.truncation = Truncation(max_length=MAX_TOKENS)
+        tokenizer = tokenizer.compile()
+    else:
+        tokenizer.enable_padding()
+        tokenizer.enable_truncation(max_length=MAX_TOKENS)
 
     options = ort.SessionOptions()
     options.intra_op_num_threads = ENCODER_THREADS

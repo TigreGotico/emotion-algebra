@@ -151,3 +151,82 @@ class TestShapes:
     def test_mismatched_lengths_raise(self):
         with pytest.raises(ValueError, match="same length"):
             design_matrix(np.zeros((2, N_EMBED)), ["only one"], lang="en")
+
+
+class TestTheTokenizerSettings:
+    """The encoder sees each batch padded to its longest text and each text cut
+    at ``MAX_TOKENS``, on tokenizers 0.x and 1.x.
+
+    A word-level ``tokenizer.json`` with the encoder's ``<s> ... </s>`` template
+    stands in for the real one, and a stub records what the ONNX session gets,
+    so the test stays offline. The expected rows follow from the settings by
+    hand: ``enable_padding()`` pads with id 0, and the truncation keeps
+    ``MAX_TOKENS - 2`` words to leave room for ``<s>`` and ``</s>``. tokenizers
+    0.23.3 gives the same rows.
+    """
+
+    WORDS = "one two three four five six seven eight nine ten".split()
+
+    @pytest.fixture
+    def feed(self, tmp_path, monkeypatch):
+        from emotion_algebra import multilingual
+
+        vocab = {"<s>": 0, "<pad>": 1, "</s>": 2, "<unk>": 3}
+        vocab.update({word: 4 + i for i, word in enumerate(self.WORDS)})
+        template = [{"SpecialToken": {"id": "<s>", "type_id": 0}},
+                    {"Sequence": {"id": "A", "type_id": 0}},
+                    {"SpecialToken": {"id": "</s>", "type_id": 0}}]
+        path = tmp_path / "tokenizer.json"
+        path.write_text(json.dumps({
+            "version": "1.0", "truncation": None, "padding": None,
+            "added_tokens": [], "normalizer": None,
+            "pre_tokenizer": {"type": "Whitespace"},
+            "post_processor": {
+                "type": "TemplateProcessing", "single": template,
+                "pair": template + [{"Sequence": {"id": "B", "type_id": 0}},
+                                    {"SpecialToken": {"id": "</s>", "type_id": 0}}],
+                "special_tokens": {
+                    "<s>": {"id": "<s>", "ids": [0], "tokens": ["<s>"]},
+                    "</s>": {"id": "</s>", "ids": [2], "tokens": ["</s>"]}}},
+            "decoder": None,
+            "model": {"type": "WordLevel", "vocab": vocab, "unk_token": "<unk>"},
+        }))
+
+        seen = {}
+
+        class Input:
+            def __init__(self, name):
+                self.name = name
+
+        class Session:
+            def get_inputs(self):
+                return [Input("input_ids"), Input("attention_mask")]
+
+            def run(self, _, feed):
+                seen.update(feed)
+                return [np.ones(feed["input_ids"].shape + (N_EMBED,))]
+
+        monkeypatch.setattr(
+            "huggingface_hub.hf_hub_download",
+            lambda repo, filename: str(path) if filename == "tokenizer.json" else filename,
+        )
+        monkeypatch.setattr("onnxruntime.InferenceSession", lambda *a, **k: Session())
+        multilingual._encoder.cache_clear()
+        yield lambda texts: (multilingual._encode_batch(texts), seen)[1]
+        multilingual._encoder.cache_clear()
+
+    def test_a_batch_is_padded_and_cut(self, feed):
+        from emotion_algebra.multilingual import MAX_TOKENS
+
+        long_text = " ".join(self.WORDS * 15)              # 150 words
+        seen = feed(["one two", long_text])
+
+        kept = [4 + i % 10 for i in range(MAX_TOKENS - 2)]
+        assert seen["input_ids"].tolist() == [
+            [0, 4, 5, 2] + [0] * (MAX_TOKENS - 4),
+            [0, *kept, 2],
+        ]
+        assert seen["attention_mask"].tolist() == [
+            [1] * 4 + [0] * (MAX_TOKENS - 4),
+            [1] * MAX_TOKENS,
+        ]
